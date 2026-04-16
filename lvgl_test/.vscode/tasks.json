@@ -1,7 +1,7 @@
 {
 	"version": "2.0.0",
-	"options": {
-	"cwd": "${workspaceFolder}/build/Debug"
+    "options": {
+	    "cwd": "${workspaceFolder}/build/Debug"
 	},
 	"tasks": [
 		{
@@ -14,6 +14,17 @@
             "problemMatcher": [],
 		},
 
+
+		// {
+		// 	"type": "shell",
+		// 	"label": "rebuild",  // clean+build
+		// 	"command": "rmdir -r ${workspaceFolder}/build/Debug/CMakeFiles; mingw32-make -j16" ,   
+        //     "options": {
+        //         "cwd": "${workspaceFolder}"   // 覆盖全局的 build/Debug，因为要删除 build 目录
+        //     },
+        //     "problemMatcher": [],
+		// },
+        
 		{
 			"type": "shell",
 			"label": "jlink-flash",

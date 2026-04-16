@@ -19,10 +19,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "gpio.h"
+#include "fsmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "lcd_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -86,12 +87,17 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_FSMC_Init();
   /* USER CODE BEGIN 2 */
-
+  ILI9341_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  /* 整屏清为白色 */
+  LCD_SetBackColor(WHITE);
+  ILI9341_Clear(0,0,LCD_X_LENGTH,LCD_Y_LENGTH);	
+  ILI9341_DrawRectangle(10,10,20,30,1);
   while (1)
   {
     /* USER CODE END WHILE */
@@ -99,7 +105,6 @@ int main(void)
     HAL_Delay(500);
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
     HAL_Delay(500);
-
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
