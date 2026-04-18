@@ -16,6 +16,7 @@ set(MX_Include_Dirs
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/CMSIS/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/../../user
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../RTT
 )
 
 # STM32CubeMX generated application sources
@@ -30,6 +31,8 @@ set(MX_Application_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/syscalls.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../startup_stm32f103xe.s
     ${CMAKE_CURRENT_SOURCE_DIR}/../../user/lcd_driver.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../RTT/SEGGER_RTT.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../RTT/SEGGER_RTT_printf.c
 )
 
 # STM32 HAL/LL Drivers

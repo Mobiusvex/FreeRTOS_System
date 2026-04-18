@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "SEGGER_RTT.h"
 #include "lcd_driver.h"
 /* USER CODE END Includes */
 
@@ -98,6 +99,8 @@ int main(void)
   LCD_SetBackColor(WHITE);
   ILI9341_Clear(0,0,LCD_X_LENGTH,LCD_Y_LENGTH);	
   ILI9341_DrawRectangle(10,10,20,30,1);
+  SEGGER_RTT_Init();
+	SEGGER_RTT_printf(0, "Hello world !");  // Ô­½Ó¿Ú
   while (1)
   {
     /* USER CODE END WHILE */
