@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "SEGGER_RTT.h"
 #include "lcd_driver.h"
+#include "touch_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,24 +92,25 @@ int main(void)
   MX_FSMC_Init();
   /* USER CODE BEGIN 2 */
   ILI9341_Init();
+  
+  SEGGER_RTT_Init();
+  XPT2046_CS_DISABLE();
+	SEGGER_RTT_printf(0, "RTT Init OK\n"); 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  /* 整屏清为白色 */
+	
+  Calibrate_or_Get_TouchParaWithFlash(0);
   LCD_SetBackColor(WHITE);
   ILI9341_Clear(0,0,LCD_X_LENGTH,LCD_Y_LENGTH);	
   ILI9341_DrawRectangle(10,10,20,30,1);
-  SEGGER_RTT_Init();
-	SEGGER_RTT_printf(0, "Hello world !");  // 原接口
   while (1)
   {
     /* USER CODE END WHILE */
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
-    HAL_Delay(500);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
-    HAL_Delay(500);
+
     /* USER CODE BEGIN 3 */
+    XPT2046_TouchEvenHandler();
   }
   /* USER CODE END 3 */
 }

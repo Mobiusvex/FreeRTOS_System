@@ -12,7 +12,7 @@ uint16_t LCD_Y_LENGTH = ILI9341_MORE_PIXEL;
 //参数可选值为0-7
 //调用ILI9341_GramScan函数设置方向时会自动更改
 //LCD刚初始化完成时会使用本默认值
-uint8_t LCD_SCAN_MODE = 3;
+uint8_t LCD_SCAN_MODE = 0;
 //保存液晶屏驱动ic的 ID
 static uint16_t lcdid = LCDID_UNKNOWN;
 
@@ -862,4 +862,17 @@ void ILI9341_DrawRectangle ( uint16_t usX_Start, uint16_t usY_Start, uint16_t us
 		ILI9341_DrawLine ( usX_Start + usWidth - 1, usY_Start, usX_Start + usWidth - 1, usY_Start + usHeight - 1 );		
 	}
 
+}
+
+
+/**
+  * @brief  ÉèÖÃLCDµÄÇ°¾°(×ÖÌå)¼°±³¾°ÑÕÉ«,RGB565
+  * @param  TextColor: Ö¸¶¨Ç°¾°(×ÖÌå)ÑÕÉ«
+  * @param  BackColor: Ö¸¶¨±³¾°ÑÕÉ«
+  * @retval None
+  */
+void LCD_SetColors(uint16_t TextColor, uint16_t BackColor) 
+{
+  CurrentTextColor = TextColor; 
+  CurrentBackColor = BackColor;
 }
