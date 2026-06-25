@@ -30,11 +30,6 @@ set(MX_Application_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/sysmem.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/syscalls.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../startup_stm32f103xe.s
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../user/lcd_driver.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../user/touch_driver.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../user/flash_driver.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../RTT/SEGGER_RTT.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../RTT/SEGGER_RTT_printf.c
 )
 
 # STM32 HAL/LL Drivers
@@ -101,3 +96,5 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES ADDITIONAL_CLEAN_FILES ${
 if((CMAKE_C_STANDARD EQUAL 90) OR (CMAKE_C_STANDARD EQUAL 99))
     message(ERROR "Generated code requires C11 or higher")
 endif()
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists_main.txt)
