@@ -80,4 +80,6 @@ void                     ILI9341_OpenWindow              ( uint16_t usX, uint16_
 void ILI9341_Clear ( uint16_t usX, uint16_t usY, uint16_t usWidth, uint16_t usHeight );
 void LCD_SetColors(uint16_t TextColor, uint16_t BackColor) ;
 void ILI9341_GramScan ( uint8_t ucOption );
+void lcd_draw_point ( uint16_t usX, uint16_t usY, uint16_t color  );
+
 #endif /* __LCD_DRIVER_H__ */

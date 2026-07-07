@@ -7,16 +7,15 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl
     ${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/examples/porting
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/extra/widgets/win
 )
+
+# 自动搜索 lvgl/src 下所有的 .c 文件（包括 extra 里的所有控件）
+file(GLOB_RECURSE LVGL_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/*.c
+)
+
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/examples/porting LVGL_PORTING)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/core LVGL_CORE_LIST)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/draw LVGL_DRAW_LIST)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/core/extra LVGL_EXTRA_LIST)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/core/font LVGL_FONT_LIST)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/core/gpu LVGL_GPU_LIST)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/core/hal LVGL_HAL_LIST)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/core/misc LVGL_MISC_LIST)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/widgets LVGL_WIDGET_LIST)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../user PROJECT_USER_LIST)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../RTT PROJECT_RTT_LIST)
 
@@ -25,15 +24,8 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../RTT PROJECT_RTT_LIST)
 # 将源文件添加给该目标
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${LVGL_PORTING}
-    ${LVGL_CORE_LIST}
-    ${LVGL_DRAW_LIST}
-    ${LVGL_EXTRA_LIST}
-    ${LVGL_FONT_LIST}
-    ${LVGL_GPU_LIST}
-    ${LVGL_HAL_LIST}
-    ${LVGL_MISC_LIST}
-    ${LVGL_WIDGET_LIST}
     ${PROJECT_USER_LIST}
     ${PROJECT_RTT_LIST}
+    ${LVGL_SOURCES}
 )
 

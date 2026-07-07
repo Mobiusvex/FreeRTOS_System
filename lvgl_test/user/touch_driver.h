@@ -144,5 +144,6 @@ uint8_t XPT2046_Touch_Calibrate();
 uint8_t XPT2046_Get_TouchedPoint( strType_XPT2046_Coordinate * displayPtr, strType_XPT2046_TouchPara * para );
 void XPT2046_TouchEvenHandler(void );
 void Calibrate_or_Get_TouchParaWithFlash(uint8_t forceCal);
+uint8_t XPT2046_TouchDetect(void);
 
 #endif /* __TOUCH_DRIVER_H__ */

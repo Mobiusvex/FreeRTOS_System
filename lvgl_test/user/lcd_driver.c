@@ -876,3 +876,22 @@ void LCD_SetColors(uint16_t TextColor, uint16_t BackColor)
   CurrentTextColor = TextColor; 
   CurrentBackColor = BackColor;
 }
+
+
+/**
+ * @brief  显示器的某一点以某种颜色进行填充
+ * @param  usX ：在特定扫描方向下该点的X坐标
+ * @param  usY ：在特定扫描方向下该点的Y坐标
+ * @param  color ：填充的颜色
+ * @retval 无
+ */
+void lcd_draw_point ( uint16_t usX, uint16_t usY, uint16_t color  )	
+{	
+	if ( ( usX < LCD_X_LENGTH ) && ( usY < LCD_Y_LENGTH ) )
+  {
+		ILI9341_SetCursor ( usX, usY );
+		
+		ILI9341_FillColor ( 1, color );
+	}
+	
+}

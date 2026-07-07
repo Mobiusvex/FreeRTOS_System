@@ -18,14 +18,18 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "tim.h"
 #include "gpio.h"
 #include "fsmc.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "SEGGER_RTT.h"
 #include "lcd_driver.h"
 #include "touch_driver.h"
+#include "lvgl.h"
+#include "hal/lv_hal_tick.h"
+#include "lv_port_disp_template.h"
+#include "lv_port_indev_template.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,27 +94,33 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_FSMC_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  ILI9341_Init();
   
   SEGGER_RTT_Init();
   XPT2046_CS_DISABLE();
 	SEGGER_RTT_printf(0, "RTT Init OK\n"); 
+	HAL_TIM_Base_Start_IT(&htim2);
+
+  lv_init();
+  lv_port_disp_init();
+  lv_port_indev_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	
-  Calibrate_or_Get_TouchParaWithFlash(0);
-  LCD_SetBackColor(WHITE);
-  ILI9341_Clear(0,0,LCD_X_LENGTH,LCD_Y_LENGTH);	
-  ILI9341_DrawRectangle(10,10,20,30,1);
+
+  lv_obj_t * switch_obj = lv_switch_create(lv_scr_act());
+
+  lv_obj_set_size(switch_obj, 50, 20);
+  lv_obj_align(switch_obj, LV_ALIGN_CENTER, 0, 0);
+
   while (1)
   {
     /* USER CODE END WHILE */
-
+    HAL_Delay(5);
+    lv_timer_handler();
     /* USER CODE BEGIN 3 */
-    XPT2046_TouchEvenHandler();
   }
   /* USER CODE END 3 */
 }
@@ -176,7 +186,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
+  if (htim->Instance == TIM2)
+  {
+     lv_tick_inc(1);
+  }
   /* USER CODE END Callback 1 */
 }
 
