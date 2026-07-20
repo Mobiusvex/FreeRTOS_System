@@ -18,9 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "tim.h"
 #include "gpio.h"
 #include "fsmc.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "SEGGER_RTT.h"
@@ -55,6 +57,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -97,29 +100,25 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   
-  SEGGER_RTT_Init();
-  XPT2046_CS_DISABLE();
-	SEGGER_RTT_printf(0, "RTT Init OK\n"); 
-	HAL_TIM_Base_Start_IT(&htim2);
-
-  lv_init();
-  lv_port_disp_init();
-  lv_port_indev_init();
   /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();  /* Call init function for freertos objects (in cmsis_os2.c) */
+  MX_FREERTOS_Init();
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  lv_obj_t * switch_obj = lv_switch_create(lv_scr_act());
-
-  lv_obj_set_size(switch_obj, 50, 20);
-  lv_obj_align(switch_obj, LV_ALIGN_CENTER, 0, 0);
 
   while (1)
   {
     /* USER CODE END WHILE */
-    HAL_Delay(5);
-    lv_timer_handler();
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
