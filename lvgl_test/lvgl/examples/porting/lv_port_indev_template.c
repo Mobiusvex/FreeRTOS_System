@@ -3,7 +3,7 @@
  *
  */
 
- /*Copy this file as "lv_port_indev.c" and set this value to "1" to enable content*/
+/*Copy this file as "lv_port_indev.c" and set this value to "1" to enable content*/
 #if 1
 
 /*********************
@@ -26,14 +26,14 @@
  **********************/
 
 static void touchpad_init(void);
-static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
+static void touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data);
 static bool touchpad_is_pressed(void);
-static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y);
+static void touchpad_get_xy(lv_coord_t *x, lv_coord_t *y);
 
 /**********************
  *  STATIC VARIABLES
  **********************/
-lv_indev_t * indev_touchpad;
+lv_indev_t *indev_touchpad;
 
 static int32_t encoder_diff;
 static lv_indev_state_t encoder_state;
@@ -46,8 +46,7 @@ static lv_indev_state_t encoder_state;
  *   GLOBAL FUNCTIONS
  **********************/
 
-void lv_port_indev_init(void)
-{
+void lv_port_indev_init(void) {
     /**
      * Here you will find example implementation of input devices supported by LittelvGL:
      *  - Touchpad
@@ -74,7 +73,6 @@ void lv_port_indev_init(void)
     indev_drv.type = LV_INDEV_TYPE_POINTER;
     indev_drv.read_cb = touchpad_read;
     indev_touchpad = lv_indev_drv_register(&indev_drv);
-
 }
 
 /**********************
@@ -86,20 +84,18 @@ void lv_port_indev_init(void)
  * -----------------*/
 
 /*Initialize your touchpad*/
-static void touchpad_init(void)
-{
+static void touchpad_init(void) {
     /*Your code comes here*/
     Calibrate_or_Get_TouchParaWithFlash(0);
 }
 
 /*Will be called by the library to read the touchpad*/
-static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
-{
+static void touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
     static lv_coord_t last_x = 0;
     static lv_coord_t last_y = 0;
 
     /*Save the pressed coordinates and the state*/
-    if(touchpad_is_pressed()) {
+    if (touchpad_is_pressed()) {
         touchpad_get_xy(&last_x, &last_y);
         data->state = LV_INDEV_STATE_PR;
     } else {
@@ -112,31 +108,26 @@ static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 }
 
 /*Return true is the touchpad is pressed*/
-static bool touchpad_is_pressed(void)
-{
+static bool touchpad_is_pressed(void) {
     /*Your code comes here*/
-    if(XPT2046_TouchDetect() == TOUCH_PRESSED)
-    {
-        
+    if (XPT2046_TouchDetect() == TOUCH_PRESSED) {
         return true;
     }
     return false;
 }
 
 /*Get the x and y coordinates if the touchpad is pressed*/
-static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)
-{
+static void touchpad_get_xy(lv_coord_t *x, lv_coord_t *y) {
     /*Your code comes here*/
     /*Your code comes here*/
-    static strType_XPT2046_Coordinate cinfo={-1,-1,-1,-1};
-    //获取触摸坐标
-	XPT2046_Get_TouchedPoint(&cinfo,strXPT2046_TouchPara);
+    static strType_XPT2046_Coordinate cinfo = {-1, -1, -1, -1};
+    // 获取触摸坐标
+    XPT2046_Get_TouchedPoint(&cinfo, strXPT2046_TouchPara);
     (*x) = cinfo.x;
     (*y) = cinfo.y;
-    
-	SEGGER_RTT_printf(0,"x=%d,y=%d\n",cinfo.x,cinfo.y);
-}
 
+    SEGGER_RTT_printf(0, "x=%d,y=%d\n", cinfo.x, cinfo.y);
+}
 
 #else /*Enable this file at the top*/
 

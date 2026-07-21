@@ -49,6 +49,18 @@
                 "-programfile", "${workspaceFolder}/build/Debug/lvgl_test.elf"  // 修改xxx为当前工程名
             ],
             "problemMatcher": [],
-        }
+        },
+		{
+            "type": "shell",
+            "label": "generate-bin",
+            "command": "arm-none-eabi-objcopy",
+            "args": [
+                "-O", "binary",
+                "${workspaceFolder}/build/Debug/lvgl_test.elf",   // 输入 .elf
+                "${workspaceFolder}/build/Debug/lvgl_test.bin"    // 输出 .bin
+            ],
+            "problemMatcher": [],
+            "dependsOn": ["build"]   // 可选：依赖 build，先编译再转换
+        },
 	]
 }
