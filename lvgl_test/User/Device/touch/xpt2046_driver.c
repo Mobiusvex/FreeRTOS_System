@@ -1,11 +1,13 @@
-#include "touch_driver.h"
+#include "xpt2046_driver.h"
 #include "flash_driver.h"
 #include "stdint-gcc.h"
+#include "bsp_spi.h"
+#include "lcd_driver.h"
 
 /******************************* 声明 XPT2046 相关的静态函数 ***************************/
-static void XPT2046_DelayUS(__IO uint32_t ulCount);
-static void XPT2046_WriteCMD(uint8_t ucCmd);
-static uint16_t XPT2046_ReadCMD(void);
+// static void BSP_DelayUS(__IO uint32_t ulCount);
+// static void XPT2046_WriteCMD(uint8_t ucCmd);
+// static uint16_t XPT2046_ReadCMD(void);
 static uint16_t XPT2046_ReadAdc(uint8_t ucChannel);
 static void XPT2046_ReadAdc_XY(int16_t *sX_Ad, int16_t *sY_Ad);
 static uint8_t XPT2046_ReadAdc_Smooth_XY(strType_XPT2046_Coordinate *pScreenCoordinate);
@@ -28,75 +30,6 @@ strType_XPT2046_TouchPara strXPT2046_TouchPara[8] = {
 volatile uint8_t ucXPT2046_TouchFlag = 0;
 
 /**
- * @brief  用于 XPT2046 的简单微秒级延时函数
- * @param  nCount ：延时计数值，单位为微妙
- * @retval 无
- */
-static void XPT2046_DelayUS(__IO uint32_t ulCount) {
-    uint32_t i;
-
-    for (i = 0; i < ulCount; i++) {
-        uint8_t uc = 12; // 设置值为12，大约延1微秒
-
-        while (uc--); // 延1微秒
-    }
-}
-
-/**
- * @brief  XPT2046 的写入命令
- * @param  ucCmd ：命令
- *   该参数为以下值之一：
- *     @arg 0x90 :通道Y+的选择控制字
- *     @arg 0xd0 :通道X+的选择控制字
- * @retval 无
- */
-static void XPT2046_WriteCMD(uint8_t ucCmd) {
-    uint8_t i;
-
-    XPT2046_MOSI_0();
-
-    XPT2046_CLK_LOW();
-
-    for (i = 0; i < 8; i++) {
-        ((ucCmd >> (7 - i)) & 0x01) ? XPT2046_MOSI_1() : XPT2046_MOSI_0();
-
-        XPT2046_DelayUS(5);
-
-        XPT2046_CLK_HIGH();
-
-        XPT2046_DelayUS(5);
-
-        XPT2046_CLK_LOW();
-    }
-}
-
-/**
- * @brief  XPT2046 的读取命令
- * @param  无
- * @retval 读取到的数据
- */
-static uint16_t XPT2046_ReadCMD(void) {
-    uint8_t i;
-    uint16_t usBuf = 0, usTemp;
-
-    XPT2046_MOSI_0();
-
-    XPT2046_CLK_HIGH();
-
-    for (i = 0; i < 12; i++) {
-        XPT2046_CLK_LOW();
-
-        usTemp = XPT2046_MISO();
-
-        usBuf |= usTemp << (11 - i);
-
-        XPT2046_CLK_HIGH();
-    }
-
-    return usBuf;
-}
-
-/**
  * @brief  对 XPT2046 选择一个模拟通道后，启动ADC，并返回ADC采样结果
  * @param  ucChannel
  *   该参数为以下值之一：
@@ -105,9 +38,17 @@ static uint16_t XPT2046_ReadCMD(void) {
  * @retval 该通道的ADC采样结果
  */
 static uint16_t XPT2046_ReadAdc(uint8_t ucChannel) {
-    XPT2046_WriteCMD(ucChannel);
-
-    return XPT2046_ReadCMD();
+    uint8_t tx_data[3] = {ucChannel, 0x00, 0X00};
+    uint8_t rx_data[3];
+    uint16_t res = 0;
+#if SPI_TEST
+    // TODO:时序好像有问题，会导致触摸屏失效
+    BSP_SPI_TransmitReceive(BSP_SPI_BUS_XPT2046, tx_data, &res, 1, 0);
+#else
+    BSP_SPI_TransmitReceive(BSP_SPI_BUS_XPT2046, tx_data, rx_data, 3, 0);
+    res = (uint16_t)(rx_data[1] << 4 | rx_data[2] >> 4);
+#endif
+    return res;
 }
 
 /**
@@ -121,7 +62,7 @@ static void XPT2046_ReadAdc_XY(int16_t *sX_Ad, int16_t *sY_Ad) {
 
     sX_Ad_Temp = XPT2046_ReadAdc(XPT2046_CHANNEL_X);
 
-    XPT2046_DelayUS(1);
+    BSP_DelayUS(1);
 
     sY_Ad_Temp = XPT2046_ReadAdc(XPT2046_CHANNEL_Y);
 
@@ -280,7 +221,7 @@ uint8_t XPT2046_Touch_Calibrate() {
     for (i = 0; i < 4; i++) {
         ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
 
-        XPT2046_DelayUS(300000); // 适当的延时很有必要
+        BSP_DelayUS(300000); // 适当的延时很有必要
 
         ILI9341_DrawCross(strCrossCoordinate[i].x, strCrossCoordinate[i].y); // 显示校正用的“十”字
 
@@ -292,12 +233,6 @@ uint8_t XPT2046_Touch_Calibrate() {
     if (CalibrationFactor.Divider == 0) {
         SEGGER_RTT_printf(0, "XPT2046_Touch_Calibrate: Divider is zero\r\n");
     } else {
-        // usTest_x = ( ( CalibrationFactor.An * strScreenSample[3].x ) + ( CalibrationFactor.Bn * strScreenSample[3].y ) + CalibrationFactor.Cn ) / CalibrationFactor.Divider;		//取一个点计算X值
-        // usTest_y = ( ( CalibrationFactor.Dn * strScreenSample[3].x ) + ( CalibrationFactor.En * strScreenSample[3].y ) + CalibrationFactor.Fn ) / CalibrationFactor.Divider;    //取一个点计算Y值
-
-        // usGap_x = ( usTest_x > strCrossCoordinate[3].x ) ? ( usTest_x - strCrossCoordinate[3].x ) : ( strCrossCoordinate[3].x - usTest_x );   //实际X坐标与计算坐标的绝对差
-        // usGap_y = ( usTest_y > strCrossCoordinate[3].y ) ? ( usTest_y - strCrossCoordinate[3].y ) : ( strCrossCoordinate[3].y - usTest_y );   //实际Y坐标与计算坐标的绝对差
-
         /* 校准系数为全局变量 */
         strXPT2046_TouchPara[LCD_SCAN_MODE].dX_X = (CalibrationFactor.An * 1.0) / CalibrationFactor.Divider;
         strXPT2046_TouchPara[LCD_SCAN_MODE].dX_Y = (CalibrationFactor.Bn * 1.0) / CalibrationFactor.Divider;
@@ -311,7 +246,7 @@ uint8_t XPT2046_Touch_Calibrate() {
 
         LCD_SetTextColor(GREEN);
 
-        XPT2046_DelayUS(1000000);
+        BSP_DelayUS(1000000);
         result = 1;
     }
 
@@ -363,7 +298,7 @@ uint8_t XPT2046_Touch_Calibrate() {
     for (i = 0; i < 4; i++) {
         ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
 
-        XPT2046_DelayUS(300000); // 适当的延时很有必要
+        BSP_DelayUS(300000); // 适当的延时很有必要
 
         ILI9341_DrawCross(strCrossCoordinate[i].x, strCrossCoordinate[i].y); // 显示校正用的“十”字
 

@@ -27,7 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "SEGGER_RTT.h"
 #include "lcd_driver.h"
-#include "touch_driver.h"
+#include "xpt2046_driver.h"
 #include "lvgl.h"
 #include "hal/lv_hal_tick.h"
 #include "lv_port_disp_template.h"

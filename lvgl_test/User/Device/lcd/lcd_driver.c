@@ -2,6 +2,7 @@
 #include "main.h"
 #include "stdint-gcc.h"
 #include "stm32f103xe.h"
+#include "SEGGER_RTT.h"
 
 // 根据液晶扫描方向而变化的XY像素宽度
 // 调用ILI9341_GramScan函数设置方向时会自动更改
@@ -129,7 +130,8 @@ uint16_t ILI9341_ReadID(void) {
  */
 static void ILI9341_REG_Config(void) {
     lcdid = ILI9341_ReadID();
-
+    // SEGGER_RTT_printf(0, "ILI9341_ReadID: %04X\n", lcdid);
+    HAL_Delay(1);
     if (lcdid == LCDID_ILI9341) {
         /*  Power control B (CFh)  */
         DEBUG_DELAY();
@@ -812,7 +814,6 @@ void LCD_SetColors(uint16_t TextColor, uint16_t BackColor) {
 void lcd_draw_point(uint16_t usX, uint16_t usY, uint16_t color) {
     if ((usX < LCD_X_LENGTH) && (usY < LCD_Y_LENGTH)) {
         ILI9341_SetCursor(usX, usY);
-
         ILI9341_FillColor(1, color);
     }
 }

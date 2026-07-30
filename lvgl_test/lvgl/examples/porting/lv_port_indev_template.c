@@ -11,7 +11,7 @@
  *********************/
 #include "lv_port_indev_template.h"
 #include "../../lvgl.h"
-#include "touch_driver.h"
+#include "xpt2046_driver.h"
 #include "SEGGER_RTT.h"
 /*********************
  *      DEFINES

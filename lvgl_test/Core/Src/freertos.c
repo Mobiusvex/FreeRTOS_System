@@ -28,7 +28,7 @@
 
 #include "SEGGER_RTT.h"
 #include "lcd_driver.h"
-#include "touch_driver.h"
+#include "xpt2046_driver.h"
 #include "lvgl.h"
 #include "hal/lv_hal_tick.h"
 #include "lv_port_disp_template.h"
@@ -71,7 +71,6 @@ void lv_page_show(void *params) {
 
     lv_obj_set_size(switch_obj, 50, 20);
     lv_obj_align(switch_obj, LV_ALIGN_CENTER, 0, 0);
-
     while (1) {
         vTaskDelay(5);
         lv_timer_handler();
@@ -125,7 +124,7 @@ void MX_FREERTOS_Init(void) {
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
     /* USER CODE END RTOS_THREADS */
-    if (xTaskCreate(lv_page_show, "lv_page_show", 512, NULL, osPriorityNormal, NULL) != pdPASS) {
+    if (xTaskCreate(lv_page_show, "lv_page_show", 1024, NULL, osPriorityNormal, NULL) != pdPASS) {
         SEGGER_RTT_printf(0, "Failed to create lv_page_show\n");
     }
     /* USER CODE BEGIN RTOS_EVENTS */

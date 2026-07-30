@@ -1,47 +1,16 @@
-#ifndef __TOUCH_DRIVER_H__
-#define __TOUCH_DRIVER_H__
+#ifndef _XPT2046_DRIVER_H__
+#define _XPT2046_DRIVER_H__
 
-#include "main.h"
 #include "SEGGER_RTT.h"
-#include "stm32f103xe.h"
-#include "gpio.h"
+#include "bsp_gpio.h"
 #include "flash_driver.h"
-#include "lcd_driver.h"
-
-/******************************* XPT2046 触摸屏触摸信号指示引脚定义(不使用中断) ***************************/
-#define XPT2046_PENIRQ_GPIO_CLK RCC_APB2Periph_GPIOF
-#define XPT2046_PENIRQ_GPIO_PORT GPIOF
-#define XPT2046_PENIRQ_GPIO_PIN GPIO_PIN_9
 
 // 触屏信号有效电平
-#define XPT2046_PENIRQ_ActiveLevel 0
-#define XPT2046_PENIRQ_Read() HAL_GPIO_ReadPin(XPT2046_PENIRQ_GPIO_PORT, XPT2046_PENIRQ_GPIO_PIN)
+#define XPT2046_PENIRQ_ActiveLevel BSP_GPIO_LOW
+#define XPT2046_PENIRQ_Read() BSP_GPIO_Read(BSP_GPIO_XPT2046_PENIRQ)
 
-/******************************* XPT2046 触摸屏模拟SPI引脚定义 ***************************/
-#define XPT2046_SPI_GPIO_CLK RCC_APB2Periph_GPIOF | RCC_APB2Periph_GPIOG
-
-#define XPT2046_SPI_CS_PIN GPIO_PIN_10
-#define XPT2046_SPI_CS_PORT GPIOF
-
-#define XPT2046_SPI_CLK_PIN GPIO_PIN_7
-#define XPT2046_SPI_CLK_PORT GPIOG
-
-#define XPT2046_SPI_MOSI_PIN GPIO_PIN_11
-#define XPT2046_SPI_MOSI_PORT GPIOF
-
-#define XPT2046_SPI_MISO_PIN GPIO_PIN_6
-#define XPT2046_SPI_MISO_PORT GPIOF
-
-#define XPT2046_CS_ENABLE() HAL_GPIO_WritePin(XPT2046_SPI_CS_PORT, XPT2046_SPI_CS_PIN, GPIO_PIN_SET)
-#define XPT2046_CS_DISABLE() HAL_GPIO_WritePin(XPT2046_SPI_CS_PORT, XPT2046_SPI_CS_PIN, GPIO_PIN_RESET)
-
-#define XPT2046_CLK_HIGH() HAL_GPIO_WritePin(XPT2046_SPI_CLK_PORT, XPT2046_SPI_CLK_PIN, GPIO_PIN_SET)
-#define XPT2046_CLK_LOW() HAL_GPIO_WritePin(XPT2046_SPI_CLK_PORT, XPT2046_SPI_CLK_PIN, GPIO_PIN_RESET)
-
-#define XPT2046_MOSI_1() HAL_GPIO_WritePin(XPT2046_SPI_MOSI_PORT, XPT2046_SPI_MOSI_PIN, GPIO_PIN_SET)
-#define XPT2046_MOSI_0() HAL_GPIO_WritePin(XPT2046_SPI_MOSI_PORT, XPT2046_SPI_MOSI_PIN, GPIO_PIN_RESET)
-
-#define XPT2046_MISO() HAL_GPIO_ReadPin(XPT2046_SPI_MISO_PORT, XPT2046_SPI_MISO_PIN)
+#define XPT2046_CS_ENABLE() BSP_GPIO_Write(BSP_GPIO_XPT2046_SPI_CS, BSP_GPIO_HIGH)
+#define XPT2046_CS_DISABLE() BSP_GPIO_Write(BSP_GPIO_XPT2046_SPI_CS, BSP_GPIO_LOW)
 
 /******************************* XPT2046 触摸屏参数定义 ***************************/
 // 校准触摸屏时触摸坐标的AD值相差门限
@@ -135,4 +104,4 @@ void XPT2046_TouchEvenHandler(void);
 void Calibrate_or_Get_TouchParaWithFlash(uint8_t forceCal);
 uint8_t XPT2046_TouchDetect(void);
 
-#endif /* __TOUCH_DRIVER_H__ */
+#endif /* _XPT2046_DRIVER_H__ */

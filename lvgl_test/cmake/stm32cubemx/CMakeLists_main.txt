@@ -1,22 +1,33 @@
 # 假设 CubeMX 的目标名为 ${CMAKE_PROJECT_NAME}
 # 将头文件目录添加给该目标
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../user
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../user/App/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/../../RTT
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl
     ${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/examples/porting
     ${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/extra/widgets/win
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Bsp/Inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/lcd
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/touch
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/App/Tasks/Inc
 )
 
 # 自动搜索 lvgl/src 下所有的 .c 文件（包括 extra 里的所有控件）
 file(GLOB_RECURSE LVGL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/src/*.c
 )
+# 自动搜索 lvgl/src 下所有的 .c 文件（包括 extra 里的所有控件）
+file(GLOB_RECURSE USER_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Bsp/src/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/App/Tasks/src/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/lcd/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/touch/*.c
+)
+
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../lvgl/examples/porting LVGL_PORTING)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../user PROJECT_USER_LIST)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../RTT PROJECT_RTT_LIST)
 
 
@@ -24,7 +35,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../RTT PROJECT_RTT_LIST)
 # 将源文件添加给该目标
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${LVGL_PORTING}
-    ${PROJECT_USER_LIST}
+    ${USER_SOURCES}
     ${PROJECT_RTT_LIST}
     ${LVGL_SOURCES}
 )
