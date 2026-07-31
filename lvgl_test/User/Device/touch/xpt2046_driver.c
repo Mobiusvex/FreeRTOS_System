@@ -1,9 +1,10 @@
 #include "xpt2046_driver.h"
-#include "flash_driver.h"
 #include "stdint-gcc.h"
 #include "bsp_spi.h"
 #include "lcd_driver.h"
 #include "bsp_delay.h"
+#include "bsp_flash.h"
+
 /******************************* 声明 XPT2046 相关的静态函数 ***************************/
 static uint16_t XPT2046_ReadAdc(uint8_t ucChannel);
 static void XPT2046_ReadAdc_XY(int16_t *sX_Ad, int16_t *sY_Ad);
@@ -373,31 +374,31 @@ void Calibrate_or_Get_TouchParaWithFlash(uint8_t forceCal) {
     uint32_t para_flag = 0;
 
     // 读取触摸参数标志
-    FLASH_ReadData(FLASH_TOUCH_PARA_ADDR + 7 * 4 * lcd_scan_mode, (uint32_t *)&para_flag, 1);
+    BSP_FLASH_Read(FLASH_TOUCH_PARA_ADDR + 7 * 4 * lcd_scan_mode, (uint32_t *)&para_flag, 1);
 
     // 若不存在标志或florceCal=1时，重新校正参数
     if ((para_flag != FLASH_TOUCH_PARA_FLAG_VALUE) || (forceCal == 1)) {
         // 若标志存在，说明原本FLASH内有触摸参数，
         // 先读回所有LCD模式的参数值，以便稍后强制更新时只更新指定LCD模式的参数,其它模式的不变
         if (para_flag == FLASH_TOUCH_PARA_FLAG_VALUE && forceCal == 1) {
-            FLASH_ReadData(FLASH_TOUCH_PARA_ADDR, (uint32_t *)strXPT2046_TouchPara, 7 * 8);
+            BSP_FLASH_Read(FLASH_TOUCH_PARA_ADDR, (uint32_t *)strXPT2046_TouchPara, 7 * 8);
         }
 
         // 等待触摸屏校正完毕,更新指定LCD模式的触摸参数值
         while (!XPT2046_Touch_Calibrate());
 
         // 擦除扇区
-        FLASH_ERASE_PAGE(FLASH_SAVE_ADDR);
+        BSP_FLASH_ErasePage(FLASH_TOUCH_PARA_ADDR);
         // 设置触摸参数标志
         para_flag = FLASH_TOUCH_PARA_FLAG_VALUE;
         // 写入触摸参数标志
         strXPT2046_TouchPara[lcd_scan_mode].calibrate_flag = para_flag;
         // 写入最新的触摸参数
-        FLASH_WriteData(FLASH_TOUCH_PARA_ADDR, (uint32_t *)strXPT2046_TouchPara, 7 * 8);
+        BSP_FLASH_Write(FLASH_TOUCH_PARA_ADDR, (uint32_t *)strXPT2046_TouchPara, 7 * 8);
 
     } else // 若标志存在且不强制校正，则直接从FLASH中读取
     {
-        FLASH_ReadData(FLASH_TOUCH_PARA_ADDR, (uint32_t *)strXPT2046_TouchPara, 6 * 8);
+        BSP_FLASH_Read(FLASH_TOUCH_PARA_ADDR, (uint32_t *)strXPT2046_TouchPara, 6 * 8);
 #if 0 // 输出调试信息，注意要初始化串口
 				{
 					

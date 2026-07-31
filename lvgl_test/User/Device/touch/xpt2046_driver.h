@@ -3,7 +3,6 @@
 
 #include "SEGGER_RTT.h"
 #include "bsp_gpio.h"
-#include "flash_driver.h"
 
 // 触屏信号有效电平
 #define XPT2046_PENIRQ_ActiveLevel BSP_GPIO_LOW
@@ -23,7 +22,7 @@
 #define FLASH_TOUCH_PARA_FLAG_VALUE 0xA5
 
 // 触摸参数写到FLASH里的地址
-#define FLASH_TOUCH_PARA_ADDR FLASH_SAVE_ADDR
+#define FLASH_TOUCH_PARA_ADDR BSP_FLASH_LAST_PAGE_START
 
 /*信息输出*/
 #define XPT2046_DEBUG_ON 0
