@@ -3,11 +3,8 @@
 #include "stdint-gcc.h"
 #include "bsp_spi.h"
 #include "lcd_driver.h"
-
+#include "bsp_delay.h"
 /******************************* 声明 XPT2046 相关的静态函数 ***************************/
-// static void BSP_DelayUS(__IO uint32_t ulCount);
-// static void XPT2046_WriteCMD(uint8_t ucCmd);
-// static uint16_t XPT2046_ReadCMD(void);
 static uint16_t XPT2046_ReadAdc(uint8_t ucChannel);
 static void XPT2046_ReadAdc_XY(int16_t *sX_Ad, int16_t *sY_Ad);
 static uint8_t XPT2046_ReadAdc_Smooth_XY(strType_XPT2046_Coordinate *pScreenCoordinate);
@@ -234,13 +231,13 @@ uint8_t XPT2046_Touch_Calibrate() {
         SEGGER_RTT_printf(0, "XPT2046_Touch_Calibrate: Divider is zero\r\n");
     } else {
         /* 校准系数为全局变量 */
-        strXPT2046_TouchPara[LCD_SCAN_MODE].dX_X = (CalibrationFactor.An * 1.0) / CalibrationFactor.Divider;
-        strXPT2046_TouchPara[LCD_SCAN_MODE].dX_Y = (CalibrationFactor.Bn * 1.0) / CalibrationFactor.Divider;
-        strXPT2046_TouchPara[LCD_SCAN_MODE].dX = (CalibrationFactor.Cn * 1.0) / CalibrationFactor.Divider;
+        strXPT2046_TouchPara[lcd_scan_mode].dX_X = (CalibrationFactor.An * 1.0) / CalibrationFactor.Divider;
+        strXPT2046_TouchPara[lcd_scan_mode].dX_Y = (CalibrationFactor.Bn * 1.0) / CalibrationFactor.Divider;
+        strXPT2046_TouchPara[lcd_scan_mode].dX = (CalibrationFactor.Cn * 1.0) / CalibrationFactor.Divider;
 
-        strXPT2046_TouchPara[LCD_SCAN_MODE].dY_X = (CalibrationFactor.Dn * 1.0) / CalibrationFactor.Divider;
-        strXPT2046_TouchPara[LCD_SCAN_MODE].dY_Y = (CalibrationFactor.En * 1.0) / CalibrationFactor.Divider;
-        strXPT2046_TouchPara[LCD_SCAN_MODE].dY = (CalibrationFactor.Fn * 1.0) / CalibrationFactor.Divider;
+        strXPT2046_TouchPara[lcd_scan_mode].dY_X = (CalibrationFactor.Dn * 1.0) / CalibrationFactor.Divider;
+        strXPT2046_TouchPara[lcd_scan_mode].dY_Y = (CalibrationFactor.En * 1.0) / CalibrationFactor.Divider;
+        strXPT2046_TouchPara[lcd_scan_mode].dY = (CalibrationFactor.Fn * 1.0) / CalibrationFactor.Divider;
 
         ILI9341_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
 
@@ -376,7 +373,7 @@ void Calibrate_or_Get_TouchParaWithFlash(uint8_t forceCal) {
     uint32_t para_flag = 0;
 
     // 读取触摸参数标志
-    FLASH_ReadData(FLASH_TOUCH_PARA_ADDR + 7 * 4 * LCD_SCAN_MODE, (uint32_t *)&para_flag, 1);
+    FLASH_ReadData(FLASH_TOUCH_PARA_ADDR + 7 * 4 * lcd_scan_mode, (uint32_t *)&para_flag, 1);
 
     // 若不存在标志或florceCal=1时，重新校正参数
     if ((para_flag != FLASH_TOUCH_PARA_FLAG_VALUE) || (forceCal == 1)) {
@@ -394,7 +391,7 @@ void Calibrate_or_Get_TouchParaWithFlash(uint8_t forceCal) {
         // 设置触摸参数标志
         para_flag = FLASH_TOUCH_PARA_FLAG_VALUE;
         // 写入触摸参数标志
-        strXPT2046_TouchPara[LCD_SCAN_MODE].calibrate_flag = para_flag;
+        strXPT2046_TouchPara[lcd_scan_mode].calibrate_flag = para_flag;
         // 写入最新的触摸参数
         FLASH_WriteData(FLASH_TOUCH_PARA_ADDR, (uint32_t *)strXPT2046_TouchPara, 7 * 8);
 
@@ -441,8 +438,8 @@ uint8_t XPT2046_Get_TouchedPoint(strType_XPT2046_Coordinate *pDisplayCoordinate,
     strType_XPT2046_Coordinate strScreenCoordinate;
 
     if (XPT2046_ReadAdc_Smooth_XY(&strScreenCoordinate)) {
-        pDisplayCoordinate->x = ((pTouchPara[LCD_SCAN_MODE].dX_X * strScreenCoordinate.x) + (pTouchPara[LCD_SCAN_MODE].dX_Y * strScreenCoordinate.y) + pTouchPara[LCD_SCAN_MODE].dX);
-        pDisplayCoordinate->y = ((pTouchPara[LCD_SCAN_MODE].dY_X * strScreenCoordinate.x) + (pTouchPara[LCD_SCAN_MODE].dY_Y * strScreenCoordinate.y) + pTouchPara[LCD_SCAN_MODE].dY);
+        pDisplayCoordinate->x = ((pTouchPara[lcd_scan_mode].dX_X * strScreenCoordinate.x) + (pTouchPara[lcd_scan_mode].dX_Y * strScreenCoordinate.y) + pTouchPara[lcd_scan_mode].dX);
+        pDisplayCoordinate->y = ((pTouchPara[lcd_scan_mode].dY_X * strScreenCoordinate.x) + (pTouchPara[lcd_scan_mode].dY_Y * strScreenCoordinate.y) + pTouchPara[lcd_scan_mode].dY);
 
     }
 

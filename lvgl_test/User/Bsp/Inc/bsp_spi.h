@@ -29,5 +29,4 @@ bool BSP_SPI_TransmitReceive(BSP_SPI_Bus_t bus,
                              uint16_t length,
                              uint32_t timeout_ms);
 
-void BSP_DelayUS(volatile uint32_t ulCount);
 #endif
