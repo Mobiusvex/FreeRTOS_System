@@ -25,15 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
-#include "SEGGER_RTT.h"
-#include "lcd_driver.h"
-#include "xpt2046_driver.h"
-#include "lvgl.h"
-#include "hal/lv_hal_tick.h"
-#include "lv_port_disp_template.h"
-#include "lv_port_indev_template.h"
-#include "tim.h"
+#include "user_TaskInit.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,16 +58,6 @@ const osThreadAttr_t defaultTask_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
-void lv_page_show(void *params) {
-    lv_obj_t *switch_obj = lv_switch_create(lv_scr_act());
-
-    lv_obj_set_size(switch_obj, 50, 20);
-    lv_obj_align(switch_obj, LV_ALIGN_CENTER, 0, 0);
-    while (1) {
-        vTaskDelay(5);
-        lv_timer_handler();
-    }
-}
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -89,16 +71,6 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
  */
 void MX_FREERTOS_Init(void) {
     /* USER CODE BEGIN Init */
-    SEGGER_RTT_Init();
-    XPT2046_CS_DISABLE();
-    SEGGER_RTT_printf(0, "RTT Init OK\n");
-
-    lv_init();
-    lv_port_disp_init();
-    lv_port_indev_init();
-
-    HAL_TIM_Base_Start_IT(&htim2);
-
     /* USER CODE END Init */
 
     /* USER CODE BEGIN RTOS_MUTEX */
@@ -122,11 +94,11 @@ void MX_FREERTOS_Init(void) {
     defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
     /* USER CODE BEGIN RTOS_THREADS */
+
+    userTasksInit();
     /* add threads, ... */
     /* USER CODE END RTOS_THREADS */
-    if (xTaskCreate(lv_page_show, "lv_page_show", 1024, NULL, osPriorityNormal, NULL) != pdPASS) {
-        SEGGER_RTT_printf(0, "Failed to create lv_page_show\n");
-    }
+
     /* USER CODE BEGIN RTOS_EVENTS */
     /* add events, ... */
     /* USER CODE END RTOS_EVENTS */
