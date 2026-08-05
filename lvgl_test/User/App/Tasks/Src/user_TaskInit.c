@@ -12,7 +12,6 @@ osThreadAttr_t user_HardwareInitTaskAttr = {
 };
 
 osThreadId_t user_LvHandlerTaskHandle;
-;
 osThreadAttr_t user_LvHandlerTaskAttr = {
     .name = "LvHandlerTask",
     .stack_size = 1024,
