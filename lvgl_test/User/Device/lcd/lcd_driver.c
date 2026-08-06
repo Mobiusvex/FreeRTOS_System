@@ -53,10 +53,10 @@ static void ILI9341_Delay(volatile uint32_t nCount) {
  */
 void ILI9341_Rst(void) {
     BSP_GPIO_Write(BSP_GPIO_LCD_RST, BSP_GPIO_LOW);
-    BSP_DelayMS(1);
+    BSP_DelayMS_Block(1);
 
     BSP_GPIO_Write(BSP_GPIO_LCD_RST, BSP_GPIO_HIGH);
-    BSP_DelayMS(1);
+    BSP_DelayMS_Block(1);
 }
 /**
  * @brief  读取LCD驱动芯片ID函数，可用于测试底层的读写函数
@@ -99,7 +99,7 @@ uint16_t ILI9341_ReadID(void) {
 static void ILI9341_REG_Config(void) {
     lcdid = ILI9341_ReadID();
     // SEGGER_RTT_printf(0, "ILI9341_ReadID: %04X\n", lcdid);
-    BSP_DelayMS(1);
+    BSP_DelayMS_Block(1);
     if (lcdid == LCDID_ILI9341) {
         /*  Power control B (CFh)  */
         DEBUG_DELAY();
@@ -248,7 +248,7 @@ static void ILI9341_REG_Config(void) {
 
         /* Sleep Out (11h)  */
         BSP_LCD_IF_WriteCmd(0x11);
-        BSP_DelayMS(10);
+        BSP_DelayMS_Block(10);
         DEBUG_DELAY();
 
         /* Display ON (29h) */
@@ -387,7 +387,7 @@ static void ILI9341_REG_Config(void) {
 
         /* Sleep Out (11h)  */
         BSP_LCD_IF_WriteCmd(0x11); // Exit Sleep
-        BSP_DelayMS(100);
+        BSP_DelayMS_Block(100);
         DEBUG_DELAY();
 
         /* Display ON (29h) */

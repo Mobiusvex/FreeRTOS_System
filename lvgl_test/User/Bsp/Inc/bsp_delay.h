@@ -5,6 +5,8 @@
 #include <stdbool.h>
 
 void BSP_DelayUS(uint32_t ulCount);
-void BSP_DelayMS(uint32_t mlCount);
+
+void BSP_DelayMS_Block(uint32_t ms); // 忙等
+void BSP_DelayMS_Sleep(uint32_t ms); // 阻塞
 
 #endif

@@ -22,6 +22,7 @@ typedef enum {
     BSP_GPIO_XPT2046_PENIRQ,
     BSP_GPIO_LCD_BL, // 屏幕背光
     BSP_GPIO_LCD_RST,
+    BSP_GPIO_DHT11_DATA,
     // 总数量（必须放在最后）
     BSP_GPIO_NUMBER
 } BSP_GPIO_Name_t;
@@ -31,5 +32,8 @@ void BSP_GPIO_Init(void); // 初始化所有引脚
 void BSP_GPIO_Write(BSP_GPIO_Name_t name, BSP_GPIO_Level_t level);
 BSP_GPIO_Level_t BSP_GPIO_Read(BSP_GPIO_Name_t name);
 void BSP_GPIO_Toggle(BSP_GPIO_Name_t name);
+
+void BSP_CRITICAL_Enter(void);
+void BSP_CRITICAL_Exit(void);
 
 #endif

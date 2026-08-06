@@ -1,6 +1,8 @@
 // bsp_gpio.c
 #include "bsp_gpio.h"
 #include "stm32f1xx_hal.h" // 仅用于 HAL_GPIO_ReadPin/WritePin
+#include "FreeRTOS.h"
+#include "task.h"
 
 // 1. 精简映射表：只保留 端口 和 引脚 (去掉 mode, pull, init_level)
 typedef struct {
@@ -17,6 +19,7 @@ static const GPIO_Map_t s_gpioMap[BSP_GPIO_NUMBER] = {
     [BSP_GPIO_XPT2046_PENIRQ] = {GPIOF, GPIO_PIN_9},
     [BSP_GPIO_LCD_BL] = {GPIOG, GPIO_PIN_6},
     [BSP_GPIO_LCD_RST] = {GPIOG, GPIO_PIN_11},
+    [BSP_GPIO_DHT11_DATA] = {GPIOD, GPIO_PIN_6},
 };
 
 /**
@@ -61,4 +64,22 @@ BSP_GPIO_Level_t BSP_GPIO_Read(BSP_GPIO_Name_t name) {
 void BSP_GPIO_Toggle(BSP_GPIO_Name_t name) {
     if (name >= BSP_GPIO_NUMBER) return;
     HAL_GPIO_TogglePin(s_gpioMap[name].port, s_gpioMap[name].pin);
+}
+
+/**
+ * @brief 进入临界区
+ * @param 无
+ * @retval 无
+ * @details 进入临界区，防止中断干扰
+ */
+void BSP_CRITICAL_Enter(void) {
+    // TODO:记得改configMAX_SYSCALL_INTERRUPT_PRIORITY，让UART等中断优先级高于此
+    taskENTER_CRITICAL();
+}
+
+/**
+ * @brief 退出临界区
+ */
+void BSP_CRITICAL_Exit(void) {
+    taskEXIT_CRITICAL();
 }

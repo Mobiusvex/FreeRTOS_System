@@ -1,4 +1,6 @@
 #include "bsp_delay.h"
+#include "cmsis_os2.h"
+
 #include "stm32f1xx_hal.h" // 仅用于 HAL_GPIO_ReadPin/WritePin
 #include "tim.h"
 /**
@@ -27,12 +29,25 @@ void BSP_DelayUS(uint32_t ulCount) {
 }
 
 /**
- * @brief  简单毫秒级延时函数
- * @param  nCount ：延时计数值，单位为毫妙
+ * @brief  忙等 毫秒级延时函数
+ * @param  nCount ：延时计数值，单位为毫秒
  * @retval 无
  */
-void BSP_DelayMS(uint32_t mlCount) {
-    for (uint16_t i = 0; i < mlCount; i++) {
+void BSP_DelayMS_Block(uint32_t ms) {
+    for (uint32_t i = 0; i < ms; i++) {
         BSP_DelayUS(1000);
+    }
+}
+
+/**
+ * @brief  阻塞 毫秒级延时函数
+ * @param  nCount ：延时计数值，单位为毫秒
+ * @retval 无
+ */
+void BSP_DelayMS_Sleep(uint32_t ms) {
+    if (osKernelGetState() == osKernelRunning) {
+        osDelay(ms);
+    } else {
+        BSP_DelayMS_Block(ms); // 容错降级
     }
 }

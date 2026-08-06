@@ -1,6 +1,7 @@
 #include "user_TaskInit.h"
 #include "user_HardwareInitTask.h"
 #include "user_LvglTask.h"
+#include "user_sensorDataUpdateTask.h"
 
 #include "SEGGER_RTT.h"
 
@@ -18,6 +19,13 @@ osThreadAttr_t user_LvHandlerTaskAttr = {
     .priority = (osPriority_t)osPriorityLow,
 };
 
+osThreadId_t user_sensorDataUpdateHandle;
+osThreadAttr_t user_sensorDataUpdateTaskAttr = {
+    .name = "sensorDataUpdateTask",
+    .stack_size = 1024,
+    .priority = (osPriority_t)osPriorityLow1,
+};
+
 /**
  * @brief Initialize all tasks
  * @param None
@@ -31,5 +39,9 @@ void userTasksInit(void) {
     user_LvHandlerTaskHandle = osThreadNew(lvHandlerTask, NULL, &user_LvHandlerTaskAttr);
     if (user_LvHandlerTaskHandle == NULL) {
         SEGGER_RTT_printf(0, "Failed to create LvHandlerTask\n");
+    }
+    user_sensorDataUpdateHandle = osThreadNew(sensorDataUpdateTask, NULL, &user_sensorDataUpdateTaskAttr);
+    if (user_sensorDataUpdateHandle == NULL) {
+        SEGGER_RTT_printf(0, "Failed to create sensorDataUpdateTask\n");
     }
 }

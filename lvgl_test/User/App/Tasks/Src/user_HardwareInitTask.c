@@ -17,6 +17,7 @@
  * @retval None
  */
 void hardwareInitTask(void *pvParameters) {
+    uint32_t lock_state = osKernelLock();
     SEGGER_RTT_Init();
     XPT2046_CS_DISABLE();
     SEGGER_RTT_printf(0, "RTT Init OK\n");
@@ -30,5 +31,6 @@ void hardwareInitTask(void *pvParameters) {
 
     lv_obj_set_size(switch_obj, 50, 20);
     lv_obj_align(switch_obj, LV_ALIGN_TOP_LEFT, 10, 10);
+    osKernelRestoreLock(lock_state);
     osThreadExit();
 }

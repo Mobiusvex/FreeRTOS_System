@@ -24,6 +24,7 @@ void OnProjectLoad (void) {
   //
   Project.SetDevice ("stm32f103ze");
   Project.AddSvdFile ("$(InstallDir)/Config/CPU/Cortex-M3.svd");
+  Debug.SetResetMode (RM_HARDWARE);
   Project.SetHostIF ("USB", "");
   Project.SetTargetIF ("SWD");
   Project.SetTIFSpeed ("4 MHz");
@@ -114,7 +115,7 @@ void OnProjectLoad (void) {
 **********************************************************************
 */
 void AfterTargetReset (void) {
-  _SetupTarget();
+  //_SetupTarget();
 }
 
 /*********************************************************************
@@ -200,7 +201,8 @@ void AfterTargetReset (void) {
 **********************************************************************
 */
 void AfterTargetDownload (void) {
-  _SetupTarget();
+  //_SetupTarget();
+  // 增加一个小延时，等待芯片稳定（单位：毫秒）
 }
 
 /*********************************************************************
