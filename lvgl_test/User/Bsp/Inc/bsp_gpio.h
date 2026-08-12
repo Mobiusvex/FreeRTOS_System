@@ -23,6 +23,8 @@ typedef enum {
     BSP_GPIO_LCD_BL, // 屏幕背光
     BSP_GPIO_LCD_RST,
     BSP_GPIO_DHT11_DATA,
+    BSP_GPIO_MPU6050_SCL,
+    BSP_GPIO_MPU6050_SDA,
     // 总数量（必须放在最后）
     BSP_GPIO_NUMBER
 } BSP_GPIO_Name_t;

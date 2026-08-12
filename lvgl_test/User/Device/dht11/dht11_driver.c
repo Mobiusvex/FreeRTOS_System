@@ -146,7 +146,7 @@ void DHT11_Init(void) {
  *            temp - 用于保存温度值
  * @retval 0 - 成功, (-1) - 失败
  */
-int DHT11_Read(float *hum, float *temp) {
+SYS_StatusTypeDef DHT11_Read(float *hum, float *temp) {
     uint8_t hum_m, hum_n;
     uint8_t temp_m, temp_n;
     uint8_t check;
@@ -155,19 +155,19 @@ int DHT11_Read(float *hum, float *temp) {
     BSP_CRITICAL_Enter();
     if (0 != DHT11_Wait_Ack()) {
         // printf("dht11 not ack, err!\n\r");
-        return DHT11_ERROR;
+        return SYS_ERROR;
     }
 
     if (0 != DHT11_WaitFor_Val(1, 1000)) /* 等待ACK变为高电平, 超时时间是1000us */
     {
         // printf("dht11 wait for ack high err!\n\r");
-        return DHT11_TIMEOUT;
+        return SYS_TIMEOUT;
     }
 
     if (0 != DHT11_WaitFor_Val(0, 1000)) /* 数据阶段: 等待低电平, 超时时间是1000us */
     {
         // printf("dht11 wait for data low err!\n\r");
-        return DHT11_TIMEOUT;
+        return SYS_TIMEOUT;
     }
 
     hum_m = DHT11_ReadByte();
@@ -182,9 +182,9 @@ int DHT11_Read(float *hum, float *temp) {
     if (hum_m + hum_n + temp_m + temp_n == check) {
         *hum = (float)(hum_m * 10 + hum_n) / 10.0;
         *temp = (float)(temp_m * 10 + temp_n) / 10.0;
-        return DHT11_OK;
+        return SYS_OK;
     } else {
         // printf("dht11 checksum err!\n\r");
-        return DHT11_INVALID_DATA;
+        return SYS_INVALID_DATA;
     }
 }

@@ -33,6 +33,7 @@ void OnProjectLoad (void) {
   // User settings
   //
   File.Open ("E:/STM32/LVGL/LVGL_PROJECT/LVGL_TEST/LVGL_TEST/lvgl_test/build/Debug/lvgl_test.elf");
+  Edit.SysVar (VAR_HSS_SPEED, FREQ_10_KHZ);
   Project.SetOSPlugin ("FreeRTOSPlugin_Cortex-M");
 
 }

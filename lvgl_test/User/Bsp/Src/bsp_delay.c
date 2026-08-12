@@ -9,7 +9,7 @@
  * @retval 无
  */
 void BSP_DelayUS(uint32_t ulCount) {
-    HAL_TIM_Base_Start(&htim7); // 可以只开启一次
+    uint32_t lock_state = osKernelLock();
 
     while (ulCount > 0) {
         // 每次最多延时 65535us（硬件CNT最大值）
@@ -24,8 +24,7 @@ void BSP_DelayUS(uint32_t ulCount) {
         }
         ulCount -= wait; // 剩余时间继续
     }
-
-    HAL_TIM_Base_Stop(&htim7);
+    osKernelRestoreLock(lock_state);
 }
 
 /**
@@ -34,9 +33,7 @@ void BSP_DelayUS(uint32_t ulCount) {
  * @retval 无
  */
 void BSP_DelayMS_Block(uint32_t ms) {
-    for (uint32_t i = 0; i < ms; i++) {
-        BSP_DelayUS(1000);
-    }
+    HAL_Delay(ms);
 }
 
 /**
