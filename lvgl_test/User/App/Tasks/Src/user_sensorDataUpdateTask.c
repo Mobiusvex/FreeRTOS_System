@@ -26,6 +26,7 @@ void sensorDataUpdateTask(void *pvParameters) {
         if (time_counter % (HW_Interface.DHT11.update_time / HW_UPDATE_TASK_PERIOD_MS) == 0) {
             HW_Interface.DHT11.data_status = HW_Interface.DHT11.GetHumiTemp(&humi, &temp);
             if (HW_Interface.DHT11.data_status == SYS_OK) {
+                // NOTE:调度引起数据撕裂风险，但此应用场景不影响
                 HW_Interface.DHT11.humidity = humi;
                 HW_Interface.DHT11.temperature = temp;
                 SEGGER_RTT_printf(0, "Temperature: %f°C, Humidity: %f%%\n", temp, humi); // Print sensor data to RTT
@@ -38,6 +39,7 @@ void sensorDataUpdateTask(void *pvParameters) {
             HW_Interface.MPU6050.data_status = HW_Interface.MPU6050.GetAngle(&pitch, &roll, &yaw);
             if (time_counter % (HW_Interface.MPU6050.update_time / HW_UPDATE_TASK_PERIOD_MS) == 0) {
                 if (HW_Interface.MPU6050.data_status == SYS_OK) {
+                    // NOTE:调度引起数据撕裂风险，但此应用场景不影响
                     HW_Interface.MPU6050.pitch_angle = pitch;
                     HW_Interface.MPU6050.roll_angle = roll;
                     HW_Interface.MPU6050.yaw_angle = yaw; // Update MPU6050 angles

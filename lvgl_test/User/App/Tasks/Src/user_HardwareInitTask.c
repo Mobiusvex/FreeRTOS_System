@@ -5,8 +5,8 @@
 #include "HWDataAccess.h"
 
 #include "SEGGER_RTT.h"
-#include "lcd_driver.h"
-#include "xpt2046_driver.h"
+#include "driver_lcd.h"
+#include "driver_xpt2046.h"
 #include "lvgl.h"
 #include "hal/lv_hal_tick.h"
 #include "lv_port_disp_template.h"

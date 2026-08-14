@@ -1,7 +1,7 @@
-#include "xpt2046_driver.h"
+#include "driver_xpt2046.h"
 #include "stdint-gcc.h"
 #include "bsp_spi.h"
-#include "lcd_driver.h"
+#include "driver_lcd.h"
 #include "bsp_delay.h"
 #include "bsp_flash.h"
 

@@ -1,7 +1,7 @@
 
 
 #include "stm32f1xx_hal.h"
-#include "dht11_driver.h"
+#include "driver_dht11.h"
 
 #include "bsp_gpio.h"
 #include "bsp_delay.h"

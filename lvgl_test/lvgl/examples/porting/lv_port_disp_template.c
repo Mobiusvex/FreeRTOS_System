@@ -11,7 +11,7 @@
  *********************/
 #include "lv_port_disp_template.h"
 #include "../../lvgl.h"
-#include "lcd_driver.h"
+#include "driver_lcd.h"
 #include "SEGGER_RTT.h"
 /*********************
  *      DEFINES

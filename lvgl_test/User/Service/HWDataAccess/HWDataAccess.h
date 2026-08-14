@@ -18,6 +18,7 @@ typedef struct
     uint8_t ConnectionError;
     uint16_t update_time;
     SYS_StatusTypeDef data_status;
+    //HACK： 要不要加volatile保护
     float pitch_angle;
     float roll_angle;
     float yaw_angle;

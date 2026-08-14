@@ -1,5 +1,5 @@
-#ifndef __LCD_DRIVER_H__
-#define __LCD_DRIVER_H__
+#ifndef __driver_lcd_H__
+#define __driver_lcd_H__
 #include "main.h"
 
 /*************************************** 调试预用 ******************************************/
@@ -76,4 +76,4 @@ void LCD_SetColors(uint16_t TextColor, uint16_t BackColor);
 void ILI9341_GramScan(uint8_t ucOption);
 void lcd_draw_point(uint16_t usX, uint16_t usY, uint16_t color);
 
-#endif /* __LCD_DRIVER_H__ */
+#endif /* __driver_lcd_H__ */

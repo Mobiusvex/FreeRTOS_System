@@ -1,5 +1,5 @@
-#ifndef _XPT2046_DRIVER_H__
-#define _XPT2046_DRIVER_H__
+#ifndef _driver_xpt2046_H__
+#define _driver_xpt2046_H__
 
 #include "SEGGER_RTT.h"
 #include "bsp_gpio.h"
@@ -103,4 +103,4 @@ void XPT2046_TouchEvenHandler(void);
 void Calibrate_or_Get_TouchParaWithFlash(uint8_t forceCal);
 uint8_t XPT2046_TouchDetect(void);
 
-#endif /* _XPT2046_DRIVER_H__ */
+#endif /* _driver_xpt2046_H__ */

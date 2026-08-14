@@ -1,6 +1,6 @@
 #include "HWDataAccess.h"
 
-#include "dht11_driver.h"
+#include "driver_dht11.h"
 #include "driver_mpu6050.h"
 /**
  * @brief DHT11传感器初始化
