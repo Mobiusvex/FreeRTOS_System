@@ -1,0 +1,297 @@
+// bsp_uart.c
+#include "bsp_uart.h"
+#include "bsp_gpio.h" // 如果需要复用/翻转引脚
+#include "stm32f1xx_hal.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include <string.h>
+#include "usart.h"
+#include "dma.h"
+#include "SEGGER_RTT.h"
+
+extern DMA_HandleTypeDef hdma_usart3_rx;
+
+osEventFlagsId_t uartReceiveEventFlagsId;
+
+// ---------- 私有上下文 ----------
+typedef struct {
+    UART_HandleTypeDef *huart; // CubeMX生成的句柄
+    DMA_HandleTypeDef *hdmarx; // CubeMX生成的句柄
+    bool use_dma_rx;
+    // 环形缓冲区（软件FIFO）
+    uint8_t *rx_buffer; // 指向分配的内存
+    uint16_t rx_size;
+    volatile uint16_t rx_tail; // 写入索引（中断/DMA中更新）
+    volatile uint16_t rx_head; // 读取索引（用户调用读取时更新）
+    // 发送
+    volatile bool tx_busy;     // 发送忙标志
+    volatile bool tx_complete; // 发送完成标志（用于阻塞等待）
+    osSemaphoreId_t tx_sem;    // 信号量（用于阻塞等待发送完成）
+
+} UART_Ctx_t;
+
+// 静态实例（内存分配由你决定，这里演示静态数组）
+#define BSP_UART_BUFFER_SIZE 512
+static uint8_t s_uart_rx_buf[BSP_UART_NUMBER][BSP_UART_BUFFER_SIZE];
+
+static UART_Ctx_t s_uartCtx[BSP_UART_NUMBER] = {
+    [BSP_UART_ESP8266] = {
+        .huart = &huart3,
+        .hdmarx = &hdma_usart3_rx,
+        .use_dma_rx = true, // ESP8266数据量大，开DMA
+        .rx_buffer = s_uart_rx_buf[BSP_UART_ESP8266],
+        .rx_size = BSP_UART_BUFFER_SIZE,
+        .tx_busy = false,
+        .tx_complete = false,
+    },
+};
+
+/**
+ * @brief 初始化UART
+ * @param bus      UART总线
+ * @param cfg      配置参数（NULL表示使用CubeMX生成的默认配置）
+ * @retval SYS_OK: 初始化成功, SYS_INVALID_PARAM: 参数无效, SYS_ERROR: 初始化失败
+ */
+SYS_StatusTypeDef BSP_UART_Init(BSP_UART_Bus_t bus, const BSP_UART_Config_t *cfg) {
+    if (bus >= BSP_UART_NUMBER) return SYS_INVALID_PARAM;
+
+    // 获取HAL句柄
+    UART_Ctx_t *ctx = &s_uartCtx[bus];
+    UART_HandleTypeDef *huart = ctx->huart;
+    DMA_HandleTypeDef *hdmarx = ctx->hdmarx;
+
+    // 配置UART参数（HAL结构体赋值）
+    if (cfg != NULL) {
+        huart->Init.BaudRate = cfg->baudrate;
+        huart->Init.WordLength = cfg->word_length;
+        huart->Init.StopBits = cfg->stop_bits;
+        huart->Init.Parity = cfg->parity;
+        huart->Init.HwFlowCtl = UART_HWCONTROL_NONE;
+        huart->Init.Mode = UART_MODE_TX_RX;
+
+        if (HAL_UART_Init(huart) != HAL_OK) return SYS_ERROR;
+    }
+
+    // 初始化发送环形缓冲区
+    ctx->rx_head = 0;
+    ctx->rx_tail = 0;
+    memset((void *)ctx->rx_buffer, 0, ctx->rx_size);
+
+    // 初始化发送状态
+    ctx->tx_busy = false;
+    ctx->tx_complete = false;
+
+    // 创建事件标志组（用于通知上层任务）
+    if (uartReceiveEventFlagsId == NULL) {
+        uartReceiveEventFlagsId = osEventFlagsNew(NULL);
+        if (uartReceiveEventFlagsId == NULL) {
+            return SYS_ERROR; // 创建失败（通常是因为内存不足）
+        }
+    }
+
+    // 启动接收（DMA模式）
+    if (ctx->use_dma_rx) {
+        // 启动DMA空闲中断接收（经典做法：空闲中断+DMA）
+        //__HAL_UART_ENABLE_IT(huart, UART_IT_IDLE); // 使能空闲中断
+        HAL_UARTEx_ReceiveToIdle_DMA(huart, (uint8_t *)ctx->rx_buffer, ctx->rx_size);
+        __HAL_DMA_DISABLE_IT(hdmarx, DMA_IT_HT);
+        __HAL_DMA_DISABLE_IT(hdmarx, DMA_IT_TE);
+        // 注意：需要在HAL_UART_RxCpltCallback中处理DMA半满/全满，这里暂略。
+    } else {
+        // 中断接收每个字节（适用于调试口或小数据）
+        HAL_UART_Receive_IT(huart, (uint8_t *)ctx->rx_buffer, 1); // 每次收1字节进中断
+    }
+
+    // 创建二值信号量（初始为0）
+    ctx->tx_sem = osSemaphoreNew(1, 0, NULL);
+    if (ctx->tx_sem == NULL) {
+        return SYS_ERROR;
+    }
+
+    return SYS_OK;
+}
+
+/**
+ * @brief 发送数据（非阻塞）
+ * @param bus      UART总线
+ * @param data     数据缓冲区
+ * @param len      数据长度
+ * @param timeout_ms 超时时间（毫秒）
+ * @retval SYS_OK: 发送成功, SYS_TIMEOUT: 超时, SYS_ERROR: 其他错误
+ */
+SYS_StatusTypeDef BSP_UART_Transmit(BSP_UART_Bus_t bus, const uint8_t *data, uint16_t len, uint32_t timeout_ms) {
+    if (bus >= BSP_UART_NUMBER || data == NULL || len == 0) return SYS_INVALID_PARAM;
+    UART_Ctx_t *ctx = &s_uartCtx[bus];
+
+    // 加互斥锁，防止多任务乱发数据（例如Debug和ESP8266同时发）
+    // osMutexAcquire(ctx->tx_mutex, timeout_ms);
+
+    HAL_StatusTypeDef status = HAL_UART_Transmit(ctx->huart, (uint8_t *)data, len, timeout_ms);
+
+    // osMutexRelease(ctx->tx_mutex);
+
+    return (status == HAL_OK) ? SYS_OK : (status == HAL_TIMEOUT ? SYS_TIMEOUT : SYS_ERROR);
+}
+
+/**
+ * @brief 读取缓冲区数据（非阻塞）
+ * @param bus      UART总线
+ * @param buffer  数据缓冲区
+ * @param max_len 最大读取长度
+ * @retval 读取到的字节数
+ */
+uint16_t BSP_UART_ReadFromBuffer(BSP_UART_Bus_t bus, uint8_t *buffer, uint16_t max_len) {
+    if (bus >= BSP_UART_NUMBER || buffer == NULL || max_len == 0) return 0;
+    UART_Ctx_t *ctx = &s_uartCtx[bus];
+    uint16_t tail = ctx->rx_tail;
+    uint16_t copied = 0;
+
+    while (copied < max_len && ctx->rx_head != tail) {
+        buffer[copied] = ctx->rx_buffer[ctx->rx_head];
+        ctx->rx_head++;
+        if (ctx->rx_head >= ctx->rx_size) {
+            ctx->rx_head = 0;
+        }
+        copied++;
+    }
+    return copied;
+}
+
+/**
+ * @brief 中断方式发送数据（非阻塞）
+ * @param bus      UART总线
+ * @param data     数据缓冲区
+ * @param len      数据长度
+ * @retval SYS_OK: 启动成功, SYS_BUSY: 上一次发送未完成
+ */
+SYS_StatusTypeDef BSP_UART_Transmit_IT(BSP_UART_Bus_t bus, const uint8_t *data, uint16_t len) {
+    if (bus >= BSP_UART_NUMBER || data == NULL || len == 0) {
+        return SYS_INVALID_PARAM;
+    }
+
+    UART_Ctx_t *ctx = &s_uartCtx[bus];
+
+    // 关闭调度器
+    uint32_t lock_state = osKernelLock();
+    // ★ 如果上一次发送未完成，拒绝新请求
+    if (ctx->tx_busy) {
+        osKernelRestoreLock(lock_state);
+        return SYS_BUSY;
+    }
+
+    // 标记忙
+    ctx->tx_busy = true;
+    ctx->tx_complete = false;
+    osKernelRestoreLock(lock_state);
+
+    // 调用 HAL 中断发送
+    HAL_StatusTypeDef status = HAL_UART_Transmit_IT(ctx->huart, (uint8_t *)data, len);
+
+    if (status != HAL_OK) {
+        lock_state = osKernelLock();
+        ctx->tx_busy = false;
+        ctx->tx_complete = false;
+        osKernelRestoreLock(lock_state);
+        return SYS_ERROR;
+    }
+
+    return SYS_OK;
+}
+
+/**
+ * @brief 阻塞方式发送数据（等待发送完成）
+ * @param bus      UART总线
+ * @param data     数据缓冲区
+ * @param len      数据长度
+ * @param timeout_ms 超时时间（毫秒）
+ * @retval SYS_OK: 发送成功, SYS_TIMEOUT: 超时, SYS_ERROR: 其他错误
+ */
+SYS_StatusTypeDef BSP_UART_Transmit_Block(BSP_UART_Bus_t bus, const uint8_t *data, uint16_t len, uint32_t timeout_ms) {
+    // 1. 先尝试用中断方式启动发送
+    SYS_StatusTypeDef ret = BSP_UART_Transmit_IT(bus, data, len);
+    if (ret != SYS_OK) {
+        return ret; // 启动失败（可能是繁忙或参数错误）
+    }
+
+    // 2. 等待信号量（发送完成回调中释放）
+    UART_Ctx_t *ctx = &s_uartCtx[bus];
+    if (osSemaphoreAcquire(ctx->tx_sem, timeout_ms) == osOK) {
+        return SYS_OK;
+    } else {
+        // 超时：取消发送（HAL_UART_Abort_IT），将状态复位
+        HAL_UART_Abort_IT(ctx->huart);
+        ctx->tx_busy = false;
+        return SYS_TIMEOUT;
+    }
+}
+
+/**
+ * @brief 接收中断回调函数
+ */
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
+    if (huart == s_uartCtx[BSP_UART_ESP8266].huart) {
+        if (huart->RxEventType == HAL_UART_RXEVENT_IDLE) {
+            s_uartCtx[BSP_UART_ESP8266].rx_tail = Size;                            // 更新尾指针
+            osEventFlagsSet(uartReceiveEventFlagsId, BSP_UART_ESP8266_EVENT_MASK); // 设置标志位，通知上层任务
+        }
+    }
+}
+
+/**
+ * @brief 获取事件标志组
+ * @retval 事件标志组ID
+ */
+osEventFlagsId_t BSP_UART_GetEventGroup(void) {
+    return uartReceiveEventFlagsId;
+}
+
+/**
+ * @brief 发送完成回调函数
+ * @param huart UART句柄
+ * @retval 无
+ */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
+    // 查找对应的总线
+    for (int i = 0; i < BSP_UART_NUMBER; i++) {
+        if (s_uartCtx[i].huart == huart) {
+            UART_Ctx_t *ctx = &s_uartCtx[i];
+
+            // 1. 清除忙标志
+            ctx->tx_busy = false;
+            ctx->tx_complete = true;
+
+            // 2. ★ 释放信号量（唤醒等待发送完成的阻塞任务）
+            osSemaphoreRelease(ctx->tx_sem);
+
+            break;
+        }
+    }
+}
+
+/**
+ * @brief 发送错误回调函数
+ * @param huart UART句柄
+ * @retval 无
+ */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+    // 同样需要复位状态，并释放信号量（传递错误信号）
+    for (int i = 0; i < BSP_UART_NUMBER; i++) {
+        if (s_uartCtx[i].huart == huart) {
+            UART_Ctx_t *ctx = &s_uartCtx[i];
+            ctx->tx_busy = false;
+            ctx->tx_complete = false;
+            // 可以选择释放信号量，并让上层检测到超时
+            break;
+        }
+    }
+}
+
+/**
+ * @brief 查询当前发送是否空闲
+ * @param bus UART总线
+ * @return true: 空闲可发送, false: 正在发送中
+ */
+bool BSP_UART_IsTxIdle(BSP_UART_Bus_t bus) {
+    if (bus >= BSP_UART_NUMBER) return false;
+    return !s_uartCtx[bus].tx_busy;
+}

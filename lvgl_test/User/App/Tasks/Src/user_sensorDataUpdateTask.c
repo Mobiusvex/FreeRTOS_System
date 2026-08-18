@@ -29,9 +29,9 @@ void sensorDataUpdateTask(void *pvParameters) {
                 // NOTE:调度引起数据撕裂风险，但此应用场景不影响
                 HW_Interface.DHT11.humidity = humi;
                 HW_Interface.DHT11.temperature = temp;
-                SEGGER_RTT_printf(0, "Temperature: %f°C, Humidity: %f%%\n", temp, humi); // Print sensor data to RTT
+                // SEGGER_RTT_printf(0, "Temperature: %f°C, Humidity: %f%%\n", temp, humi); // Print sensor data to RTT
             } else {
-                SEGGER_RTT_printf(0, "DHT11 read failed\n");
+                // SEGGER_RTT_printf(0, "DHT11 read failed\n");
                 HW_Interface.DHT11.Init(); // Reinitialize DHT11
             }
         }
@@ -43,7 +43,7 @@ void sensorDataUpdateTask(void *pvParameters) {
                     HW_Interface.MPU6050.pitch_angle = pitch;
                     HW_Interface.MPU6050.roll_angle = roll;
                     HW_Interface.MPU6050.yaw_angle = yaw; // Update MPU6050 angles
-                    SEGGER_RTT_printf(0, "Pitch: %f, Roll: %f, Yaw: %f\n", pitch, roll, yaw);
+                    // SEGGER_RTT_printf(0, "Pitch: %f, Roll: %f, Yaw: %f\n", pitch, roll, yaw);
                 } else {
                 }
             }

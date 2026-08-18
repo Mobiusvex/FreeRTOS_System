@@ -1,7 +1,6 @@
 #include "tim.h"
 
 #include "user_HardwareInitTask.h"
-
 #include "HWDataAccess.h"
 
 #include "SEGGER_RTT.h"
@@ -41,7 +40,11 @@ void hardwareInitTask(void *pvParameters) {
         count--;
         HW_Interface.MPU6050.ConnectionError = HW_Interface.MPU6050.Init();
     }
-
+    count = 3;
+    while (count && HW_Interface.ESP8266.ConnectionError) {
+        count--;
+        HW_Interface.ESP8266.ConnectionError = HW_Interface.ESP8266.Init();
+    }
     HAL_TIM_Base_Start_IT(&htim2);
     lv_obj_t *switch_obj = lv_switch_create(lv_scr_act());
 
