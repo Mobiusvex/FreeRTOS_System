@@ -10,6 +10,7 @@
 // 1. 定义系统中有哪些UART实例
 typedef enum {
     BSP_UART_ESP8266, // 接ESP8266 (AT指令)
+    BSP_UART_PC,      // 接电脑串口
     BSP_UART_NUMBER
 } BSP_UART_Bus_t;
 

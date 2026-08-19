@@ -3,6 +3,8 @@
 #include "user_LvglTask.h"
 #include "user_sensorDataUpdateTask.h"
 #include "user_uart3ReceiveTask.h"
+#include "user_uart1ReceiveTask.h"
+#include "user_ESP8266CommTask.h"
 
 #include "SEGGER_RTT.h"
 
@@ -33,6 +35,18 @@ const osThreadAttr_t user_uart3ReceiveTaskAttr = {
     .stack_size = 1024,
     .priority = (osPriority_t)osPriorityAboveNormal,
 };
+osThreadId_t user_uart1ReceiveTaskHandle;
+const osThreadAttr_t user_uart1ReceiveTaskAttr = {
+    .name = "uart1ReceiveTask",
+    .stack_size = 1024,
+    .priority = (osPriority_t)osPriorityAboveNormal,
+};
+osThreadId_t user_ESP8266CommTaskHandle;
+const osThreadAttr_t user_ESP8266CommTaskAttr = {
+    .name = "uart1ESP8266CommTask",
+    .stack_size = 512,
+    .priority = (osPriority_t)osPriorityLow2,
+};
 
 /**
  * @brief Initialize all tasks
@@ -55,5 +69,13 @@ void userTasksInit(void) {
     user_uart3ReceiveTaskHandle = osThreadNew(uart3ReceiveTask, NULL, &user_uart3ReceiveTaskAttr);
     if (user_uart3ReceiveTaskHandle == NULL) {
         SEGGER_RTT_printf(0, "Failed to create uart3ReceiveTask\n");
+    }
+    user_uart1ReceiveTaskHandle = osThreadNew(uart1ReceiveTask, NULL, &user_uart1ReceiveTaskAttr);
+    if (user_uart1ReceiveTaskHandle == NULL) {
+        SEGGER_RTT_printf(0, "Failed to create uart1ReceiveTask\n");
+    }
+    user_ESP8266CommTaskHandle = osThreadNew(user_ESP8266CommTask, NULL, &user_ESP8266CommTaskAttr);
+    if (user_ESP8266CommTaskHandle == NULL) {
+        SEGGER_RTT_printf(0, "Failed to create ESP8266CommTask\n");
     }
 }

@@ -33,7 +33,7 @@ typedef struct
     uint16_t update_time;
     SYS_StatusTypeDef data_status;
     SYS_StatusTypeDef (*Init)(void);
-
+    SYS_StatusTypeDef (*Reset)(void);
 } HW_ESP8266_InterfaceTypeDef;
 
 typedef struct {

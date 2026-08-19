@@ -10,6 +10,7 @@
 #include "SEGGER_RTT.h"
 
 extern DMA_HandleTypeDef hdma_usart3_rx;
+extern DMA_HandleTypeDef hdma_usart1_rx;
 
 // ---------- 私有上下文 ----------
 typedef struct {
@@ -44,7 +45,17 @@ static UART_Ctx_t s_uartCtx[BSP_UART_NUMBER] = {
         .tx_complete = false,
         .rx_task_handle = NULL, // 用于接收任务
     },
-};
+    [BSP_UART_PC] = {
+        .huart = &huart1,
+        .hdmarx = &hdma_usart1_rx,
+        .use_dma_rx = true,
+        .rx_buffer = s_uart_rx_buf[BSP_UART_PC],
+        .rx_size = BSP_UART_BUFFER_SIZE,
+        .tx_busy = false,
+        .tx_complete = false,
+        .rx_task_handle = NULL, // 用于接收任务
+
+    }};
 
 /**
  * @brief 初始化UART
@@ -85,7 +96,9 @@ SYS_StatusTypeDef BSP_UART_Init(BSP_UART_Bus_t bus, const BSP_UART_Config_t *cfg
     if (ctx->use_dma_rx) {
         // 启动DMA空闲中断接收（经典做法：空闲中断+DMA）
         //__HAL_UART_ENABLE_IT(huart, UART_IT_IDLE); // 使能空闲中断
-        HAL_UARTEx_ReceiveToIdle_DMA(huart, (uint8_t *)ctx->rx_buffer, ctx->rx_size);
+        if (HAL_UARTEx_ReceiveToIdle_DMA(huart, (uint8_t *)ctx->rx_buffer, ctx->rx_size) != HAL_OK) {
+            return SYS_ERROR;
+        }
         __HAL_DMA_DISABLE_IT(hdmarx, DMA_IT_HT);
         __HAL_DMA_DISABLE_IT(hdmarx, DMA_IT_TC);
         // 注意：需要在HAL_UART_RxCpltCallback中处理DMA半满/全满，这里暂略。
@@ -143,7 +156,6 @@ uint16_t BSP_UART_ReadFromBuffer(BSP_UART_Bus_t bus, uint8_t *buffer, uint16_t m
     UART_Ctx_t *ctx = &s_uartCtx[bus];
     uint16_t tail = ctx->rx_tail;
     uint16_t copied = 0;
-
     while (copied < max_len && ctx->rx_head != tail) {
         buffer[copied] = ctx->rx_buffer[ctx->rx_head];
         ctx->rx_head++;
@@ -278,6 +290,10 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
             UART_Ctx_t *ctx = &s_uartCtx[i];
             ctx->tx_busy = false;
             ctx->tx_complete = false;
+            // 重启DMA
+            HAL_UART_AbortReceive(huart);
+            __HAL_UART_CLEAR_OREFLAG(huart);
+            HAL_UARTEx_ReceiveToIdle_DMA(huart, (uint8_t *)ctx->rx_buffer, ctx->rx_size);
             // 可以选择释放信号量，并让上层检测到超时
             break;
         }

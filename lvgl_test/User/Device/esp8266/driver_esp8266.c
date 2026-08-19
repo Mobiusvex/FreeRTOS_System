@@ -14,11 +14,13 @@ SYS_StatusTypeDef ESP8266_Init(void) {
     }
 
     BSP_GPIO_Write(BSP_GPIO_ESP8266_RST, BSP_GPIO_HIGH);
-    BSP_GPIO_Write(BSP_GPIO_ESP8266_EN, BSP_GPIO_LOW);
+    BSP_GPIO_Write(BSP_GPIO_ESP8266_EN, BSP_GPIO_HIGH);
+    return status;
 }
 
-void ESP8266_Reset(void) {
+SYS_StatusTypeDef ESP8266_Reset(void) {
     BSP_GPIO_Write(BSP_GPIO_ESP8266_RST, BSP_GPIO_LOW);
-    BSP_DelayMS_Sleep(100);
+    BSP_DelayMS_Sleep(500);
     BSP_GPIO_Write(BSP_GPIO_ESP8266_RST, BSP_GPIO_HIGH);
+    return SYS_OK;
 }

@@ -52,6 +52,9 @@ SYS_StatusTypeDef HW_ESP8266_Init(void) {
     return ESP8266_Init(); // Initialize ESP8266 sensor
 }
 
+SYS_StatusTypeDef HW_ESP8266_Reset(void) {
+    return ESP8266_Reset(); // Reset ESP8266 sensor
+}
 HW_InterfaceTypeDef HW_Interface = {
     .DHT11 = {
         .ConnectionError = 1,
@@ -69,9 +72,11 @@ HW_InterfaceTypeDef HW_Interface = {
                 .roll_angle = 0,
                 .Init = HW_MPU6050_Init,
                 .GetAngle = HW_MPU6050_Get_Angle},
-    .ESP8266 = {
-        .ConnectionError = 1,
-        .update_time = 500,
-        .data_status = SYS_ERROR,
-        .Init = HW_ESP8266_Init,
-    }};
+    .ESP8266 = {// ESP8266 sensor
+                .ConnectionError = 1,
+                .update_time = 500,
+                .data_status = SYS_ERROR,
+                .Init = HW_ESP8266_Init,
+                .Reset = HW_ESP8266_Reset}
+
+};
