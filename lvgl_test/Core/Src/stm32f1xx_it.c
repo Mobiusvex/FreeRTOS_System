@@ -46,7 +46,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+extern void HAL_UARTEx_RxIDLECallback(UART_HandleTypeDef *huart);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -182,10 +182,11 @@ void TIM2_IRQHandler(void) {
  */
 void USART3_IRQHandler(void) {
     /* USER CODE BEGIN USART3_IRQn 0 */
-    // if (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_IDLE)) // 再次确认是否为真正的 IDLE 中断标志
-    // {
-    //     __HAL_UART_CLEAR_IDLEFLAG(&huart3); // 必须手动清除 IDLE 中断标志，否则会持续触发中断
-    // }
+    if (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_IDLE)) // 再次确认是否为真正的 IDLE 中断标志
+    {
+        __HAL_UART_CLEAR_IDLEFLAG(&huart3); // 必须手动清除 IDLE 中断标志，否则会持续触发中断
+        HAL_UARTEx_RxIDLECallback(&huart3);
+    }
     /* USER CODE END USART3_IRQn 0 */
     HAL_UART_IRQHandler(&huart3);
     /* USER CODE BEGIN USART3_IRQn 1 */

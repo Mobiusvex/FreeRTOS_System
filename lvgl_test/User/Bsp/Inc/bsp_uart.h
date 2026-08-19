@@ -13,8 +13,6 @@ typedef enum {
     BSP_UART_NUMBER
 } BSP_UART_Bus_t;
 
-#define BSP_UART_ESP8266_EVENT_MASK (1 << 0) // 用于ESP8266的事件标志
-
 // 2. 配置结构体（可扩展）
 typedef struct {
     uint32_t baudrate;       // 如 115200
@@ -28,6 +26,8 @@ typedef struct {
 // 3. 对外核心API
 SYS_StatusTypeDef BSP_UART_Init(BSP_UART_Bus_t bus, const BSP_UART_Config_t *cfg);
 
+void BSP_UART_RegisterTask(BSP_UART_Bus_t bus, osThreadId_t task);
+
 // 发送（阻塞/带超时）
 SYS_StatusTypeDef BSP_UART_Transmit(BSP_UART_Bus_t bus, const uint8_t *data, uint16_t len, uint32_t timeout_ms);
 
@@ -39,8 +39,6 @@ uint16_t BSP_UART_ReadFromBuffer(BSP_UART_Bus_t bus, uint8_t *buffer, uint16_t m
 
 // ★ 查询接收缓冲区现有数据长度
 uint16_t BSP_UART_GetRxCount(BSP_UART_Bus_t bus);
-
-osEventFlagsId_t BSP_UART_GetEventGroup(void);
 
 // ========== 发送接口（新增） ==========
 

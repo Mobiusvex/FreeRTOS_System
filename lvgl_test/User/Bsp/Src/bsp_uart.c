@@ -11,8 +11,6 @@
 
 extern DMA_HandleTypeDef hdma_usart3_rx;
 
-osEventFlagsId_t uartReceiveEventFlagsId;
-
 // ---------- 私有上下文 ----------
 typedef struct {
     UART_HandleTypeDef *huart; // CubeMX生成的句柄
@@ -27,6 +25,7 @@ typedef struct {
     volatile bool tx_busy;     // 发送忙标志
     volatile bool tx_complete; // 发送完成标志（用于阻塞等待）
     osSemaphoreId_t tx_sem;    // 信号量（用于阻塞等待发送完成）
+    osThreadId_t rx_task_handle;
 
 } UART_Ctx_t;
 
@@ -43,6 +42,7 @@ static UART_Ctx_t s_uartCtx[BSP_UART_NUMBER] = {
         .rx_size = BSP_UART_BUFFER_SIZE,
         .tx_busy = false,
         .tx_complete = false,
+        .rx_task_handle = NULL, // 用于接收任务
     },
 };
 
@@ -81,21 +81,13 @@ SYS_StatusTypeDef BSP_UART_Init(BSP_UART_Bus_t bus, const BSP_UART_Config_t *cfg
     ctx->tx_busy = false;
     ctx->tx_complete = false;
 
-    // 创建事件标志组（用于通知上层任务）
-    if (uartReceiveEventFlagsId == NULL) {
-        uartReceiveEventFlagsId = osEventFlagsNew(NULL);
-        if (uartReceiveEventFlagsId == NULL) {
-            return SYS_ERROR; // 创建失败（通常是因为内存不足）
-        }
-    }
-
     // 启动接收（DMA模式）
     if (ctx->use_dma_rx) {
         // 启动DMA空闲中断接收（经典做法：空闲中断+DMA）
         //__HAL_UART_ENABLE_IT(huart, UART_IT_IDLE); // 使能空闲中断
         HAL_UARTEx_ReceiveToIdle_DMA(huart, (uint8_t *)ctx->rx_buffer, ctx->rx_size);
         __HAL_DMA_DISABLE_IT(hdmarx, DMA_IT_HT);
-        __HAL_DMA_DISABLE_IT(hdmarx, DMA_IT_TE);
+        __HAL_DMA_DISABLE_IT(hdmarx, DMA_IT_TC);
         // 注意：需要在HAL_UART_RxCpltCallback中处理DMA半满/全满，这里暂略。
     } else {
         // 中断接收每个字节（适用于调试口或小数据）
@@ -109,6 +101,12 @@ SYS_StatusTypeDef BSP_UART_Init(BSP_UART_Bus_t bus, const BSP_UART_Config_t *cfg
     }
 
     return SYS_OK;
+}
+
+void BSP_UART_RegisterTask(BSP_UART_Bus_t bus, osThreadId_t task) {
+    if (bus < BSP_UART_NUMBER) {
+        s_uartCtx[bus].rx_task_handle = task;
+    }
 }
 
 /**
@@ -228,21 +226,21 @@ SYS_StatusTypeDef BSP_UART_Transmit_Block(BSP_UART_Bus_t bus, const uint8_t *dat
 /**
  * @brief 接收中断回调函数
  */
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-    if (huart == s_uartCtx[BSP_UART_ESP8266].huart) {
-        if (huart->RxEventType == HAL_UART_RXEVENT_IDLE) {
-            s_uartCtx[BSP_UART_ESP8266].rx_tail = Size;                            // 更新尾指针
-            osEventFlagsSet(uartReceiveEventFlagsId, BSP_UART_ESP8266_EVENT_MASK); // 设置标志位，通知上层任务
+void HAL_UARTEx_RxIDLECallback(UART_HandleTypeDef *huart) {
+    // 查找对应的总线
+    for (int i = 0; i < BSP_UART_NUMBER; i++) {
+        if (s_uartCtx[i].huart == huart) {
+            UART_Ctx_t *ctx = &s_uartCtx[i];
+            uint16_t write_idx = ctx->rx_size - __HAL_DMA_GET_COUNTER(huart->hdmarx);
+
+            if (write_idx == ctx->rx_size) {
+                write_idx = 0;
+            }
+            ctx->rx_tail = write_idx; // 直接赋值当前写位置
+            osThreadFlagsSet(ctx->rx_task_handle, 0x01);
+            break;
         }
     }
-}
-
-/**
- * @brief 获取事件标志组
- * @retval 事件标志组ID
- */
-osEventFlagsId_t BSP_UART_GetEventGroup(void) {
-    return uartReceiveEventFlagsId;
 }
 
 /**

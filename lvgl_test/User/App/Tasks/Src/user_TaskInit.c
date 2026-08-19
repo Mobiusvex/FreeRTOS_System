@@ -2,7 +2,7 @@
 #include "user_HardwareInitTask.h"
 #include "user_LvglTask.h"
 #include "user_sensorDataUpdateTask.h"
-#include "user_uartReceiveTask.h"
+#include "user_uart3ReceiveTask.h"
 
 #include "SEGGER_RTT.h"
 
@@ -27,9 +27,9 @@ const osThreadAttr_t user_sensorDataUpdateTaskAttr = {
     .priority = (osPriority_t)osPriorityLow1,
 };
 
-osThreadId_t user_uartReceiveTaskHandle;
-const osThreadAttr_t user_uartReceiveTaskAttr = {
-    .name = "uartReceiveTask",
+osThreadId_t user_uart3ReceiveTaskHandle;
+const osThreadAttr_t user_uart3ReceiveTaskAttr = {
+    .name = "uart3ReceiveTask",
     .stack_size = 1024,
     .priority = (osPriority_t)osPriorityAboveNormal,
 };
@@ -52,8 +52,8 @@ void userTasksInit(void) {
     if (user_sensorDataUpdateHandle == NULL) {
         SEGGER_RTT_printf(0, "Failed to create sensorDataUpdateTask\n");
     }
-    user_uartReceiveTaskHandle = osThreadNew(uartReceiveTask, NULL, &user_uartReceiveTaskAttr);
-    if (user_uartReceiveTaskHandle == NULL) {
-        SEGGER_RTT_printf(0, "Failed to create uartReceiveTask\n");
+    user_uart3ReceiveTaskHandle = osThreadNew(uart3ReceiveTask, NULL, &user_uart3ReceiveTaskAttr);
+    if (user_uart3ReceiveTaskHandle == NULL) {
+        SEGGER_RTT_printf(0, "Failed to create uart3ReceiveTask\n");
     }
 }
