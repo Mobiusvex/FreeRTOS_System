@@ -8,6 +8,8 @@
 
 #include "SEGGER_RTT.h"
 
+StreamBufferHandle_t xESP8266StreamBuffer = NULL;
+
 osThreadId_t user_HardwareInitTaskHandle;
 const osThreadAttr_t user_HardwareInitTaskAttr = {
     .name = "HardwareInitTask",
@@ -54,6 +56,11 @@ const osThreadAttr_t user_ESP8266CommTaskAttr = {
  * @retval None
  */
 void userTasksInit(void) {
+    xESP8266StreamBuffer = xStreamBufferCreate(1024, 1);
+    if (xESP8266StreamBuffer == NULL) {
+        SEGGER_RTT_printf(0, "UART3 Failed to create stream buffer\n");
+    }
+
     user_HardwareInitTaskHandle = osThreadNew(hardwareInitTask, NULL, &user_HardwareInitTaskAttr);
     if (user_HardwareInitTaskHandle == NULL) {
         SEGGER_RTT_printf(0, "Failed to create HardwareInitTask\n");

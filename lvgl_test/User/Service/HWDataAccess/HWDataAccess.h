@@ -29,6 +29,21 @@ typedef struct
 
 typedef struct
 {
+    uint16_t head;
+    uint16_t tail;
+} HW_Uart_ReceiverTypeDef;
+// NOTE:接收任务接收数据，将数据放进缓冲区，写入队列（接收长度）
+// NOTE:esp8266通信任务从队列读取数据，判断数据类型，调用相应的接口函数
+// NOTE:esp8266通信任务的接口函数如下：
+// NOTE:接口函数传入的状态机参数有：数据缓冲区（指针），数据长度，数据类型
+// NOTE:1.AT指令发送与接收：状态机判断当前步骤，进行AT指令接收判定
+// NOTE:2.控制指令发送与接收：状态机判断当前步骤，进行控制指令接收判定
+// NOTE:3.天气指令发送与接收：状态机判断当前步骤，进行天气指令接收判定
+// NOTE:4.时间指令发送与接收：状态机判断当前步骤，进行时间指令接收判定
+// NOTE:5.数据处理：将接收到的数据进行处理，更新数据状态，更新数据缓冲区
+
+typedef struct
+{
     uint8_t ConnectionError;
     uint16_t update_time;
     SYS_StatusTypeDef data_status;

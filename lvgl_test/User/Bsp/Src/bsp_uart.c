@@ -152,19 +152,39 @@ SYS_StatusTypeDef BSP_UART_Transmit(BSP_UART_Bus_t bus, const uint8_t *data, uin
  * @retval 读取到的字节数
  */
 uint16_t BSP_UART_ReadFromBuffer(BSP_UART_Bus_t bus, uint8_t *buffer, uint16_t max_len) {
-    if (bus >= BSP_UART_NUMBER || buffer == NULL || max_len == 0) return 0;
     UART_Ctx_t *ctx = &s_uartCtx[bus];
-    uint16_t tail = ctx->rx_tail;
-    uint16_t copied = 0;
-    while (copied < max_len && ctx->rx_head != tail) {
-        buffer[copied] = ctx->rx_buffer[ctx->rx_head];
-        ctx->rx_head++;
-        if (ctx->rx_head >= ctx->rx_size) {
-            ctx->rx_head = 0;
-        }
-        copied++;
+    uint16_t head, tail;
+    uint16_t available, copy_len, cont_len;
+
+    taskENTER_CRITICAL();
+    head = ctx->rx_head;
+    tail = ctx->rx_tail;
+    taskEXIT_CRITICAL();
+
+    if (head <= tail) {
+        available = tail - head;
+    } else {
+        available = ctx->rx_size - head + tail;
     }
-    return copied;
+
+    if (available == 0) {
+        return 0;
+    }
+    copy_len = (max_len < available) ? max_len : available;
+
+    cont_len = ctx->rx_size - head;
+    if (copy_len <= cont_len) {
+        memcpy(buffer, &ctx->rx_buffer[head], copy_len);
+    } else {
+        memcpy(buffer, &ctx->rx_buffer[head], cont_len);
+        memcpy(buffer + cont_len, ctx->rx_buffer, copy_len - cont_len);
+    }
+
+    taskENTER_CRITICAL();
+    ctx->rx_head = tail;
+    taskEXIT_CRITICAL();
+
+    return copy_len;
 }
 
 /**

@@ -8,5 +8,5 @@ void BSP_DelayUS(uint32_t ulCount);
 
 void BSP_DelayMS_Block(uint32_t ms); // 忙等
 void BSP_DelayMS_Sleep(uint32_t ms); // 阻塞
-
+uint32_t BSP_GetTick(void);
 #endif

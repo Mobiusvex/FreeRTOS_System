@@ -48,3 +48,11 @@ void BSP_DelayMS_Sleep(uint32_t ms) {
         BSP_DelayMS_Block(ms); // 容错降级
     }
 }
+
+/**
+ * @brief  获取当前系统时间
+ * @retval 当前系统时间，单位为毫秒
+ */
+uint32_t BSP_GetTick(void) {
+    return osKernelGetTickCount();
+}
