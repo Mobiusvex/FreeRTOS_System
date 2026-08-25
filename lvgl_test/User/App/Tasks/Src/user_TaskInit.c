@@ -9,6 +9,7 @@
 #include "SEGGER_RTT.h"
 
 StreamBufferHandle_t xESP8266StreamBuffer = NULL;
+osMessageQueueId_t xESP8266CmdQueue = NULL;
 
 osThreadId_t user_HardwareInitTaskHandle;
 const osThreadAttr_t user_HardwareInitTaskAttr = {
@@ -20,7 +21,7 @@ const osThreadAttr_t user_HardwareInitTaskAttr = {
 osThreadId_t user_LvHandlerTaskHandle;
 const osThreadAttr_t user_LvHandlerTaskAttr = {
     .name = "LvHandlerTask",
-    .stack_size = 1024,
+    .stack_size = 2048,
     .priority = (osPriority_t)osPriorityLow,
 };
 
@@ -34,19 +35,19 @@ const osThreadAttr_t user_sensorDataUpdateTaskAttr = {
 osThreadId_t user_uart3ReceiveTaskHandle;
 const osThreadAttr_t user_uart3ReceiveTaskAttr = {
     .name = "uart3ReceiveTask",
-    .stack_size = 1024,
+    .stack_size = 512,
     .priority = (osPriority_t)osPriorityAboveNormal,
 };
 osThreadId_t user_uart1ReceiveTaskHandle;
 const osThreadAttr_t user_uart1ReceiveTaskAttr = {
     .name = "uart1ReceiveTask",
-    .stack_size = 1024,
+    .stack_size = 512,
     .priority = (osPriority_t)osPriorityAboveNormal,
 };
 osThreadId_t user_ESP8266CommTaskHandle;
 const osThreadAttr_t user_ESP8266CommTaskAttr = {
-    .name = "uart1ESP8266CommTask",
-    .stack_size = 512,
+    .name = "uartESP8266CommTask",
+    .stack_size = 600,
     .priority = (osPriority_t)osPriorityLow2,
 };
 
@@ -58,7 +59,12 @@ const osThreadAttr_t user_ESP8266CommTaskAttr = {
 void userTasksInit(void) {
     xESP8266StreamBuffer = xStreamBufferCreate(1024, 1);
     if (xESP8266StreamBuffer == NULL) {
-        SEGGER_RTT_printf(0, "UART3 Failed to create stream buffer\n");
+        SEGGER_RTT_printf(0, "UART3 Failed to create xESP8266StreamBuffer\n");
+    }
+
+    xESP8266CmdQueue = osMessageQueueNew(5, 1, NULL);
+    if (xESP8266CmdQueue == NULL) {
+        SEGGER_RTT_printf(0, "Failed to create xESP8266CmdQueue\n");
     }
 
     user_HardwareInitTaskHandle = osThreadNew(hardwareInitTask, NULL, &user_HardwareInitTaskAttr);

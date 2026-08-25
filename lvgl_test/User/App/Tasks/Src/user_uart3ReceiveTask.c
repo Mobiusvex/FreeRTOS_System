@@ -2,15 +2,18 @@
 #include "bsp_uart.h"
 #include "SEGGER_RTT.h"
 #include "FreeRTOS.h"
+#include "task.h"
 #include "stream_buffer.h"
+#include "debug_func.h"
 
 extern StreamBufferHandle_t xESP8266StreamBuffer;
 
 void uart3ReceiveTask(void *pvParameters) {
     uint32_t ulFlags;
-    uint8_t buffer[512];
+    static uint8_t buffer[512];
     uint16_t index = 0;
     uint32_t buf_len = 0, stream_len = 0;
+    uint32_t last_print_time = 0;
     BSP_UART_RegisterTask(BSP_UART_ESP8266, osThreadGetId());
 
     while (1) {
@@ -28,5 +31,8 @@ void uart3ReceiveTask(void *pvParameters) {
                 }
             }
         }
+        // 调试：任务剩余栈空间打印
+        static uint32_t last_print_time = 0;
+        printTaskStackRemainingCapacity((TaskHandle_t)osThreadGetId(), 10000, &last_print_time);
     }
 }

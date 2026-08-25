@@ -314,6 +314,8 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
             HAL_UART_AbortReceive(huart);
             __HAL_UART_CLEAR_OREFLAG(huart);
             HAL_UARTEx_ReceiveToIdle_DMA(huart, (uint8_t *)ctx->rx_buffer, ctx->rx_size);
+            __HAL_DMA_DISABLE_IT(ctx->hdmarx, DMA_IT_HT);
+            __HAL_DMA_DISABLE_IT(ctx->hdmarx, DMA_IT_TC);
             // 可以选择释放信号量，并让上层检测到超时
             break;
         }

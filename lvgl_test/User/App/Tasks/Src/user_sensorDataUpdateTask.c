@@ -5,7 +5,7 @@
 
 #include "driver_mpu6050.h"
 #include "stm32f1xx_hal.h"
-
+#include "debug_func.h"
 #define HW_UPDATE_TASK_PERIOD_MS 20
 /**
  * @brief Sensor data update task
@@ -17,11 +17,12 @@ void sensorDataUpdateTask(void *pvParameters) {
     float temp, humi;
     float pitch, roll, yaw;
     static uint16_t time_counter = 0;
+    uint32_t last_print_time = 0;
 
     int ret;
     int16_t AccX, AccY, AccZ, GyroX, GyroY, GyroZ;
     while (1) {
-        // TODO: 要不要状态机轮流读取
+        //  TODO: 要不要状态机轮流读取
         uint32_t tick = osKernelGetTickCount();
         if (time_counter % (HW_Interface.DHT11.update_time / HW_UPDATE_TASK_PERIOD_MS) == 0) {
             HW_Interface.DHT11.data_status = HW_Interface.DHT11.GetHumiTemp(&humi, &temp);
@@ -56,5 +57,8 @@ void sensorDataUpdateTask(void *pvParameters) {
         if (time_counter > 1000) {
             time_counter = 0;
         }
+        // 调试：任务剩余栈空间打印
+        static uint32_t last_print_time = 0;
+        printTaskStackRemainingCapacity((TaskHandle_t)osThreadGetId(), 10000, &last_print_time);
     }
 }
