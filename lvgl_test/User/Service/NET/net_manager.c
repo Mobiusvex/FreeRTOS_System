@@ -4,9 +4,11 @@
 #include "net_weather.h"
 #include "net_cloud.h"
 #include "net_time.h"
+#include "HWDataAccess.h"
 
 static esp8266_cmd_t s_pending_cmd = ESP8266_CMD_NONE; // 忙时暂存的指令
 
+extern uint32_t net_time_get_time(void);
 /**
  * @brief ESP8266操作管理 主函数
  * @param cmd 指令
@@ -15,44 +17,50 @@ static esp8266_cmd_t s_pending_cmd = ESP8266_CMD_NONE; // 忙时暂存的指令
  * @return esp8266_app_state_t 操作状态
  */
 esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t rx_buf_size) {
-    cmd_state_t ret;
-    if (cmd == ESP8266_CMD_NONE) {
-        return ESP8266_APP_STATE_IDLE;
-    }
+    cmd_state_t state;
+    esp8266_app_state_t main_state = ESP8266_APP_STATE_IDLE;
+    static bool is_error = false;
+    uint32_t timestamp = 0;
 
     switch (cmd) {
+    case ESP8266_CMD_NONE:
+        main_state = ESP8266_APP_STATE_IDLE;
+        break;
     case ESP8266_CMD_REBOOT_WIFI:
-        ret = net_wifi_mode_set(rx_buf, rx_buf_size);
-        if (ret == CMD_STATE_DONE) {
-            return ESP8266_APP_STATE_IDLE;
-        } else if (ret == CMD_STATE_TIMEOUT || ret == CMD_STATE_FAIL) {
-            return ESP8266_APP_STATE_ERROR;
-        }
-        return ESP8266_APP_STATE_WIFI_CONNECT;
+        state = net_wifi_mode_set(rx_buf, rx_buf_size);
+        main_state = ESP8266_APP_STATE_WIFI_CONNECT;
+        break;
 
     case ESP8266_CMD_FETCH_TIME:
-        // ret = Time_Get_Process(); // 获取网络时间
-        if (ret == CMD_STATE_DONE || ret == CMD_STATE_TIMEOUT || ret == CMD_STATE_FAIL) {
-            // 无论成败，进入空闲（等待定时器触发下一次）
-            return ESP8266_APP_STATE_IDLE;
+        state = net_time_mode_set(rx_buf, rx_buf_size); // 获取网络时间
+        if (state == CMD_STATE_DONE) {
+            timestamp = net_time_get_time();
+            HW_Interface.RealTimeClock.SetTimestamp(timestamp);
         }
-        return ESP8266_APP_STATE_GET_TIME;
+        main_state = ESP8266_APP_STATE_GET_TIME; // 获取网络时间完成，回空闲
+        break;
 
     case ESP8266_CMD_FETCH_WEATHER:
-        ret = net_weather_mode_set(rx_buf, rx_buf_size);
-        if (ret == CMD_STATE_DONE || ret == CMD_STATE_TIMEOUT || ret == CMD_STATE_FAIL) {
-            // 无论成败，进入空闲（等待定时器触发下一次）
-            return ESP8266_APP_STATE_IDLE;
-        }
-        return ESP8266_APP_STATE_GET_WEATHER;
+        state = net_weather_mode_set(rx_buf, rx_buf_size);
+        main_state = ESP8266_APP_STATE_GET_WEATHER;
+        break;
 
     case ESP8266_CMD_UPLOAD_DATA:
-        // ret = DataUpload_Process(); // 上报温湿度、角度
-        if (ret == CMD_STATE_DONE || ret == CMD_STATE_TIMEOUT || ret == CMD_STATE_FAIL) {
-            return ESP8266_APP_STATE_IDLE; // 上报完成，回空闲
-        }
-        return ESP8266_APP_STATE_UPLOAD_DATA;
+        // state = DataUpload_Process(); // 上报温湿度、角度
+        main_state = ESP8266_APP_STATE_UPLOAD_DATA;
+        break;
     default:
-        return ESP8266_APP_STATE_ERROR;
+        main_state = ESP8266_APP_INVALID_CMD;
     }
+    // 发生错误后状态设置为错误，直到收到一次成功指令才解除错误标志
+    if (state == CMD_STATE_DONE) {
+        is_error = false;
+        main_state = ESP8266_APP_STATE_IDLE; // 操作完成，回空闲
+    } else if (state == CMD_STATE_FAIL || state == CMD_STATE_TIMEOUT) {
+        is_error = true;
+    }
+    if (is_error) {
+        main_state = ESP8266_APP_STATE_ERROR;
+    }
+    return main_state;
 }

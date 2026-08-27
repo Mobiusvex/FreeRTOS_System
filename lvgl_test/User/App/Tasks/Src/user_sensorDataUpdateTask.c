@@ -18,7 +18,7 @@ void sensorDataUpdateTask(void *pvParameters) {
     float pitch, roll, yaw;
     static uint16_t time_counter = 0;
     uint32_t last_print_time = 0;
-
+    static char time_buffer[20];
     int ret;
     int16_t AccX, AccY, AccZ, GyroX, GyroY, GyroZ;
     while (1) {
@@ -48,6 +48,10 @@ void sensorDataUpdateTask(void *pvParameters) {
                 } else {
                 }
             }
+        }
+        if (time_counter % (HW_Interface.RealTimeClock.update_time / HW_UPDATE_TASK_PERIOD_MS) == 0) {
+            HW_Interface.RealTimeClock.data_status = HW_Interface.RealTimeClock.GetTimeString(time_buffer, 20);
+            SEGGER_RTT_printf(0, "Time: %s\n", time_buffer); // Print time to RTT
         }
         // HACK: 任务周期非严格20ms，DHT11每次读取20ms，6050每次读取13ms
         // SEGGER_RTT_printf(0, "Time: %dms\n", osKernelGetTickCount() - tick); // Print current time to RTT

@@ -3,6 +3,10 @@
 #include "driver_dht11.h"
 #include "driver_mpu6050.h"
 #include "driver_esp8266.h"
+#include <string.h>
+#include "bsp_rtc.h"
+
+#include "stdio.h"
 /**
  * @brief DHT11传感器初始化
  * @retval 初始化成功返回SYS_OK，初始化失败返回SYS_ERROR
@@ -55,6 +59,35 @@ SYS_StatusTypeDef HW_ESP8266_Init(void) {
 SYS_StatusTypeDef HW_ESP8266_Reset(void) {
     return ESP8266_Reset(); // Reset ESP8266 sensor
 }
+
+/**
+ * @brief 获取当前时间字符串
+ * @param buffer 指向存储时间字符串的缓冲区
+ * @param len 缓冲区长度
+ * @retval 获取成功返回SYS_OK，获取失败返回SYS_ERROR
+ */
+SYS_StatusTypeDef HW_Time_GetString(char *buffer, uint8_t len) {
+    datetime_t now;
+    if (BSP_RTC_GetTime(&now) == SYS_OK) {
+        snprintf(buffer, len, "%04d-%02d-%02d %02d:%02d:%02d",
+                 now.year, now.month, now.day, now.hour, now.minute, now.second);
+        return SYS_OK;
+    } else {
+        return SYS_ERROR; // 获取RTC时间失败1787730595597
+    }
+}
+
+#define TIMESTAMP_TIME_2000_OFFSET 946656000
+
+/**
+ * @brief 设置RTC时间
+ * @param timestamp_sec 时间戳（秒）
+ * @retval 设置成功返回SYS_OK，设置失败返回SYS_ERROR
+ */
+SYS_StatusTypeDef HW_Time_SetRTC(uint32_t timestamp_sec) {
+    return BSP_RTC_SetTimeUnix(timestamp_sec - TIMESTAMP_TIME_2000_OFFSET);
+}
+
 HW_InterfaceTypeDef HW_Interface = {
     .DHT11 = {
         .ConnectionError = 1,
@@ -77,6 +110,9 @@ HW_InterfaceTypeDef HW_Interface = {
                 .update_time = 500,
                 .data_status = SYS_ERROR,
                 .Init = HW_ESP8266_Init,
-                .Reset = HW_ESP8266_Reset}
-
+                .Reset = HW_ESP8266_Reset},
+    .RealTimeClock = {//
+                      .update_time = 5000,
+                      .GetTimeString = HW_Time_GetString,
+                      .SetTimestamp = HW_Time_SetRTC},
 };

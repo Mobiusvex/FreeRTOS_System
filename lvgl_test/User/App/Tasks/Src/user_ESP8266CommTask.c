@@ -11,12 +11,12 @@
 #include "SEGGER_RTT.h"
 #include "string.h"
 
-#define ESP8266_WEATHER_UPDATE_INTERVAL 20000
-#define ESP8266_TIME_UPDATE_INTERVAL 30000
+#define ESP8266_WEATHER_UPDATE_INTERVAL 40000
+#define ESP8266_TIME_UPDATE_INTERVAL 20000
 #define ESP8266_UPLOAD_DATA_INTERVAL 30000
 #define ESP8266_CMD_MANAGE_INTERVAL 100
 
-#define ESP8266_ERROR_REBOOT_INTERVAL 10000
+#define ESP8266_ERROR_REBOOT_INTERVAL 20000
 
 #define ESP8266_TASK_PERIOD 10
 
@@ -36,6 +36,7 @@ void user_ESP8266CommTask(void *pvParameters) {
 
     net_wifi_init();
     net_weather_init();
+    net_time_init();
     while (1) {
         uint32_t tick = osKernelGetTickCount();
 
@@ -82,6 +83,10 @@ void user_ESP8266CommTask(void *pvParameters) {
             if (next_cmd == ESP8266_CMD_NONE) {
                 set_weather_city("Shanghai");
                 next_cmd = ESP8266_CMD_FETCH_WEATHER;
+            }
+        } else if ((time_count % (ESP8266_TIME_UPDATE_INTERVAL / ESP8266_TASK_PERIOD)) == 0) {
+            if (next_cmd == ESP8266_CMD_NONE) {
+                next_cmd = ESP8266_CMD_FETCH_TIME;
             }
         }
         if (time_count >= ESP8266_WEATHER_UPDATE_INTERVAL) {

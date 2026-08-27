@@ -47,7 +47,7 @@ const osThreadAttr_t user_uart1ReceiveTaskAttr = {
 osThreadId_t user_ESP8266CommTaskHandle;
 const osThreadAttr_t user_ESP8266CommTaskAttr = {
     .name = "uartESP8266CommTask",
-    .stack_size = 600,
+    .stack_size = 650,
     .priority = (osPriority_t)osPriorityLow2,
 };
 

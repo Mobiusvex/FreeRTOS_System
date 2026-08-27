@@ -51,10 +51,19 @@ typedef struct
     SYS_StatusTypeDef (*Reset)(void);
 } HW_ESP8266_InterfaceTypeDef;
 
+typedef struct
+{
+    SYS_StatusTypeDef data_status;
+    uint16_t update_time;
+    SYS_StatusTypeDef (*GetTimeString)(char *, uint8_t);
+    SYS_StatusTypeDef (*SetTimestamp)(uint32_t timestamp);
+} HW_RTC_InterfaceTypeDef;
+
 typedef struct {
     HW_DHT11_InterfaceTypeDef DHT11;
     HW_MPU6050_InterfaceTypeDef MPU6050;
     HW_ESP8266_InterfaceTypeDef ESP8266;
+    HW_RTC_InterfaceTypeDef RealTimeClock;
 } HW_InterfaceTypeDef;
 
 extern HW_InterfaceTypeDef HW_Interface;

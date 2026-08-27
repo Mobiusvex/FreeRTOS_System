@@ -8,6 +8,7 @@ typedef enum {
     ESP8266_APP_STATE_GET_WEATHER,  // 获取天气（后续每小时）
     ESP8266_APP_STATE_UPLOAD_DATA,  // 周期上报或立即上报
     ESP8266_APP_STATE_IDLE,         // 空闲（等待定时器或用户指令）
+    ESP8266_APP_INVALID_CMD,        // 无效命令
     ESP8266_APP_STATE_ERROR         // 全局致命错误（重启模块）
 } esp8266_app_state_t;
 

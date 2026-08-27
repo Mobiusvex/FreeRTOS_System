@@ -17,12 +17,13 @@ enum {
 };
 
 typedef enum {
-    CIP_MODE1_SET,
-    TCP_CONNECT,
-    CIP_SEND,
-    GET_WEATHER,
-    EXIT_CIP_MODE1,
-    WEATHER_STEP_NUM
+    NET_WEATHER_CIP_MODE1_SET,
+    NET_WEATHER_TCP_CONNECT,
+    NET_WEATHER_CIP_SEND,
+    NET_WEATHER_GET_WEATHER,
+    NET_WEATHER_EXIT_CIP_MODE1,
+    NET_WEATHER_CIP_CLOSE,
+    NET_WEATHER_STEP_NUM
 } net_weather_step_t;
 
 // 列出需要解析的字段
@@ -46,20 +47,18 @@ const char *net_weather_fields[WEATHER_CODE_NUM] = {
     "temperature",
 };
 
-const char cut_str[] = "{},[]/ +\":";
-
 static const step_config_t net_weather_step[] = {
-    {"AT+CIPMODE=1\r\n", "OK", 3, 3, 3000},
     {"AT+CIPSTART=\"TCP\",\"api.seniverse.com\",80\r\n", "OK", 3, 3, 3000},
+    {"AT+CIPMODE=1\r\n", "OK", 3, 3, 3000},
     {"AT+CIPSEND\r\n", "OK", 3, 3, 3000},
     {"--", "", 3, 3, 3000},
-    {"+++", "+++", 3, 3, 15000} // 等待IP
-};
+    {"+++", "+++", 3, 3, 3000},
+    {"AT+CIPCLOSE\r\n", "OK", 3, 3, 3000}};
 
-at_cmd_ctx_t net_weather_step_ctx[WEATHER_STEP_NUM];
+at_cmd_ctx_t net_weather_step_ctx[NET_WEATHER_STEP_NUM];
 
 static uint16_t build_weather_request(char *buffer, uint16_t buf_size, const char *city);
-static cmd_state_t parseJSON(char *jsonData, weather_data_t *p_weatherData);
+static cmd_state_t parseWeatherJSON(char *jsonData, weather_data_t *p_weatherData);
 static cmd_state_t receive_weather_analysis(at_cmd_ctx_t *ctx, uint8_t *buffer, uint32_t rx_len);
 
 /**
@@ -67,7 +66,7 @@ static cmd_state_t receive_weather_analysis(at_cmd_ctx_t *ctx, uint8_t *buffer, 
  * @retval 无
  */
 static void net_weather_init_ctx(void) {
-    for (int i = 0; i < WEATHER_STEP_NUM; i++) {
+    for (int i = 0; i < NET_WEATHER_STEP_NUM; i++) {
         at_cmd_ctx_t *ctx = &net_weather_step_ctx[i];
         memset(ctx, 0, sizeof(at_cmd_ctx_t));
         ctx->cmd = net_weather_step[i].cmd;
@@ -77,14 +76,14 @@ static void net_weather_init_ctx(void) {
         ctx->timeout_ticks = net_weather_step[i].timeout_ms;
         ctx->is_care_for_error = true;
         ctx->state = CMD_STATE_IDLE;
-        if (i == GET_WEATHER) {
+        if (i == NET_WEATHER_GET_WEATHER) {
             build_weather_request(weather_get_cmd_buf, WEATHER_GET_CMD_LENGTH, send_city);
             ctx->cmd = weather_get_cmd_buf;
             ctx->receive_cb = receive_weather_analysis;
         } else {
             ctx->receive_cb = receive_standard_analysis;
         }
-        if (i == CIP_MODE1_SET || i == CIP_SEND || i == TCP_CONNECT) {
+        if (i == NET_WEATHER_CIP_MODE1_SET || i == NET_WEATHER_CIP_SEND || i == NET_WEATHER_TCP_CONNECT) {
             ctx->is_care_for_error = false;
         }
     }
@@ -106,7 +105,7 @@ static cmd_state_t receive_weather_analysis(at_cmd_ctx_t *ctx, uint8_t *buffer, 
     if (strstr(buffer, "invalid") || strstr(buffer, "fail")) {
         ret = CMD_STATE_FAIL;
     } else {
-        ret = parseJSON(buffer, &weather_data);
+        ret = parseWeatherJSON(buffer, &weather_data);
     }
     SEGGER_RTT_printf(0, "city:%s,country:%s,weather:%s,temperature:%d\r\n",
                       weather_data.city, weather_data.country, weather_data.weather, weather_data.temperature);
@@ -122,20 +121,20 @@ static cmd_state_t receive_weather_analysis(at_cmd_ctx_t *ctx, uint8_t *buffer, 
  */
 cmd_state_t net_weather_mode_set(uint8_t *rx_buf, uint32_t rx_buf_size) {
     static cmd_state_t state = CMD_STATE_IDLE;
-    static net_weather_step_t net_weather_current_step = CIP_MODE1_SET;
+    static net_weather_step_t net_weather_current_step = NET_WEATHER_CIP_MODE1_SET;
 
-    if (net_weather_current_step < WEATHER_STEP_NUM) { // 确保没有越界
+    if (net_weather_current_step < NET_WEATHER_STEP_NUM) { // 确保没有越界
         at_cmd_ctx_t *ctx = &net_weather_step_ctx[net_weather_current_step];
         state = cmd_send_and_judge_process(ctx, rx_buf, rx_buf_size);
         if (state == CMD_STATE_SUCCESS || (!ctx->is_care_for_error && state == CMD_STATE_FAIL)) {
             net_weather_current_step++;
-            if (net_weather_current_step == WEATHER_STEP_NUM) {
-                net_weather_current_step = CIP_MODE1_SET;
+            if (net_weather_current_step == NET_WEATHER_STEP_NUM) {
+                net_weather_current_step = NET_WEATHER_CIP_MODE1_SET;
                 return CMD_STATE_DONE;
             }
             return CMD_STATE_SUCCESS; // 本次流程完成
         } else if (state == CMD_STATE_TIMEOUT || state == CMD_STATE_FAIL) {
-            net_weather_current_step = CIP_MODE1_SET;
+            net_weather_current_step = NET_WEATHER_CIP_MODE1_SET;
         }
     }
     return state;
@@ -168,8 +167,9 @@ static uint16_t build_weather_request(char *buffer, uint16_t buf_size, const cha
  * @param jsonData  JSON数据
  * @param p_weatherData  解析后的天气数据
  */
-static cmd_state_t parseJSON(char *jsonData, weather_data_t *p_weatherData) {
+static cmd_state_t parseWeatherJSON(char *jsonData, weather_data_t *p_weatherData) {
     // TODO: 需要保护，防止数据撕裂,或者完成后通过列队发送给显示屏
+    static const char cut_str[] = "{},[]/ +\":";
     cmd_state_t ret = CMD_STATE_WAIT_REPLY;
     uint8_t index = 0;
     // NOTE: strok会改变原字符串，但原字符串每次用完就扔，所以这里不拷贝一份
