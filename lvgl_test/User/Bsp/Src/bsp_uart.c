@@ -248,9 +248,9 @@ SYS_StatusTypeDef BSP_UART_Transmit_Block(BSP_UART_Bus_t bus, const uint8_t *dat
     if (osSemaphoreAcquire(ctx->tx_sem, timeout_ms) == osOK) {
         return SYS_OK;
     } else {
-        // 超时：取消发送（HAL_UART_Abort_IT），将状态复位
-        HAL_UART_Abort_IT(ctx->huart);
         ctx->tx_busy = false;
+        HAL_UART_AbortTransmit_IT(ctx->huart);
+
         return SYS_TIMEOUT;
     }
 }
@@ -308,8 +308,6 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
     for (int i = 0; i < BSP_UART_NUMBER; i++) {
         if (s_uartCtx[i].huart == huart) {
             UART_Ctx_t *ctx = &s_uartCtx[i];
-            ctx->tx_busy = false;
-            ctx->tx_complete = false;
             // 重启DMA
             HAL_UART_AbortReceive(huart);
             __HAL_UART_CLEAR_OREFLAG(huart);
