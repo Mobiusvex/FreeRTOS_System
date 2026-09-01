@@ -4,7 +4,9 @@
 #include "net_weather.h"
 #include "net_cloud.h"
 #include "net_time.h"
+#include "net_cloud.h"
 #include "HWDataAccess.h"
+#include "string.h"
 
 static esp8266_cmd_t s_pending_cmd = ESP8266_CMD_NONE; // 忙时暂存的指令
 
@@ -21,7 +23,10 @@ esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t
     esp8266_app_state_t main_state = ESP8266_APP_STATE_IDLE;
     static bool is_error = false;
     uint32_t timestamp = 0;
-
+    if (rx_buf_size > 0 && strstr(rx_buf, "MQTTSUBRECV")) {
+        cloud_setdata_analysis(rx_buf, rx_buf_size);
+        rx_buf_size = 0;
+    }
     switch (cmd) {
     case ESP8266_CMD_NONE:
         main_state = ESP8266_APP_STATE_IDLE;
@@ -46,7 +51,7 @@ esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t
         break;
 
     case ESP8266_CMD_UPLOAD_DATA:
-        // state = DataUpload_Process(); // 上报温湿度、角度
+        state = net_cloud_mode_set(rx_buf, rx_buf_size); // 上报温湿度、角度
         main_state = ESP8266_APP_STATE_UPLOAD_DATA;
         break;
     default:

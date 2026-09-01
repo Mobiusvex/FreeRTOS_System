@@ -25,12 +25,12 @@ SYS_StatusTypeDef ESP8266_Reset(void) {
     return SYS_OK;
 }
 
-SYS_StatusTypeDef ESP8266_SendCom(const char *command) {
+SYS_StatusTypeDef ESP8266_SendCom(const char *command, const uint16_t timeout) {
     SYS_StatusTypeDef status = SYS_OK;
     if (command == NULL) {
         return SYS_INVALID_PARAM;
     }
-    BSP_UART_Transmit_Block(BSP_UART_ESP8266, command, strlen(command), 10);
+    BSP_UART_Transmit_Block(BSP_UART_ESP8266, command, strlen(command), timeout);
     return status;
 }
 
@@ -39,7 +39,7 @@ SYS_StatusTypeDef ESP8266_SendCmdWaitResponse(const char *command, const char *r
     if (command == NULL || response == NULL) {
         return SYS_INVALID_PARAM;
     }
-    ESP8266_SendCom(command);
+    ESP8266_SendCom(command, 100);
     char buffer[256];
     return status;
 }

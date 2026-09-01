@@ -42,6 +42,7 @@ static void net_wifi_init_ctx(void) {
         ctx->timeout_ticks = net_wifi_step[i].timeout_ms;
         ctx->state = CMD_STATE_IDLE;
         ctx->receive_cb = receive_standard_analysis;
+        ctx->tx_timeout = 10;
     }
 }
 
@@ -111,7 +112,7 @@ cmd_state_t cmd_send_and_judge_process(at_cmd_ctx_t *ctx, uint8_t *rx_buf, uint3
 
     case CMD_STATE_SEND:
         // 发送命令
-        ESP8266_SendCom(ctx->cmd);
+        ESP8266_SendCom(ctx->cmd, ctx->tx_timeout);
         ctx->timeout_retry_cnt++;
         ctx->fail_retry_cnt++;
         ctx->start_tick = BSP_GetTick();

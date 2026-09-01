@@ -53,6 +53,7 @@ static void net_time_init_ctx(void) {
         ctx->timeout_ticks = net_time_step[i].timeout_ms;
         ctx->is_care_for_error = true;
         ctx->state = CMD_STATE_IDLE;
+        ctx->tx_timeout = 10;
         if (i == NET_TIME_GET_TIME) {
             ctx->receive_cb = receive_time_analysis;
         } else {
@@ -74,8 +75,6 @@ static void net_time_init_ctx(void) {
 static cmd_state_t receive_time_analysis(at_cmd_ctx_t *ctx, uint8_t *buffer, uint32_t rx_len) {
     // 检查期望关键词
     cmd_state_t ret = CMD_STATE_WAIT_REPLY;
-    bool has_expect = false;
-    bool has_error = false;
     uint64_t timestamp = 0;
     // 检测常见错误
     if (strstr(buffer, "invalid") || strstr(buffer, "fail")) {

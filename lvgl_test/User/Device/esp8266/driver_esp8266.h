@@ -20,5 +20,5 @@ typedef enum {
 
 SYS_StatusTypeDef ESP8266_Init(void);
 SYS_StatusTypeDef ESP8266_Reset(void);
-SYS_StatusTypeDef ESP8266_SendCom(const char *command);
+SYS_StatusTypeDef ESP8266_SendCom(const char *command, const uint16_t timeout);
 #endif

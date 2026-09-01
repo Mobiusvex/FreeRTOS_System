@@ -37,6 +37,7 @@ typedef struct at_cmd_ctx {
     const char *cmd;        // 要发送的AT命令（需包含 \r\n）
     const char *expect_key; // 期望在回复中匹配的关键词（如 "OK"、"WIFI GOT IP"）
                             // 若为 NULL，则只检测没有 ERROR/FAIL 就算成功
+    uint16_t tx_timeout;    // 发送命令的超时时间（ms）
 
     // ---- 超时控制 ----
     uint32_t start_tick;    // 开始等待时刻（xTaskGetTickCount()）

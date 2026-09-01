@@ -4,6 +4,7 @@
 #include "net_time.h"
 #include "net_weather.h"
 #include "net_wifi.h"
+#include "net_cloud.h"
 #include "FreeRTOS.h"
 #include "stream_buffer.h"
 #include "debug_func.h"
@@ -13,7 +14,7 @@
 
 #define ESP8266_WEATHER_UPDATE_INTERVAL 40000
 #define ESP8266_TIME_UPDATE_INTERVAL 20000
-#define ESP8266_UPLOAD_DATA_INTERVAL 30000
+#define ESP8266_UPLOAD_DATA_INTERVAL 60000
 #define ESP8266_CMD_MANAGE_INTERVAL 100
 
 #define ESP8266_ERROR_REBOOT_INTERVAL 20000
@@ -33,10 +34,11 @@ void user_ESP8266CommTask(void *pvParameters) {
     uint32_t error_count = 0;
     esp8266_app_state_t state = ESP8266_APP_STATE_IDLE;
     esp8266_cmd_t next_cmd = ESP8266_CMD_REBOOT_WIFI;
-
+    static cloud_updata_t cloud_updata = {1, 2, 3, 4, 5};
     net_wifi_init();
     net_weather_init();
     net_time_init();
+    net_cloud_init();
     while (1) {
         uint32_t tick = osKernelGetTickCount();
 
@@ -79,7 +81,18 @@ void user_ESP8266CommTask(void *pvParameters) {
         }
 
         // 测试代码，测试各个模块是否能正常工作--------------------
-        if ((time_count % (ESP8266_WEATHER_UPDATE_INTERVAL / ESP8266_TASK_PERIOD)) == 0) {
+        if ((time_count % (ESP8266_UPLOAD_DATA_INTERVAL / ESP8266_TASK_PERIOD)) == 0) {
+            if (next_cmd == ESP8266_CMD_NONE) {
+                cloud_updata.temp++;
+                cloud_updata.humi++;
+                cloud_updata.yaw++;
+                cloud_updata.pitch++;
+                cloud_updata.roll++;
+                cloud_updata.led = !cloud_updata.led;
+                net_cloud_data_update(&cloud_updata);
+                next_cmd = ESP8266_CMD_UPLOAD_DATA;
+            }
+        } else if ((time_count % (ESP8266_WEATHER_UPDATE_INTERVAL / ESP8266_TASK_PERIOD)) == 0) {
             if (next_cmd == ESP8266_CMD_NONE) {
                 set_weather_city("Shanghai");
                 next_cmd = ESP8266_CMD_FETCH_WEATHER;

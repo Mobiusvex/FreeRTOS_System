@@ -76,6 +76,7 @@ static void net_weather_init_ctx(void) {
         ctx->timeout_ticks = net_weather_step[i].timeout_ms;
         ctx->is_care_for_error = true;
         ctx->state = CMD_STATE_IDLE;
+        ctx->tx_timeout = 10;
         if (i == NET_WEATHER_GET_WEATHER) {
             build_weather_request(weather_get_cmd_buf, WEATHER_GET_CMD_LENGTH, send_city);
             ctx->cmd = weather_get_cmd_buf;

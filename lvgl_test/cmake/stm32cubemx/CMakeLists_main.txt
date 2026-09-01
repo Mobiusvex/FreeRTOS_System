@@ -17,6 +17,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/dht11
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/mpu6050
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/esp8266
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/led
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/App/Tasks/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Service/HWDataAccess
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Service/NET
@@ -35,6 +36,7 @@ file(GLOB_RECURSE USER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/dht11/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/mpu6050/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/esp8266/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/led/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Service/HWDataAccess/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Service/NET/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/Third_Party/mpu6050_dmp/*.c
