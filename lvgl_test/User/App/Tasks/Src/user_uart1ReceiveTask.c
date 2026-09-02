@@ -1,6 +1,6 @@
 #include "user_uart1ReceiveTask.h"
 #include "bsp_uart.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "debug_func.h"
@@ -23,6 +23,5 @@ void uart1ReceiveTask(void *pvParameters) {
         }
         // 调试：任务剩余栈空间打印
         static uint32_t last_print_time = 0;
-        printTaskStackRemainingCapacity((TaskHandle_t)osThreadGetId(), 10000, &last_print_time);
     }
 }

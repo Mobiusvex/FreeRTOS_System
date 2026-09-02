@@ -68,12 +68,12 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
 
 /* USER CODE BEGIN 4 */
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName) {
     /* Run time stack overflow checking is performed if
     configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
     called if a stack overflow is detected. */
-    SEGGER_RTT_printf(0, "STACK OVERFLOW in %s!\r\n", pcTaskName);
+    RTT_PRINTF("STACK OVERFLOW in %s!\r\n", pcTaskName);
     while (1);
 }
 /* USER CODE END 4 */

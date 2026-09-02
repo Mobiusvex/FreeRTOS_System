@@ -4,7 +4,7 @@
 #include "stdio.h"
 #include <stdlib.h>
 #include <string.h>
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 #include "cmsis_os2.h"
 
 const char *onenet_devid = "QlVhcDm9e2";
@@ -208,7 +208,7 @@ cmd_state_t cloud_setdata_analysis(uint8_t *buffer, uint32_t rx_len) {
     }
     if (ret == CMD_STATE_SUCCESS) {
         net_cloud_setdata = data;
-        SEGGER_RTT_printf(0, "led: %d\n", net_cloud_setdata.led);
+        RTT_PRINTF("led: %d\n", net_cloud_setdata.led);
     }
     return ret;
 }

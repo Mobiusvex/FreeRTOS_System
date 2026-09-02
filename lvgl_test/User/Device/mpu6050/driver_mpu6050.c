@@ -3,7 +3,7 @@
 #include "inv_mpu.h"
 #include "inv_mpu_dmp_motion_driver.h"
 #include "math.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 static signed char gyro_orientation[9] = {-1, 0, 0,
                                           0, -1, 0,
                                           0, 0, 1};
@@ -69,9 +69,9 @@ void run_self_test(void) {
         gyro[1] = (long)(gyro[1] * sens);
         gyro[2] = (long)(gyro[2] * sens);
         dmp_set_gyro_bias(gyro);
-        SEGGER_RTT_printf(0, "Gyro bias set.\n");
+        RTT_PRINTF("Gyro bias set.\n");
     } else {
-        SEGGER_RTT_printf(0, "Gyro self-test failed!\n");
+        RTT_PRINTF("Gyro self-test failed!\n");
     }
 
     if (result & 0x2) {
@@ -81,13 +81,13 @@ void run_self_test(void) {
         accel[1] *= accel_sens;
         accel[2] *= accel_sens;
         dmp_set_accel_bias(accel);
-        SEGGER_RTT_printf(0, "Accel bias set.\n");
+        RTT_PRINTF("Accel bias set.\n");
     } else {
-        SEGGER_RTT_printf(0, "Accel self-test failed!\n");
+        RTT_PRINTF("Accel self-test failed!\n");
     }
 
     if ((result & 0x3) == 0) {
-        SEGGER_RTT_printf(0, "Both self-tests failed! Check hardware.\n");
+        RTT_PRINTF("Both self-tests failed! Check hardware.\n");
         // 可考虑使用备用偏置（从非易失存储器加载）
     }
 }
@@ -100,53 +100,47 @@ SYS_StatusTypeDef MPU6050_Init(void) {
     int result = 0;
     result = mpu_init(NULL);
     if (!result) {
-        // SEGGER_RTT_printf(0, "mpu initialization complete......\n ");		//mpu initialization complete
+        // RTT_PRINTF("mpu initialization complete......\n "); // mpu initialization complete
         ;
 
         if (!mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL)) // mpu_set_sensor
-                                                            // SEGGER_RTT_printf(0, "mpu_set_sensor complete ......\n");
+                                                            // RTT_PRINTF("mpu_set_sensor complete ......\n");
             ;
-        else
-            // SEGGER_RTT_printf(0, "mpu_set_sensor come across error ......\n");
+        else // RTT_PRINTF("mpu_set_sensor come across error ......\n");
             ;
 
         if (!mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL)) // mpu_configure_fifo
-                                                               // SEGGER_RTT_printf(0, "mpu_configure_fifo complete ......\n");
+                                                               // RTT_PRINTF("mpu_configure_fifo complete ......\n");
             ;
-        else
-            // SEGGER_RTT_printf(0, "mpu_configure_fifo come across error ......\n");
+        else // RTT_PRINTF("mpu_configure_fifo come across error ......\n");
             ;
 
         if (!mpu_set_sample_rate(DEFAULT_MPU_HZ)) // mpu_set_sample_rate
-                                                  // SEGGER_RTT_printf(0, "mpu_set_sample_rate complete ......\n");
+                                                  //  RTT_PRINTF("mpu_set_sample_rate complete ......\n");
             ;
-        else
-            // SEGGER_RTT_printf(0, "mpu_set_sample_rate error ......\n");
+        else // RTT_PRINTF("mpu_set_sample_rate error ......\n");
             ;
 
         if (!dmp_load_motion_driver_firmware()) // dmp_load_motion_driver_firmvare
-                                                // SEGGER_RTT_printf(0, "dmp_load_motion_driver_firmware complete ......\n");
+                                                // RTT_PRINTF("dmp_load_motion_driver_firmware complete ......\n");
             ;
-        else
-            // SEGGER_RTT_printf(0, "dmp_load_motion_driver_firmware come across error ......\n");
+        else // RTT_PRINTF("dmp_load_motion_driver_firmware come across error ......\n");
             ;
 
         if (!dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_orientation))) // dmp_set_orientation
-                                                                                      // SEGGER_RTT_printf(0, "dmp_set_orientation complete ......\n");
+                                                                                      // RTT_PRINTF("dmp_set_orientation complete ......\n");
             ;
-        else
-            // SEGGER_RTT_printf(0, "dmp_set_orientation come across error ......\n");
+        else // RTT_PRINTF("dmp_set_orientation come across error ......\n");
             ;
 
         if (!dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_TAP | DMP_FEATURE_ANDROID_ORIENT | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_GYRO_CAL)) // dmp_enable_feature
-            // SEGGER_RTT_printf(0, "dmp_enable_feature complete ......\n");
+                                                                                                                                                                                        // RTT_PRINTF("dmp_enable_feature complete ......\n");
             ;
-        else
-            // SEGGER_RTT_printf(0, "dmp_enable_feature come across error ......\n");
+        else // RTT_PRINTF("dmp_enable_feature come across error ......\n");
             ;
 
         if (!dmp_set_fifo_rate(DEFAULT_MPU_HZ)) // dmp_set_fifo_rate
-                                                // SEGGER_RTT_printf(0, "dmp_set_fifo_rate complete ......\n");
+                                                // RTT_PRINTF("dmp_set_fifo_rate complete ......\n");
             ;
         else
             ////printf("dmp_set_fifo_rate come across error ......\n");
@@ -183,9 +177,6 @@ SYS_StatusTypeDef MPU6050_getAngle(float *pitch, float *roll, float *yaw) {
     unsigned char more;
     long quat[4];
     dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors, &more);
-
-    // SEGGER_RTT_printf(0, "accX: %d, accY: %d, accZ: %d\n", accX, accY, accZ);
-    // SEGGER_RTT_printf(0, "gyroX: %d, gyroY: %d, gyroZ: %d\n", gyroX, gyroY, gyroZ);
 
     // attitude_update(0.005f, accX, accY, accZ, gyroX, gyroY, gyroZ); // 0.001s为时间间隔
     if (sensors & INV_WXYZ_QUAT) {

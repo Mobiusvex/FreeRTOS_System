@@ -23,7 +23,7 @@
 /* USER CODE BEGIN 0 */
 #include "time_convert.h"
 #include "bsp_rtc.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 
 /* USER CODE END 0 */
 

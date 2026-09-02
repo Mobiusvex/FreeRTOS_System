@@ -1,7 +1,7 @@
 #ifndef _driver_xpt2046_H__
 #define _driver_xpt2046_H__
 
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 #include "bsp_gpio.h"
 
 // 触屏信号有效电平
@@ -27,12 +27,12 @@
 /*信息输出*/
 #define XPT2046_DEBUG_ON 0
 
-#define XPT2046_INFO(fmt, arg...)           SEGGER_RTT_printf(0,("<<-XPT2046-INFO->> "fmt"\n",##arg)
-#define XPT2046_ERROR(fmt, arg...) SEGGER_RTT_printf(0, "<<-XPT2046-ERROR->> " fmt "\n", ##arg)
-#define XPT2046_DEBUG(fmt, arg...)                                                      \
-    do {                                                                                \
-        if (XPT2046_DEBUG_ON)                                                           \
-            SEGGER_RTT_printf(0, "<<-XPT2046-DEBUG->> [%d]" fmt "\n", __LINE__, ##arg); \
+#define XPT2046_INFO(fmt, arg...)           RTT_PRINTF(("<<-XPT2046-INFO->> "fmt"\n",##arg)
+#define XPT2046_ERROR(fmt, arg...) RTT_PRINTF("<<-XPT2046-ERROR->> " fmt "\n", ##arg)
+#define XPT2046_DEBUG(fmt, arg...)                                            \
+    do {                                                                      \
+        if (XPT2046_DEBUG_ON)                                                 \
+            RTT_PRINTF("<<-XPT2046-DEBUG->> [%d]" fmt "\n", __LINE__, ##arg); \
     } while (0)
 
 /******************************* 声明 XPT2046 相关的数据类型 ***************************/

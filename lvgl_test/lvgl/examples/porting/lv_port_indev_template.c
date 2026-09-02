@@ -12,7 +12,7 @@
 #include "lv_port_indev_template.h"
 #include "../../lvgl.h"
 #include "driver_xpt2046.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 /*********************
  *      DEFINES
  *********************/
@@ -126,7 +126,7 @@ static void touchpad_get_xy(lv_coord_t *x, lv_coord_t *y) {
     (*x) = cinfo.x;
     (*y) = cinfo.y;
 
-    SEGGER_RTT_printf(0, "x=%d,y=%d\n", cinfo.x, cinfo.y);
+    RTT_PRINTF("x=%d,y=%d\n", cinfo.x, cinfo.y);
 }
 
 #else /*Enable this file at the top*/

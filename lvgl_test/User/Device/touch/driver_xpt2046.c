@@ -229,7 +229,7 @@ uint8_t XPT2046_Touch_Calibrate() {
     XPT2046_Calculate_CalibrationFactor(strCrossCoordinate, strScreenSample, &CalibrationFactor); // 用原始参数计算出 原始参数与坐标的转换系数
 
     if (CalibrationFactor.Divider == 0) {
-        SEGGER_RTT_printf(0, "XPT2046_Touch_Calibrate: Divider is zero\r\n");
+        RTT_PRINTF("XPT2046_Touch_Calibrate: Divider is zero\r\n");
     } else {
         /* 校准系数为全局变量 */
         strXPT2046_TouchPara[lcd_scan_mode].dX_X = (CalibrationFactor.An * 1.0) / CalibrationFactor.Divider;
@@ -536,7 +536,7 @@ void XPT2046_TouchEvenHandler(void) {
         XPT2046_Get_TouchedPoint(&cinfo, strXPT2046_TouchPara);
 
         // 输出调试信息到串口
-        SEGGER_RTT_printf(0, "x=%d,y=%d\n", cinfo.x, cinfo.y);
+        RTT_PRINTF("x=%d,y=%d\n", cinfo.x, cinfo.y);
 
         // 调用触摸被按下时的处理函数，可在该函数编写自己的触摸按下处理过程
         // XPT2046_TouchDown(&cinfo);
@@ -544,9 +544,9 @@ void XPT2046_TouchEvenHandler(void) {
         /*更新触摸信息到pre xy*/
         // cinfo.pre_x = cinfo.x; cinfo.pre_y = cinfo.y;
 
-        SEGGER_RTT_printf(0, "TOUCH DOWN !\n");
+        RTT_PRINTF("TOUCH DOWN !\n");
     } else {
-        // SEGGER_RTT_printf(0, "TOUCH PRESSED!\n");
+        //  RTT_PRINTF("TOUCH PRESSED!\n");
         // 调用触摸被释放时的处理函数，可在该函数编写自己的触摸释放处理过程
         // XPT2046_TouchUp(&cinfo);
 

@@ -1,6 +1,6 @@
 #include "user_uart3ReceiveTask.h"
 #include "bsp_uart.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "stream_buffer.h"
@@ -27,12 +27,11 @@ void uart3ReceiveTask(void *pvParameters) {
                 stream_len = xStreamBufferSend(xESP8266StreamBuffer, buffer, buf_len, 0); // 超时0，绝不阻塞
                 if (stream_len < buf_len) {
                     // 极端情况：流缓冲区满了，丢包
-                    SEGGER_RTT_printf(0, "Warning: ESP8266 Stream Buffer Full! Lost %d bytes\n", buf_len - stream_len);
+                    RTT_PRINTF("Warning: ESP8266 Stream Buffer Full! Lost %d bytes\n", buf_len - stream_len);
                 }
             }
         }
         // 调试：任务剩余栈空间打印
         static uint32_t last_print_time = 0;
-        printTaskStackRemainingCapacity((TaskHandle_t)osThreadGetId(), 10000, &last_print_time);
     }
 }

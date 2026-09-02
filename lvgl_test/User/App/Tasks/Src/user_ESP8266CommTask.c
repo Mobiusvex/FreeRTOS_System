@@ -9,7 +9,7 @@
 #include "stream_buffer.h"
 #include "debug_func.h"
 #include "net_manager.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 #include "string.h"
 
 #define ESP8266_WEATHER_UPDATE_INTERVAL 40000
@@ -73,7 +73,7 @@ void user_ESP8266CommTask(void *pvParameters) {
             if ((error_count % (ESP8266_ERROR_REBOOT_INTERVAL / ESP8266_TASK_PERIOD)) == 0) {
                 HW_Interface.ESP8266.Reset(); // 重启ESP8266
                 next_cmd = ESP8266_CMD_REBOOT_WIFI;
-                SEGGER_RTT_printf(0, "ESP8266 RESET----------\n");
+                RTT_PRINTF("ESP8266 RESET----------\n");
                 error_count = 0;
             }
         } else {
@@ -113,6 +113,5 @@ void user_ESP8266CommTask(void *pvParameters) {
 
         // 调试：任务剩余栈空间打印
         static uint32_t last_print_time = 0;
-        printTaskStackRemainingCapacity((TaskHandle_t)osThreadGetId(), 10000, &last_print_time);
     }
 }

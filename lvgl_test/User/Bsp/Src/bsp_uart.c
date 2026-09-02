@@ -7,7 +7,7 @@
 #include <string.h>
 #include "usart.h"
 #include "dma.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 
 extern DMA_HandleTypeDef hdma_usart3_rx;
 extern DMA_HandleTypeDef hdma_usart1_rx;

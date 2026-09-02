@@ -3,7 +3,7 @@
 #include "stddef.h"
 #include "bsp_delay.h"
 #include "string.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 
 typedef enum {
     START_AT,
@@ -80,7 +80,7 @@ cmd_state_t receive_standard_analysis(at_cmd_ctx_t *ctx, uint8_t *buffer, uint32
 
     if (has_expect && !has_error) {
         ret = CMD_STATE_SUCCESS;
-        SEGGER_RTT_printf(0, "AT_CMD_SUCCESS: %s\n", ctx->cmd);
+        RTT_PRINTF("AT_CMD_SUCCESS: %s\n", ctx->cmd);
     } else if (has_error) {
         ret = CMD_STATE_FAIL;
     } else {
@@ -118,7 +118,7 @@ cmd_state_t cmd_send_and_judge_process(at_cmd_ctx_t *ctx, uint8_t *rx_buf, uint3
         ctx->start_tick = BSP_GetTick();
         ctx->reply_handled = false;
         ctx->state = CMD_STATE_WAIT_REPLY;
-        SEGGER_RTT_printf(0, "AT_CMD_SEND: %s\n", ctx->cmd); // 输出命令
+        RTT_PRINTF("AT_CMD_SEND: %s\n", ctx->cmd); // 输出命令
         break;
     case CMD_STATE_WAIT_REPLY:
     case CMD_STATE_REPLY_CMD:

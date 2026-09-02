@@ -3,7 +3,7 @@
 #include "stdint-gcc.h"
 #include "bsp_gpio.h"
 #include "bsp_delay.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 #include "bsp_lcd_if.h"
 
 // 根据液晶扫描方向而变化的XY像素宽度
@@ -98,7 +98,7 @@ uint16_t ILI9341_ReadID(void) {
  */
 static void ILI9341_REG_Config(void) {
     lcdid = ILI9341_ReadID();
-    // SEGGER_RTT_printf(0, "ILI9341_ReadID: %04X\n", lcdid);
+    // RTT_PRINTF("ILI9341_ReadID: %04X\n", lcdid);
     BSP_DelayMS_Block(1);
     if (lcdid == LCDID_ILI9341) {
         /*  Power control B (CFh)  */

@@ -3,7 +3,7 @@
 #include "cmsis_os2.h"
 #include "bsp_gpio.h"
 #include "bsp_delay.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 #include "string.h"
 
 SYS_StatusTypeDef ESP8266_Init(void) {

@@ -4,7 +4,7 @@
 #include "stdio.h"
 #include <stdlib.h>
 #include <string.h>
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 #include "cmsis_os2.h"
 
 #define WEATHER_GET_CMD_LENGTH 256
@@ -108,8 +108,8 @@ static cmd_state_t receive_weather_analysis(at_cmd_ctx_t *ctx, uint8_t *buffer, 
     } else {
         ret = parseWeatherJSON(buffer, &weather_data);
     }
-    SEGGER_RTT_printf(0, "city:%s,country:%s,weather:%s,temperature:%d\r\n",
-                      weather_data.city, weather_data.country, weather_data.weather, weather_data.temperature);
+    // RTT_PRINTF( "city:%s,country:%s,weather:%s,temperature:%d\r\n",
+    //              weather_data.city, weather_data.country, weather_data.weather, weather_data.temperature);
     return ret;
 }
 

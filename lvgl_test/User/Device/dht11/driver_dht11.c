@@ -6,7 +6,7 @@
 #include "bsp_gpio.h"
 #include "bsp_delay.h"
 
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 
 /* 控制GPIO读取DHT11的数据
  * 1. 主机发出至少18MS的低脉冲: start信号
@@ -178,7 +178,7 @@ SYS_StatusTypeDef DHT11_Read(float *hum, float *temp) {
     BSP_CRITICAL_Exit(); // 退出临界区，恢复中断
     DHT11_PinCfgAsOutput();
     DHT11_PinSet(1);
-    // SEGGER_RTT_printf(0, "hum_m=%d, hum_n=%d, temp_m=%d, temp_n=%d, check=%d\n\r", hum_m, hum_n, temp_m, temp_n, check);
+    // RTT_PRINTF("hum_m=%d, hum_n=%d, temp_m=%d, temp_n=%d, check=%d\n\r", hum_m, hum_n, temp_m, temp_n, check);
     if (hum_m + hum_n + temp_m + temp_n == check) {
         *hum = (float)(hum_m * 10 + hum_n) / 10.0;
         *temp = (float)(temp_m * 10 + temp_n) / 10.0;

@@ -4,7 +4,7 @@
 #include "stdio.h"
 #include <stdlib.h>
 #include <string.h>
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 
 typedef enum {
     NET_TIME_CIP_MODE1_SET,
@@ -84,7 +84,7 @@ static cmd_state_t receive_time_analysis(at_cmd_ctx_t *ctx, uint8_t *buffer, uin
     }
     if (ret == CMD_STATE_SUCCESS) {
         net_timestamp = timestamp / 1000; // 从微秒转换为秒
-        SEGGER_RTT_printf(0, "timestamp: %d\n", net_timestamp);
+        RTT_PRINTF("timestamp: %d\n", net_timestamp);
     }
     return ret;
 }

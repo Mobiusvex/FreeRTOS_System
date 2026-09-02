@@ -3,7 +3,7 @@
 #include "user_HardwareInitTask.h"
 #include "HWDataAccess.h"
 
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 #include "driver_lcd.h"
 #include "driver_xpt2046.h"
 #include "lvgl.h"
@@ -24,7 +24,7 @@ void hardwareInitTask(void *pvParameters) {
 
     SEGGER_RTT_Init();
     XPT2046_CS_DISABLE();
-    SEGGER_RTT_printf(0, "RTT Init OK\n");
+    RTT_PRINTF("RTT Init OK\n");
 
     lv_init();
     lv_port_disp_init();

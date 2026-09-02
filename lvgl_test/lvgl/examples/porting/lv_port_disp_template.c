@@ -12,7 +12,7 @@
 #include "lv_port_disp_template.h"
 #include "../../lvgl.h"
 #include "driver_lcd.h"
-#include "SEGGER_RTT.h"
+#include "debug_func.h"
 /*********************
  *      DEFINES
  *********************/
@@ -136,7 +136,7 @@ static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_
             lcd_draw_point(x, y, (color_p)++->full);
         }
     }
-    // SEGGER_RTT_printf(0, "disp_flush called! area: %d,%d to %d,%d\n", area->x1, area->y1, area->x2, area->y2);
+    // RTT_PRINTF("disp_flush called! area: %d,%d to %d,%d\n", area->x1, area->y1, area->x2, area->y2);
 
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/

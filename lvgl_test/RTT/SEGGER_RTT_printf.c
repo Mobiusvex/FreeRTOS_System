@@ -324,7 +324,7 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char *sFormat, va_list *pPara
     unsigned NumDigits;
     unsigned FormatFlags;
     unsigned FieldWidth;
-    char acBuffer[SEGGER_RTT_PRINTF_BUFFER_SIZE];
+    static char acBuffer[SEGGER_RTT_PRINTF_BUFFER_SIZE];
 
     BufferDesc.pBuffer = acBuffer;
     BufferDesc.BufferSize = SEGGER_RTT_PRINTF_BUFFER_SIZE;
