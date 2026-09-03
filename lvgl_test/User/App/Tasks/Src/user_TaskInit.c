@@ -15,7 +15,7 @@ osMessageQueueId_t xESP8266CmdQueue = NULL;
 osThreadId_t user_HardwareInitTaskHandle;
 const osThreadAttr_t user_HardwareInitTaskAttr = {
     .name = "HardwareInitTask",
-    .stack_size = 1024,
+    .stack_size = 1024 * 4,
     .priority = (osPriority_t)osPriorityHigh,
 };
 

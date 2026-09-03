@@ -11,7 +11,7 @@
 #include "lv_port_disp_template.h"
 #include "lv_port_indev_template.h"
 #include "tim.h"
-
+#include "ui.h"
 /**
  * @brief Hardware initialization task
  * @param pvParameters Task parameters
@@ -46,10 +46,12 @@ void hardwareInitTask(void *pvParameters) {
         HW_Interface.ESP8266.ConnectionError = HW_Interface.ESP8266.Init();
     }
     HAL_TIM_Base_Start_IT(&htim2);
-    lv_obj_t *switch_obj = lv_switch_create(lv_scr_act());
+    // lv_obj_t *switch_obj = lv_switch_create(lv_scr_act());
 
-    lv_obj_set_size(switch_obj, 50, 20);
-    lv_obj_align(switch_obj, LV_ALIGN_TOP_LEFT, 10, 10);
+    // lv_obj_set_size(switch_obj, 50, 20);
+    // lv_obj_align(switch_obj, LV_ALIGN_TOP_LEFT, 10, 10);
+
+    ui_init();
     osKernelRestoreLock(lock_state);
     osThreadExit();
 }
