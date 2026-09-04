@@ -2,7 +2,7 @@
 
 #include "user_HardwareInitTask.h"
 #include "HWDataAccess.h"
-
+#include "sys_data.h"
 #include "debug_func.h"
 #include "driver_lcd.h"
 #include "driver_xpt2046.h"
@@ -20,6 +20,7 @@
 void hardwareInitTask(void *pvParameters) {
     uint32_t lock_state = osKernelLock();
     uint8_t count = 3;
+    SYS_DATA_Init();
     HAL_TIM_Base_Start(&htim7);
 
     SEGGER_RTT_Init();

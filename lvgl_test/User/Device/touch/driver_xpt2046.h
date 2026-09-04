@@ -21,9 +21,6 @@
 // 触摸参数写到FLASH里的标志
 #define FLASH_TOUCH_PARA_FLAG_VALUE 0xA5
 
-// 触摸参数写到FLASH里的地址
-#define FLASH_TOUCH_PARA_ADDR BSP_FLASH_LAST_PAGE_START
-
 /*信息输出*/
 #define XPT2046_DEBUG_ON 0
 

@@ -6,7 +6,7 @@
 #include "user_uart1ReceiveTask.h"
 #include "user_ESP8266CommTask.h"
 #include "debug_MonitorTask.h"
-
+#include "user_sysDataStorageTask.h"
 #include "debug_func.h"
 
 StreamBufferHandle_t xESP8266StreamBuffer = NULL;
@@ -47,11 +47,16 @@ const osThreadAttr_t user_uart1ReceiveTaskAttr = {
 };
 osThreadId_t user_ESP8266CommTaskHandle;
 const osThreadAttr_t user_ESP8266CommTaskAttr = {
-    .name = "uartESP8266CommTask",
+    .name = "ESP8266CommTask",
     .stack_size = 1024,
     .priority = (osPriority_t)osPriorityLow4,
 };
-
+osThreadId_t user_sysDataStorageTaskHandle;
+const osThreadAttr_t user_sysDataStorageTaskAttr = {
+    .name = "sysDataStorageTask",
+    .stack_size = 1024,
+    .priority = (osPriority_t)osPriorityLow1,
+};
 osThreadId_t debug_MonitorTaskHandle;
 const osThreadAttr_t debug_MonitorTaskAttr = {
     .name = "monitorTask",
@@ -98,6 +103,10 @@ void userTasksInit(void) {
     user_ESP8266CommTaskHandle = osThreadNew(user_ESP8266CommTask, NULL, &user_ESP8266CommTaskAttr);
     if (user_ESP8266CommTaskHandle == NULL) {
         RTT_PRINTF("Failed to create ESP8266CommTask\n");
+    }
+    user_sysDataStorageTaskHandle = osThreadNew(user_sysDataStorageTask, NULL, &user_sysDataStorageTaskAttr);
+    if (user_sysDataStorageTaskHandle == NULL) {
+        RTT_PRINTF("Failed to create sysDataStorageTask\n");
     }
 #if (DEBUG_FUNC_ENABLE == 1)
     debug_MonitorTaskHandle = osThreadNew(debug_MonitorTask, NULL, &debug_MonitorTaskAttr);

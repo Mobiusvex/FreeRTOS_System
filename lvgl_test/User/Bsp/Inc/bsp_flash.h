@@ -9,6 +9,12 @@
 #define BSP_FLASH_TOTAL_SIZE (512U * 1024U) // 512KB (根据实际芯片修改)
 #define BSP_FLASH_BASE_ADDR (0x08000000UL)
 #define BSP_FLASH_LAST_PAGE_START (BSP_FLASH_BASE_ADDR + BSP_FLASH_TOTAL_SIZE - BSP_FLASH_PAGE_SIZE)
+// 触摸参数写到FLASH里的地址
+#define FLASH_TOUCH_PARA_ADDR BSP_FLASH_LAST_PAGE_START
+
+// 系统全局变量表地址
+#define SYS_TABLE1_ADDR (BSP_FLASH_BASE_ADDR + BSP_FLASH_TOTAL_SIZE - (3 * BSP_FLASH_PAGE_SIZE)) // 表1在倒数第三页
+#define SYS_TABLE2_ADDR (BSP_FLASH_BASE_ADDR + BSP_FLASH_TOTAL_SIZE - (2 * BSP_FLASH_PAGE_SIZE))
 
 // 返回状态（扩展HAL状态，增加自定义错误）
 typedef enum {
@@ -28,4 +34,7 @@ BSP_Flash_Status_t BSP_FLASH_Read(uint32_t Address, uint32_t *pBuffer, size_t Wo
 uint32_t BSP_FLASH_GetPageSize(void);
 uint32_t BSP_FLASH_GetTotalSize(void);
 
+// 保护函数（关中断）
+void BSP_Flash_Protect_Enter(void);
+void BSP_Flash_Protect_Exit(void);
 #endif

@@ -113,3 +113,11 @@ uint32_t BSP_FLASH_GetPageSize(void) {
 uint32_t BSP_FLASH_GetTotalSize(void) {
     return BSP_FLASH_TOTAL_SIZE;
 }
+
+void BSP_Flash_Protect_Enter(void) {
+    __disable_irq(); // 关全局中断（防止擦写被打断）
+}
+
+void BSP_Flash_Protect_Exit(void) {
+    __enable_irq();
+}

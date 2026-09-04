@@ -21,6 +21,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/App/Tasks/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Service/HWDataAccess
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Service/NET
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Service/SysData
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/App/GUI/ui
 )
 
@@ -40,6 +41,7 @@ file(GLOB_RECURSE USER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Device/led/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Service/HWDataAccess/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Service/NET/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Service/SysData/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/Third_Party/mpu6050_dmp/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/Third_Party/mpu6050_dmp/port/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../User/Common/*.c
