@@ -146,7 +146,7 @@ void DHT11_Init(void) {
  *            temp - 用于保存温度值
  * @retval 0 - 成功, (-1) - 失败
  */
-SYS_StatusTypeDef DHT11_Read(float *hum, float *temp) {
+SYS_StatusTypeDef DHT11_Read(int16_t *hum, int16_t *temp) {
     uint8_t hum_m, hum_n;
     uint8_t temp_m, temp_n;
     uint8_t check;
@@ -180,8 +180,16 @@ SYS_StatusTypeDef DHT11_Read(float *hum, float *temp) {
     DHT11_PinSet(1);
     // RTT_PRINTF("hum_m=%d, hum_n=%d, temp_m=%d, temp_n=%d, check=%d\n\r", hum_m, hum_n, temp_m, temp_n, check);
     if (hum_m + hum_n + temp_m + temp_n == check) {
-        *hum = (float)(hum_m * 10 + hum_n) / 10.0;
-        *temp = (float)(temp_m * 10 + temp_n) / 10.0;
+        // ----- 1. 提取符号位 -----
+        if (temp_m & 0x80) {
+            // 负温度 (例如 -20.5℃)
+            temp_m &= 0x7F;
+            *temp = -(int16_t)(temp_m * 10 + temp_n); // 结果为 -205
+        } else {
+            // 正温度 (例如 25.3℃)
+            *temp = (int16_t)(temp_m * 10 + temp_n); // 结果为 253
+        }
+        *hum = hum_m * 10 + hum_n;
         return SYS_OK;
     } else {
         // printf("dht11 checksum err!\n\r");

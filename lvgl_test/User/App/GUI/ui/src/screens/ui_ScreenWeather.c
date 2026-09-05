@@ -45,13 +45,6 @@ void ui_ScreenWeather_screen_init(void)
     lv_obj_set_align(ui_Container1, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_Container1, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
-    ui_Container2 = lv_obj_create(ui_ScreenWeather);
-    lv_obj_remove_style_all(ui_Container2);
-    lv_obj_set_width(ui_Container2, 100);
-    lv_obj_set_height(ui_Container2, 50);
-    lv_obj_set_align(ui_Container2, LV_ALIGN_CENTER);
-    lv_obj_clear_flag(ui_Container2, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-
     ui_Panel2 = lv_obj_create(ui_ScreenWeather);
     lv_obj_set_width(ui_Panel2, 120);
     lv_obj_set_height(ui_Panel2, 80);
@@ -109,18 +102,22 @@ void ui_ScreenWeather_screen_init(void)
     lv_label_set_text(ui_LabelWeather, "Rain");
 
     ui_Panel10 = lv_obj_create(ui_ScreenWeather);
-    lv_obj_set_width(ui_Panel10, 100);
+    lv_obj_set_width(ui_Panel10, 108);
     lv_obj_set_height(ui_Panel10, 30);
-    lv_obj_set_x(ui_Panel10, -58);
+    lv_obj_set_x(ui_Panel10, -60);
     lv_obj_set_y(ui_Panel10, 29);
     lv_obj_set_align(ui_Panel10, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_Panel10, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_Panel10, lv_color_hex(0x8CC6F5), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Panel10, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(ui_Panel10, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ImageCity = lv_img_create(ui_Panel10);
     lv_img_set_src(ui_ImageCity, &ui_img_city_png);
     lv_obj_set_width(ui_ImageCity, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_ImageCity, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_ImageCity, -3);
+    lv_obj_set_y(ui_ImageCity, 0);
     lv_obj_set_align(ui_ImageCity, LV_ALIGN_LEFT_MID);
     lv_obj_add_flag(ui_ImageCity, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
     lv_obj_clear_flag(ui_ImageCity, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
@@ -138,6 +135,8 @@ void ui_ScreenWeather_screen_init(void)
     lv_obj_set_y(ui_Panel1, 29);
     lv_obj_set_align(ui_Panel1, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_Panel1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_Panel1, lv_color_hex(0xEAF58C), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Panel1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(ui_Panel1, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ImageHumi = lv_img_create(ui_Panel1);
@@ -161,6 +160,8 @@ void ui_ScreenWeather_screen_init(void)
     lv_obj_set_y(ui_Panel11, 66);
     lv_obj_set_align(ui_Panel11, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_Panel11, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_Panel11, lv_color_hex(0xF099CC), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Panel11, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(ui_Panel11, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ImagePressure = lv_img_create(ui_Panel11);
@@ -178,18 +179,22 @@ void ui_ScreenWeather_screen_init(void)
     lv_label_set_text(ui_LabelWeatherPressure, "1018");
 
     ui_Panel12 = lv_obj_create(ui_ScreenWeather);
-    lv_obj_set_width(ui_Panel12, 100);
+    lv_obj_set_width(ui_Panel12, 108);
     lv_obj_set_height(ui_Panel12, 30);
-    lv_obj_set_x(ui_Panel12, -55);
+    lv_obj_set_x(ui_Panel12, -60);
     lv_obj_set_y(ui_Panel12, 66);
     lv_obj_set_align(ui_Panel12, LV_ALIGN_CENTER);
     lv_obj_clear_flag(ui_Panel12, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_Panel12, lv_color_hex(0xCDEC8C), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Panel12, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(ui_Panel12, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ImageWind = lv_img_create(ui_Panel12);
     lv_img_set_src(ui_ImageWind, &ui_img_wind_png);
     lv_obj_set_width(ui_ImageWind, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_ImageWind, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_ImageWind, -3);
+    lv_obj_set_y(ui_ImageWind, 0);
     lv_obj_set_align(ui_ImageWind, LV_ALIGN_LEFT_MID);
     lv_obj_add_flag(ui_ImageWind, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
     lv_obj_clear_flag(ui_ImageWind, LV_OBJ_FLAG_SCROLLABLE);      /// Flags

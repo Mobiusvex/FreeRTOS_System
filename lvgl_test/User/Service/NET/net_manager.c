@@ -7,6 +7,9 @@
 #include "net_cloud.h"
 #include "HWDataAccess.h"
 #include "string.h"
+#include "sys_data.h"
+
+extern osMessageQueueId_t xCmdDisplayQueue;
 
 static esp8266_cmd_t s_pending_cmd = ESP8266_CMD_NONE; // 忙时暂存的指令
 
@@ -20,6 +23,7 @@ extern uint32_t net_time_get_time(void);
  */
 esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t rx_buf_size) {
     cmd_state_t state;
+    SYS_DataEventType_t event;
     esp8266_app_state_t main_state = ESP8266_APP_STATE_IDLE;
     static bool is_error = false;
     uint32_t timestamp = 0;
@@ -47,6 +51,11 @@ esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t
 
     case ESP8266_CMD_FETCH_WEATHER:
         state = net_weather_mode_set(rx_buf, rx_buf_size);
+        if (state == CMD_STATE_DONE) {
+            weather_sys_data_update();
+            event = SYS_WEATHER_UPDATE; // 更新天气数据
+            osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+        }
         main_state = ESP8266_APP_STATE_GET_WEATHER;
         break;
 
@@ -61,8 +70,14 @@ esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t
     if (state == CMD_STATE_DONE) {
         is_error = false;
         main_state = ESP8266_APP_STATE_IDLE; // 操作完成，回空闲
+        SYS_DATA_SetWifiStatus(WIFI_STATE_CONNECTED);
+        event = SYS_WIFI_UPDATE;
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
     } else if (state == CMD_STATE_FAIL || state == CMD_STATE_TIMEOUT) {
         is_error = true;
+        SYS_DATA_SetWifiStatus(WIFI_STATE_DISCONNECTED);
+        event = SYS_WIFI_UPDATE;
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
     }
     if (is_error) {
         main_state = ESP8266_APP_STATE_ERROR;

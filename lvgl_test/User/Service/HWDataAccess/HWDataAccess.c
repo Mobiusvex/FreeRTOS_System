@@ -22,7 +22,7 @@ SYS_StatusTypeDef HW_DHT11_Init(void) {
  * @param temp 指向存储温度值的指针
  * @retval 读取成功返回SYS_OK，读取失败返回SYS_ERROR
  */
-SYS_StatusTypeDef HW_DHT11_Get_Humi_Temp(float *humi, float *temp) {
+SYS_StatusTypeDef HW_DHT11_Get_Humi_Temp(int16_t *humi, int16_t *temp) {
     return DHT11_Read(humi, temp);
 }
 
@@ -47,6 +47,20 @@ SYS_StatusTypeDef HW_MPU6050_Get_Angle(float *pitch, float *roll, float *yaw) {
     return MPU6050_getAngle(pitch, roll, yaw);
 }
 
+/**
+ * @brief 将角度值转换为整数 放大十倍，四舍五入
+ * @param pitch 俯仰角
+ * @param roll 滚转角
+ * @param yaw 偏航角
+ * @param pitch_int 指向存储整数俯仰角的指针
+ * @param roll_int 指向存储整数滚转角的指针
+ * @param yaw_int 指向存储整数偏航角的指针
+ */
+void HW_MPU6050_AngleFloatToInt(float pitch, float roll, float yaw, int16_t *pitch_int, int16_t *roll_int, int16_t *yaw_int) {
+    *pitch_int = (int16_t)(pitch * 10.0f + (pitch >= 0 ? 0.5f : -0.5f));
+    *roll_int = (int16_t)(roll * 10.0f + (roll >= 0 ? 0.5f : -0.5f));
+    *yaw_int = (int16_t)(yaw * 10.0f + (yaw >= 0 ? 0.5f : -0.5f));
+}
 /**
  * @brief ESP8266传感器初始化
  * @param 无
@@ -77,6 +91,14 @@ SYS_StatusTypeDef HW_Time_GetString(char *buffer, uint8_t len) {
     }
 }
 
+SYS_StatusTypeDef HW_Time_Getdata(datetime_t *data) {
+    if (BSP_RTC_GetTime(data) == SYS_OK) {
+        return SYS_OK;
+    } else {
+        return SYS_ERROR; // 获取RTC时间失败1787730595597
+    }
+}
+
 #define TIMESTAMP_TIME_2000_OFFSET 946656000
 
 /**
@@ -91,28 +113,26 @@ SYS_StatusTypeDef HW_Time_SetRTC(uint32_t timestamp_sec) {
 HW_InterfaceTypeDef HW_Interface = {
     .DHT11 = {
         .ConnectionError = 1,
-        .update_time = 500,
+        .update_time = 800,
         .data_status = SYS_ERROR,
-        .humidity = 67,
-        .temperature = 26,
         .Init = HW_DHT11_Init,
         .GetHumiTemp = HW_DHT11_Get_Humi_Temp},
     .MPU6050 = {// MPU6050 sensor
                 .ConnectionError = 1,
-                .update_time = 500,
+                .update_time = 900,
                 .data_status = SYS_ERROR,
-                .pitch_angle = 0,
-                .roll_angle = 0,
                 .Init = HW_MPU6050_Init,
-                .GetAngle = HW_MPU6050_Get_Angle},
+                .GetAngle = HW_MPU6050_Get_Angle,
+                .AngleFloatToInt = HW_MPU6050_AngleFloatToInt},
     .ESP8266 = {// ESP8266 sensor
                 .ConnectionError = 1,
-                .update_time = 500,
+                .update_time = 1000,
                 .data_status = SYS_ERROR,
                 .Init = HW_ESP8266_Init,
                 .Reset = HW_ESP8266_Reset},
     .RealTimeClock = {//
-                      .update_time = 5000,
+                      .update_time = 1000,
                       .GetTimeString = HW_Time_GetString,
+                      .SetTimedata = HW_Time_Getdata,
                       .SetTimestamp = HW_Time_SetRTC},
 };

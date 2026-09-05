@@ -36,6 +36,5 @@ void ui_ScreenMusic_screen_init(void)
     lv_obj_set_y(ui_Label21, 3);
     lv_obj_set_align(ui_Label21, LV_ALIGN_TOP_MID);
 
-    lv_obj_add_event_cb(ui_Image17, ui_event_Image17, LV_EVENT_ALL, NULL);
 
 }

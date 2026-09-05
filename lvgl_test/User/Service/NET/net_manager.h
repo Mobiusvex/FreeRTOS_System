@@ -4,12 +4,15 @@
 
 typedef enum {
     ESP8266_APP_STATE_WIFI_CONNECT, // 连接WiFi
-    ESP8266_APP_STATE_GET_TIME,     // 获取时间（开机先取时间）
-    ESP8266_APP_STATE_GET_WEATHER,  // 获取天气（后续每小时）
-    ESP8266_APP_STATE_UPLOAD_DATA,  // 周期上报或立即上报
-    ESP8266_APP_STATE_IDLE,         // 空闲（等待定时器或用户指令）
-    ESP8266_APP_INVALID_CMD,        // 无效命令
-    ESP8266_APP_STATE_ERROR         // 全局致命错误（重启模块）
+    ESP8266_APP_STATE_WIFI_OK,
+    ESP8266_APP_STATE_GET_TIME,       // 获取时间（开机先取时间）
+    ESP8266_APP_STATE_GET_TIME_OK,    // 获取时间成功
+    ESP8266_APP_STATE_GET_WEATHER,    // 获取天气（后续每小时）
+    ESP8266_APP_STATE_GET_WEATHER_OK, // 获取天气成功
+    ESP8266_APP_STATE_UPLOAD_DATA,    // 周期上报或立即上报
+    ESP8266_APP_STATE_IDLE,           // 空闲（等待定时器或用户指令）
+    ESP8266_APP_INVALID_CMD,          // 无效命令
+    ESP8266_APP_STATE_ERROR           // 全局致命错误（重启模块）
 } esp8266_app_state_t;
 
 // 命令枚举

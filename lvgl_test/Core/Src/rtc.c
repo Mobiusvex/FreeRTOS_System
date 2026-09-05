@@ -24,7 +24,7 @@
 #include "time_convert.h"
 #include "bsp_rtc.h"
 #include "debug_func.h"
-
+#include "sys_data.h"
 /* USER CODE END 0 */
 
 RTC_HandleTypeDef hrtc;
@@ -66,7 +66,7 @@ void MX_RTC_Init(void) {
     timestamp = time_offset + timestamp;
 
     timestamp_to_datetime(timestamp, &datetime);
-
+    SYS_DATA_SetSysTime(datetime);
     DateToUpdate.Year = datetime.year - 2000;
     DateToUpdate.Month = datetime.month;
     DateToUpdate.Date = datetime.day;

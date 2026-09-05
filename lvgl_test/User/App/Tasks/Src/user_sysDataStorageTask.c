@@ -2,7 +2,11 @@
 #include "sys_data.h"
 #include "cmsis_os2.h"
 void user_sysDataStorageTask(void *pvParameters) {
+    uint32_t flags;
     while (1) {
-        osDelay(1000); // Delay for 1 second
+        flags = osThreadFlagsWait(FLAG_MSG_DATA_STORAGE, osFlagsWaitAny, osWaitForever);
+        if (flags & FLAG_MSG_DATA_STORAGE) {
+            SYS_DATA_Save();
+        }
     }
 }

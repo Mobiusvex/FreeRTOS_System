@@ -3,6 +3,11 @@
 #include "stdint.h"
 #include "stdbool.h"
 
+typedef enum {
+    WIFI_STATE_DISCONNECTED,
+    WIFI_STATE_CONNECTED
+} wifi_state_t;
+
 // 状态定义
 typedef enum {
     CMD_STATE_IDLE = 0,   // 空闲，准备开始

@@ -9,52 +9,6 @@
 ///////////////////// VARIABLES ////////////////////
 
 
-// SCREEN: ui_ScreenWeather
-void ui_ScreenWeather_screen_init(void);
-lv_obj_t * ui_ScreenWeather;
-lv_obj_t * ui_Container7;
-void ui_event_Image1(lv_event_t * e);
-lv_obj_t * ui_Image1;
-lv_obj_t * ui_Label20;
-lv_obj_t * ui_Container1;
-lv_obj_t * ui_Container2;
-lv_obj_t * ui_Panel2;
-lv_obj_t * ui_LabelWeatherTemp;
-lv_obj_t * ui_Label27;
-lv_obj_t * ui_Panel9;
-lv_obj_t * ui_ImageWeather;
-lv_obj_t * ui_LabelWeather;
-lv_obj_t * ui_Panel10;
-lv_obj_t * ui_ImageCity;
-lv_obj_t * ui_LabelWeatherCity;
-lv_obj_t * ui_Panel1;
-lv_obj_t * ui_ImageHumi;
-lv_obj_t * ui_LabelWeatherHumi;
-lv_obj_t * ui_Panel11;
-lv_obj_t * ui_ImagePressure;
-lv_obj_t * ui_LabelWeatherPressure;
-lv_obj_t * ui_Panel12;
-lv_obj_t * ui_ImageWind;
-lv_obj_t * ui_LabelWeatherWind;
-lv_obj_t * ui_LabelWeatherdate;
-void ui_event_ButtonWeatherUpdate(lv_event_t * e);
-lv_obj_t * ui_ButtonWeatherUpdate;
-lv_obj_t * ui_Label25;
-lv_obj_t * ui_Label24;
-lv_obj_t * ui_labelUpdateStatus;
-// CUSTOM VARIABLES
-
-
-// SCREEN: ui_ScreenMusic
-void ui_ScreenMusic_screen_init(void);
-lv_obj_t * ui_ScreenMusic;
-lv_obj_t * ui_ContainerFunSet4;
-void ui_event_Image17(lv_event_t * e);
-lv_obj_t * ui_Image17;
-lv_obj_t * ui_Label21;
-// CUSTOM VARIABLES
-
-
 // SCREEN: ui_ScreenMain
 void ui_ScreenMain_screen_init(void);
 lv_obj_t * ui_ScreenMain;
@@ -74,9 +28,7 @@ lv_obj_t * ui_Label36;
 lv_obj_t * ui_Panel7;
 lv_obj_t * ui_Panel4;
 lv_obj_t * ui_Panel6;
-lv_obj_t * ui_LabelDate;
-lv_obj_t * ui_LabelWeek;
-lv_obj_t * ui_Label30;
+lv_obj_t * ui_LabelVersion;
 lv_obj_t * ui_PanelTempHumi;
 lv_obj_t * ui_Panel5;
 void ui_event_Image19(lv_event_t * e);
@@ -90,6 +42,9 @@ lv_obj_t * ui_LabelHumi;
 lv_obj_t * ui_ImageWifi;
 void ui_event_Image22(lv_event_t * e);
 lv_obj_t * ui_Image22;
+lv_obj_t * ui_Container3;
+lv_obj_t * ui_LabelDate;
+lv_obj_t * ui_LabelWeek;
 // CUSTOM VARIABLES
 
 
@@ -121,8 +76,58 @@ void ui_event_SliderThreshold(lv_event_t * e);
 lv_obj_t * ui_SliderThreshold;
 lv_obj_t * ui_LabelMinValue;
 lv_obj_t * ui_LabelMaxValue;
-void ui_event_Image23(lv_event_t * e);
+lv_obj_t * ui_Panel13;
+lv_obj_t * ui_Label1;
+void ui_event_SliderVolume1(lv_event_t * e);
+lv_obj_t * ui_SliderVolume1;
 lv_obj_t * ui_Image23;
+void ui_event_ButtonSave(lv_event_t * e);
+lv_obj_t * ui_ButtonSave;
+lv_obj_t * ui_Label2;
+// CUSTOM VARIABLES
+
+
+// SCREEN: ui_ScreenMusic
+void ui_ScreenMusic_screen_init(void);
+lv_obj_t * ui_ScreenMusic;
+lv_obj_t * ui_ContainerFunSet4;
+lv_obj_t * ui_Image17;
+lv_obj_t * ui_Label21;
+// CUSTOM VARIABLES
+
+
+// SCREEN: ui_ScreenWeather
+void ui_ScreenWeather_screen_init(void);
+lv_obj_t * ui_ScreenWeather;
+lv_obj_t * ui_Container7;
+void ui_event_Image1(lv_event_t * e);
+lv_obj_t * ui_Image1;
+lv_obj_t * ui_Label20;
+lv_obj_t * ui_Container1;
+lv_obj_t * ui_Panel2;
+lv_obj_t * ui_LabelWeatherTemp;
+lv_obj_t * ui_Label27;
+lv_obj_t * ui_Panel9;
+lv_obj_t * ui_ImageWeather;
+lv_obj_t * ui_LabelWeather;
+lv_obj_t * ui_Panel10;
+lv_obj_t * ui_ImageCity;
+lv_obj_t * ui_LabelWeatherCity;
+lv_obj_t * ui_Panel1;
+lv_obj_t * ui_ImageHumi;
+lv_obj_t * ui_LabelWeatherHumi;
+lv_obj_t * ui_Panel11;
+lv_obj_t * ui_ImagePressure;
+lv_obj_t * ui_LabelWeatherPressure;
+lv_obj_t * ui_Panel12;
+lv_obj_t * ui_ImageWind;
+lv_obj_t * ui_LabelWeatherWind;
+lv_obj_t * ui_LabelWeatherdate;
+void ui_event_ButtonWeatherUpdate(lv_event_t * e);
+lv_obj_t * ui_ButtonWeatherUpdate;
+lv_obj_t * ui_Label25;
+lv_obj_t * ui_Label24;
+lv_obj_t * ui_labelUpdateStatus;
 // CUSTOM VARIABLES
 
 // EVENTS
@@ -144,33 +149,6 @@ const lv_img_dsc_t * ui_imgset_95929285[1] = {&ui_img_1046395525};
 ///////////////////// ANIMATIONS ////////////////////
 
 ///////////////////// FUNCTIONS ////////////////////
-void ui_event_Image1(lv_event_t * e)
-{
-    lv_event_code_t event_code = lv_event_get_code(e);
-
-    if(event_code == LV_EVENT_CLICKED) {
-        _ui_screen_change(&ui_ScreenMain, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_ScreenMain_screen_init);
-    }
-}
-
-void ui_event_ButtonWeatherUpdate(lv_event_t * e)
-{
-    lv_event_code_t event_code = lv_event_get_code(e);
-
-    if(event_code == LV_EVENT_CLICKED) {
-        event_update_click(e);
-    }
-}
-
-void ui_event_Image17(lv_event_t * e)
-{
-    lv_event_code_t event_code = lv_event_get_code(e);
-
-    if(event_code == LV_EVENT_CLICKED) {
-        _ui_screen_change(&ui_ScreenMain, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_ScreenMain_screen_init);
-    }
-}
-
 void ui_event_Image19(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
@@ -243,12 +221,39 @@ void ui_event_SliderThreshold(lv_event_t * e)
     }
 }
 
-void ui_event_Image23(lv_event_t * e)
+void ui_event_SliderVolume1(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_RELEASED) {
+        event_volume_Slider(e);
+    }
+}
+
+void ui_event_ButtonSave(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        event_save_button(e);
+    }
+}
+
+void ui_event_Image1(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
         _ui_screen_change(&ui_ScreenMain, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_ScreenMain_screen_init);
+    }
+}
+
+void ui_event_ButtonWeatherUpdate(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        event_update_click(e);
     }
 }
 
@@ -262,10 +267,10 @@ void ui_init(void)
     lv_theme_t * theme = lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED),
                                                false, LV_FONT_DEFAULT);
     lv_disp_set_theme(dispp, theme);
-    ui_ScreenWeather_screen_init();
-    ui_ScreenMusic_screen_init();
     ui_ScreenMain_screen_init();
     ui_ScreenSet_screen_init();
+    ui_ScreenMusic_screen_init();
+    ui_ScreenWeather_screen_init();
     ui____initial_actions0 = lv_obj_create(NULL);
-    lv_disp_load_scr(ui_ScreenWeather);
+    lv_disp_load_scr(ui_ScreenMain);
 }

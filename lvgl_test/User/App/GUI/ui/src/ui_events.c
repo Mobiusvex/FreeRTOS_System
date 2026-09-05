@@ -4,33 +4,35 @@
 // Project name: SquareLine_Project
 
 #include "ui.h"
+#include "user_sysDataStorageTask.h"
+#include "cmsis_os2.h"
 
-void event_update_click(lv_event_t * e)
-{
-	// Your code here
+extern osThreadId_t user_sysDataStorageTaskHandle;
+void event_update_click(lv_event_t *e) {
+    // Your code here
 }
 
-void event_volume_Slider(lv_event_t * e)
-{
-	// Your code here
+void event_volume_Slider(lv_event_t *e) {
+    // Your code here
 }
 
-void event_wifi_switch_clicked(lv_event_t * e)
-{
-	// Your code here
+void event_wifi_switch_clicked(lv_event_t *e) {
+    // Your code here
 }
 
-void event_background_dropdown(lv_event_t * e)
-{
-	// Your code here
+void event_background_dropdown(lv_event_t *e) {
+    // Your code here
 }
 
-void event_threshold_dropdown(lv_event_t * e)
-{
-	// Your code here
+void event_threshold_dropdown(lv_event_t *e) {
+    // Your code here
 }
 
-void event_threshold_slider(lv_event_t * e)
-{
-	// Your code here
+void event_threshold_slider(lv_event_t *e) {
+    // Your code here
+}
+
+void event_save_button(lv_event_t *e) {
+    // Your code here
+    osThreadFlagsSet(user_sysDataStorageTaskHandle, FLAG_MSG_DATA_STORAGE);
 }

@@ -6,6 +6,7 @@
 #include <string.h>
 #include "debug_func.h"
 #include "cmsis_os2.h"
+#include "sys_data.h"
 
 #define WEATHER_GET_CMD_LENGTH 256
 enum {
@@ -13,7 +14,11 @@ enum {
     WEATHER_COUNTRY,
     WEATHER_TEXT,
     WEATHER_TEMPERATURE,
-    WEATHER_CODE_NUM
+    WEATHER_HUMIDITY,
+    WEATHER_WIND_SCALE,
+    WEATHER_PRESSURE,
+    WEATHER_LAST_UPDATE_TIME,
+    WEATHER_PARAM_NUM
 };
 
 typedef enum {
@@ -32,6 +37,12 @@ typedef struct {
     char country[10];
     char weather[10];
     int8_t temperature;
+    uint8_t humidity;
+    uint8_t wind_scale;
+    uint16_t pressure;
+    uint16_t last_update_year; // 最后更新时间
+    uint8_t last_update_month;
+    uint8_t last_update_day; // 最后更新时间
 } weather_data_t;
 
 char weather_get_cmd_buf[WEATHER_GET_CMD_LENGTH];
@@ -40,12 +51,15 @@ volatile char send_city[25] = "enshi"; // 城市名称
 
 weather_data_t weather_data = {"enshi", "China", "Sunny", 25};
 
-const char *net_weather_fields[WEATHER_CODE_NUM] = {
+const char *net_weather_fields[WEATHER_PARAM_NUM] = {
     "name",
     "country",
     "text",
     "temperature",
-};
+    "humidity",
+    "wind_scale",
+    "pressure",
+    "last_update"};
 
 static const step_config_t net_weather_step[] = {
     {"AT+CIPSTART=\"TCP\",\"api.seniverse.com\",80\r\n", "OK", 3, 3, 3000},
@@ -108,8 +122,9 @@ static cmd_state_t receive_weather_analysis(at_cmd_ctx_t *ctx, uint8_t *buffer, 
     } else {
         ret = parseWeatherJSON(buffer, &weather_data);
     }
-    // RTT_PRINTF( "city:%s,country:%s,weather:%s,temperature:%d\r\n",
-    //              weather_data.city, weather_data.country, weather_data.weather, weather_data.temperature);
+    RTT_PRINTF("city:%s,country:%s,weather:%s,temperature:%d,humidity:%d,wind_scale:%d,pressure:%d,last_update:%d-%d-%d\r\n",
+               weather_data.city, weather_data.country, weather_data.weather, weather_data.temperature, weather_data.humidity,
+               weather_data.wind_scale, weather_data.pressure, weather_data.last_update_year, weather_data.last_update_month, weather_data.last_update_day);
     return ret;
 }
 
@@ -158,8 +173,7 @@ void net_weather_init(void) {
 static uint16_t build_weather_request(char *buffer, uint16_t buf_size, const char *city) {
     // 直接格式化：将 %s 替换为传入的城市名
     return snprintf(buffer, buf_size,
-                    "GET https://api.seniverse.com/v3/weather/now.json"
-                    "?key=SwLQ3i0Q5TNa6NSKT&location=%s&language=en&unit=c\r\n",
+                    "GET https://api.seniverse.com/v3/weather/now.json?key=SNcrC_jZnh627Quf_&location=%s&language=en&unit=c\r\n",
                     city);
 }
 
@@ -196,10 +210,29 @@ static cmd_state_t parseWeatherJSON(char *jsonData, weather_data_t *p_weatherDat
             token = strtok(NULL, cut_str);
             weather_data.temperature = atoi(token);
             index++;
+        } else if (strcmp(token, net_weather_fields[WEATHER_HUMIDITY]) == 0) {
+            token = strtok(NULL, cut_str);
+            weather_data.humidity = atoi(token);
+            index++;
+        } else if (strcmp(token, net_weather_fields[WEATHER_WIND_SCALE]) == 0) {
+            token = strtok(NULL, cut_str);
+            weather_data.wind_scale = atoi(token);
+            index++;
+        } else if (strcmp(token, net_weather_fields[WEATHER_PRESSURE]) == 0) {
+            token = strtok(NULL, cut_str);
+            weather_data.pressure = atoi(token);
+            index++;
+        } else if (strcmp(token, net_weather_fields[WEATHER_LAST_UPDATE_TIME]) == 0) {
+            token = strtok(NULL, cut_str);
+            sscanf(token, "%d-%d-%d", &weather_data.last_update_year, &weather_data.last_update_month, &weather_data.last_update_day);
+            // memcpy(weather_data.last_update, token, 10);
+            // weather_data.last_update[10] = '\0'; // 确保字符串结束
+            index++;
         }
+        // RTT_PRINTF("token:%s\r\n", token); // 打印解析到的字段
         token = strtok(NULL, cut_str);
     }
-    if (index == WEATHER_CODE_NUM) {
+    if (index == WEATHER_PARAM_NUM) {
         ret = CMD_STATE_SUCCESS;
     }
     return ret;
@@ -216,4 +249,22 @@ void set_weather_city(const char *city) {
     strcpy(send_city, city);
     build_weather_request(weather_get_cmd_buf, WEATHER_GET_CMD_LENGTH, send_city);
     osKernelRestoreLock(lock_state);
+}
+
+void weather_sys_data_update(void) {
+    uint8_t weather_code = 0;
+    if (strstr(weather_data.weather, "Sunny") != NULL) {
+        weather_code = WEATHER_CODE_SUNNY;
+    } else if (strstr(weather_data.weather, "Cloudy") != NULL) {
+        weather_code = WEATHER_CODE_CLOUDY;
+    } else if (strstr(weather_data.weather, "Rainy") != NULL) {
+        weather_code = WEATHER_CODE_RAINY;
+    } else if (strstr(weather_data.weather, "Snowy") != NULL) {
+        weather_code = WEATHER_CODE_SNOWY;
+    } else {
+        weather_code = WEATHER_CODE_OVERCAST;
+    }
+    SYS_DATA_SetWeather(weather_code, weather_data.temperature, weather_data.humidity, weather_data.wind_scale, weather_data.pressure);
+    SYS_DATA_SetWeatherUpdateDate(weather_data.last_update_year, weather_data.last_update_month, weather_data.last_update_day);
+    SYS_DATA_SetWeatherCity(weather_data.city);
 }

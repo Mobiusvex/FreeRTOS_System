@@ -11,6 +11,7 @@
 
 StreamBufferHandle_t xESP8266StreamBuffer = NULL;
 osMessageQueueId_t xESP8266CmdQueue = NULL;
+osMessageQueueId_t xCmdDisplayQueue = NULL;
 
 osThreadId_t user_HardwareInitTaskHandle;
 const osThreadAttr_t user_HardwareInitTaskAttr = {
@@ -48,7 +49,7 @@ const osThreadAttr_t user_uart1ReceiveTaskAttr = {
 osThreadId_t user_ESP8266CommTaskHandle;
 const osThreadAttr_t user_ESP8266CommTaskAttr = {
     .name = "ESP8266CommTask",
-    .stack_size = 1024,
+    .stack_size = 1324,
     .priority = (osPriority_t)osPriorityLow4,
 };
 osThreadId_t user_sysDataStorageTaskHandle;
@@ -78,6 +79,10 @@ void userTasksInit(void) {
     xESP8266CmdQueue = osMessageQueueNew(5, 1, NULL);
     if (xESP8266CmdQueue == NULL) {
         RTT_PRINTF("Failed to create xESP8266CmdQueue\n");
+    }
+    xCmdDisplayQueue = osMessageQueueNew(20, 1, NULL);
+    if (xCmdDisplayQueue == NULL) {
+        RTT_PRINTF("Failed to create xCmdDisplayQueue\n");
     }
 
     user_HardwareInitTaskHandle = osThreadNew(hardwareInitTask, NULL, &user_HardwareInitTaskAttr);

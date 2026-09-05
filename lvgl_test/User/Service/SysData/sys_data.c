@@ -7,6 +7,7 @@
 static FlashStorage_t g_flashStorage;
 static volatile SystemGlobalData_t *const g_sysData = &g_flashStorage.data;
 
+static void sys_data_set_init(void);
 /**
  * @brief 初始化系统数据
  * @return SYS_OK 成功，SYS_ERROR 失败
@@ -16,8 +17,10 @@ SYS_StatusTypeDef SYS_DATA_Init(void) {
     // 此处调用 SYS_Storage_Load 从 Flash 恢复数据
     if (SYS_Storage_Load(&g_flashStorage, sizeof(g_flashStorage)) != SYS_OK) {
         memset(&g_flashStorage, 0, sizeof(g_flashStorage));
+        sys_data_set_init();
         return SYS_ERROR; // 初始化失败，返回错误码
     }
+    sys_data_set_init();
     return SYS_OK;
 }
 
@@ -36,20 +39,50 @@ SYS_StatusTypeDef SYS_DATA_Save(void) {
 //                   Set 函数实现
 // ============================================================
 
+static void sys_data_set_init(void) {
+    if (g_sysData->temp_threshold_high == 0 && g_sysData->temp_threshold_low == 0) {
+        SYS_DATA_SetTempThreshold(400, 200);
+    }
+    if (g_sysData->humi_threshold_high == 0 && g_sysData->humi_threshold_low == 0) {
+        SYS_DATA_SetHumiThreshold(600, 400);
+    }
+    if (g_sysData->pitch_threshold_high == 0 && g_sysData->pitch_threshold_low == 0) {
+        SYS_DATA_SetPitchThreshold(50, -50);
+    }
+    if (g_sysData->roll_threshold_high == 0 && g_sysData->roll_threshold_low == 0) {
+        SYS_DATA_SetRollThreshold(50, -50);
+    }
+    if (g_sysData->yaw_threshold_high == 0 && g_sysData->yaw_threshold_low == 0) {
+        SYS_DATA_SetYawThreshold(50, -50);
+    }
+    if (g_sysData->volume == 0) {
+        SYS_DATA_SetVolume(50);
+    }
+}
+
+void SYS_DATA_SetWifiStatus(wifi_state_t status) {
+    uint32_t lock_state = osKernelLock();
+    g_sysData->wifi_status = status;
+    osKernelRestoreLock(lock_state);
+}
+
 /**
  * @brief 设置系统时间
  * @param datetime 指向 datetime_t 结构体的指针
  */
-void SYS_DATA_SetSysTime(datetime_t *datetime) {
-    if (datetime == NULL) return;
+void SYS_DATA_SetSysTime(const datetime_t datetime) {
     uint32_t lock_state = osKernelLock();
-    g_sysData->year = datetime->year;
-    g_sysData->month = datetime->month;
-    g_sysData->day = datetime->day;
-    g_sysData->hour = datetime->hour;
-    g_sysData->minute = datetime->minute;
-    g_sysData->second = datetime->second;
-
+    g_sysData->year = datetime.year;
+    g_sysData->month = datetime.month;
+    g_sysData->day = datetime.day;
+    g_sysData->hour = datetime.hour;
+    g_sysData->minute = datetime.minute;
+    g_sysData->second = datetime.second;
+    if (datetime.weekday <= 0 && datetime.weekday > 7) {
+        g_sysData->weekday = 1;
+    } else {
+        g_sysData->weekday = datetime.weekday;
+    }
     osKernelRestoreLock(lock_state);
 }
 
@@ -83,12 +116,23 @@ void SYS_DATA_SetAngle(int16_t pitch, int16_t roll, int16_t yaw) {
  */
 void SYS_DATA_SetWeather(int16_t weather_code, int8_t temp, int8_t humi, int8_t wind, int16_t pressure) {
     uint32_t lock_state = osKernelLock();
-    g_sysData->weather_code = weather_code; // 注意原实现误写为 code，现改正
+    if (weather_code < 0 || weather_code >= WEATHER_CODE_NUM) {
+        g_sysData->weather_code = 0;
+    } else {
+        g_sysData->weather_code = weather_code; // 注意原实现误写为 code，现改正
+    }
     g_sysData->weather_temp = temp;
     g_sysData->weather_humi = humi;
     g_sysData->weather_wind = wind;
     g_sysData->weather_pressure = pressure;
 
+    osKernelRestoreLock(lock_state);
+}
+
+void SYS_DATA_SetWeatherCity(const char *city) {
+    uint32_t lock_state = osKernelLock();
+    strncpy(g_sysData->weather_city, city, sizeof(g_sysData->weather_city) - 1);
+    g_sysData->weather_city[sizeof(g_sysData->weather_city) - 1] = '\0'; // 确保字符串以空字符结束
     osKernelRestoreLock(lock_state);
 }
 
@@ -184,6 +228,15 @@ void SYS_DATA_SetBackgroundColor(uint8_t color_code) {
 // ============================================================
 //                   Get 函数实现（单值读取）
 // ============================================================
+
+void SYS_DATA_GetWifiStatus(wifi_state_t *status) {
+    if (status) {
+        uint32_t lock_state = osKernelLock(); // 加锁
+        *status = g_sysData->wifi_status;
+        osKernelRestoreLock(lock_state); // 解锁
+    }
+}
+
 /**
  * @brief 获取系统时间
  */
@@ -311,5 +364,11 @@ void SYS_DATA_GetVolume(uint8_t *vol) {
 void SYS_DATA_GetBackgroundColor(uint8_t *color_code) {
     uint32_t lock_state = osKernelLock();
     *color_code = g_sysData->background_color_code;
+    osKernelRestoreLock(lock_state);
+}
+
+void SYS_DATA_GetSnapshot(SystemGlobalData_t *out) {
+    uint32_t lock_state = osKernelLock();
+    memcpy(out, g_sysData, sizeof(SystemGlobalData_t)); // 复制数据到 out
     osKernelRestoreLock(lock_state);
 }

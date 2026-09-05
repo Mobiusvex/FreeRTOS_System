@@ -7,4 +7,5 @@
 cmd_state_t net_weather_mode_set(uint8_t *rx_buf, uint32_t rx_buf_size);
 void net_weather_init(void);
 void set_weather_city(const char *city);
+void weather_sys_data_update(void);
 #endif
