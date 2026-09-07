@@ -19,16 +19,19 @@
 
 #define ESP8266_ERROR_REBOOT_INTERVAL 20000
 
+#define ESP8266_TASK_TIME_MAX_PERIOD_MS 3600000
 #define ESP8266_TASK_PERIOD 10
+
+#define ESP8266_TASK_BUFFER_SIZE 512
 
 extern StreamBufferHandle_t xESP8266StreamBuffer;
 extern osMessageQueueId_t xESP8266CmdQueue;
-
-#define ESP8266_TASK_BUFFER_SIZE 512
+extern osMessageQueueId_t xWeatherCityQueue;
 
 void user_ESP8266CommTask(void *pvParameters) {
     // 创建buffer
     static uint8_t buffer[ESP8266_TASK_BUFFER_SIZE];
+    char WeatherCity[12] = "Shanghai";
     uint32_t buf_len = 0;
     uint32_t time_count = 0;
     uint32_t error_count = 0;
@@ -46,7 +49,9 @@ void user_ESP8266CommTask(void *pvParameters) {
         if (next_cmd == ESP8266_CMD_NONE) {
             osMessageQueueGet(xESP8266CmdQueue, &next_cmd, 0, 0);
         }
-
+        if (osMessageQueueGet(xWeatherCityQueue, WeatherCity, 0, 0) == osOK) {
+            set_weather_city(WeatherCity);
+        }
         buf_len = xStreamBufferReceive(xESP8266StreamBuffer, buffer, 512, 0);
         // 接收到ESP8266发来的数据，立即执行
         if (buf_len > 0) {
@@ -80,33 +85,9 @@ void user_ESP8266CommTask(void *pvParameters) {
             error_count = 0;
         }
 
-        // 测试代码，测试各个模块是否能正常工作--------------------
-        if ((time_count % (ESP8266_UPLOAD_DATA_INTERVAL / ESP8266_TASK_PERIOD)) == 0) {
-            if (next_cmd == ESP8266_CMD_NONE) {
-                cloud_updata.temp++;
-                cloud_updata.humi++;
-                cloud_updata.yaw++;
-                cloud_updata.pitch++;
-                cloud_updata.roll++;
-                cloud_updata.led = !cloud_updata.led;
-                net_cloud_data_update(&cloud_updata);
-                next_cmd = ESP8266_CMD_UPLOAD_DATA;
-            }
-        } else if ((time_count % (ESP8266_WEATHER_UPDATE_INTERVAL / ESP8266_TASK_PERIOD)) == 0) {
-            if (next_cmd == ESP8266_CMD_NONE) {
-                set_weather_city("Shanghai");
-                next_cmd = ESP8266_CMD_FETCH_WEATHER;
-            }
-        } else if ((time_count % (ESP8266_TIME_UPDATE_INTERVAL / ESP8266_TASK_PERIOD)) == 0) {
-            if (next_cmd == ESP8266_CMD_NONE) {
-                next_cmd = ESP8266_CMD_FETCH_TIME;
-            }
-        }
-        if (time_count >= ESP8266_WEATHER_UPDATE_INTERVAL) {
+        if (time_count >= ESP8266_TASK_TIME_MAX_PERIOD_MS) {
             time_count = 0;
         }
-        //-----------------------------------------------------
-
         tick += ESP8266_TASK_PERIOD;
         osDelayUntil(tick);
         time_count++;

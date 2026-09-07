@@ -47,7 +47,7 @@ typedef struct {
 
 char weather_get_cmd_buf[WEATHER_GET_CMD_LENGTH];
 
-volatile char send_city[25] = "enshi"; // 城市名称
+volatile char send_city[12] = "enshi"; // 城市名称
 
 weather_data_t weather_data = {"enshi", "China", "Sunny", 25};
 
@@ -187,6 +187,7 @@ static cmd_state_t parseWeatherJSON(char *jsonData, weather_data_t *p_weatherDat
     static const char cut_str[] = "{},[]/ +\":";
     cmd_state_t ret = CMD_STATE_WAIT_REPLY;
     uint8_t index = 0;
+    int year, month, day;
     // NOTE: strok会改变原字符串，但原字符串每次用完就扔，所以这里不拷贝一份
     char *token = strtok(jsonData, cut_str);
     while (token != NULL) {
@@ -224,9 +225,10 @@ static cmd_state_t parseWeatherJSON(char *jsonData, weather_data_t *p_weatherDat
             index++;
         } else if (strcmp(token, net_weather_fields[WEATHER_LAST_UPDATE_TIME]) == 0) {
             token = strtok(NULL, cut_str);
-            sscanf(token, "%d-%d-%d", &weather_data.last_update_year, &weather_data.last_update_month, &weather_data.last_update_day);
-            // memcpy(weather_data.last_update, token, 10);
-            // weather_data.last_update[10] = '\0'; // 确保字符串结束
+            sscanf(token, "%d-%d-%d", &year, &month, &day);
+            weather_data.last_update_year = year;
+            weather_data.last_update_month = month;
+            weather_data.last_update_day = day;
             index++;
         }
         // RTT_PRINTF("token:%s\r\n", token); // 打印解析到的字段

@@ -81,14 +81,14 @@ void ui_ScreenSet_screen_init(void)
     lv_obj_set_width(ui_Label42, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label42, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_align(ui_Label42, LV_ALIGN_LEFT_MID);
-    lv_label_set_text(ui_Label42, "WIFI");
+    lv_label_set_text(ui_Label42, "Onenet");
     lv_obj_set_style_text_color(ui_Label42, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_Label42, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_SwitchWifiSet = lv_switch_create(ui_PanelWifi1);
-    lv_obj_set_width(ui_SwitchWifiSet, 50);
-    lv_obj_set_height(ui_SwitchWifiSet, 25);
-    lv_obj_set_align(ui_SwitchWifiSet, LV_ALIGN_RIGHT_MID);
+    ui_SwitchOnenet = lv_switch_create(ui_PanelWifi1);
+    lv_obj_set_width(ui_SwitchOnenet, 50);
+    lv_obj_set_height(ui_SwitchOnenet, 25);
+    lv_obj_set_align(ui_SwitchOnenet, LV_ALIGN_RIGHT_MID);
 
 
     ui_PanelColor = lv_obj_create(ui_Container13);
@@ -255,7 +255,7 @@ void ui_ScreenSet_screen_init(void)
     lv_obj_set_style_text_font(ui_Label2, &ui_font_siyuanMedium16_4, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_add_event_cb(ui_SliderVolume, ui_event_SliderVolume, LV_EVENT_ALL, NULL);
-    lv_obj_add_event_cb(ui_SwitchWifiSet, ui_event_SwitchWifiSet, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_SwitchOnenet, ui_event_SwitchOnenet, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_DropdownColor, ui_event_DropdownColor, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_DropdownThreshold, ui_event_DropdownThreshold, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_SliderThreshold, ui_event_SliderThreshold, LV_EVENT_ALL, NULL);

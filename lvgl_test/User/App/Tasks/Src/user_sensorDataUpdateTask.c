@@ -8,8 +8,10 @@
 #include "debug_func.h"
 #include "time_convert.h"
 #include "sys_data.h"
-#define HW_UPDATE_TASK_PERIOD_MS 20
+#include "net_manager.h"
 
+#define HW_UPDATE_TASK_PERIOD_MS 20
+#define HW_UPDATE_TASK_MAX_PERID_S 86400 //(86400s = 24h * 60min * 60s)
 typedef struct {
     int16_t pitch;
     int16_t roll;
@@ -21,6 +23,8 @@ typedef struct {
 } env_data_t;
 
 extern osMessageQueueId_t xCmdDisplayQueue;
+extern osMessageQueueId_t xESP8266CmdQueue;
+
 static void time_display_update(const datetime_t last_time, const datetime_t current_time);
 static void angle_display_update(const angle_data_t last_angle_data, const angle_data_t current_angle_data);
 static void evnt_display_update(const env_data_t last_env_data, const env_data_t current_env_data);
@@ -35,12 +39,15 @@ void sensorDataUpdateTask(void *pvParameters) {
     env_data_t env_data, last_env_data;
     float pitch_f, roll_f, yaw_f;
     angle_data_t angle_data, last_angle_data;
-    static uint16_t time_counter = 0;
+    static uint32_t time_counter = 0;
     uint32_t last_print_time = 0;
     datetime_t last_datetime;
     datetime_t current_datetime;
     int ret;
     int16_t AccX, AccY, AccZ, GyroX, GyroY, GyroZ;
+    esp8266_cmd_t net_cmd = ESP8266_CMD_REBOOT_WIFI;
+    bool onenet_switch = false;
+
     while (1) {
         //  TODO: 要不要状态机轮流读取
         uint32_t tick = osKernelGetTickCount();
@@ -74,12 +81,24 @@ void sensorDataUpdateTask(void *pvParameters) {
                 last_datetime = current_datetime;
             }
         }
+        if (time_counter % (HW_Interface.ESP8266.onenet_report_interval / HW_UPDATE_TASK_PERIOD_MS) == 0) {
+            SYS_DATA_GetOnenetSwitch(&onenet_switch); // 获取ONENET连接状态
+            if (onenet_switch == true) {
+                net_cmd = ESP8266_CMD_UPLOAD_DATA;
+                // osMessageQueuePut(xESP8266CmdQueue, &net_cmd, 0, 50);
+            }
+        }
+        if (time_counter % (HW_Interface.ESP8266.time_fetch_interval / HW_UPDATE_TASK_PERIOD_MS) == 0) {
+            net_cmd = ESP8266_CMD_FETCH_TIME;
+            // osMessageQueuePut(xESP8266CmdQueue, &net_cmd, 0, 50);
+        }
+
         // HACK: 任务周期非严格20ms，DHT11每次读取20ms，6050每次读取13ms
         // RTT_PRINTF("Time: %dms\n", osKernelGetTickCount() - tick); // Print current time to RTT
         tick += HW_UPDATE_TASK_PERIOD_MS;
         osDelayUntil(tick); // 20ms
         time_counter++;
-        if (time_counter > 1000) {
+        if (time_counter > HW_UPDATE_TASK_MAX_PERID_S) {
             time_counter = 0;
         }
         // 调试：任务剩余栈空间打印
@@ -91,19 +110,19 @@ void time_display_update(const datetime_t last_time, const datetime_t current_ti
     SYS_DataEventType_t event = SYS_NONE_UPDATE;
     if (last_time.year != current_time.year || last_time.month != current_time.month || last_time.day != current_time.day) {
         event = SYS_DATE_UPDATE;
-        osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
     }
     if (last_time.hour != current_time.hour || last_time.minute != current_time.minute) {
         event = SYS_TIME_UPDATE;
-        osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
     }
     if (last_time.second != current_time.second) {
         event = SYS_TIME_SECOND_UPDATE;
-        osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
     }
     if (last_time.weekday != current_time.weekday) {
         event = SYS_WEEKDAY_UPDATE;
-        osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
     }
 }
 
@@ -111,7 +130,7 @@ static void angle_display_update(const angle_data_t last_angle_data, const angle
     SYS_DataEventType_t event;
     if (last_angle_data.pitch != current_angle_data.pitch || last_angle_data.roll != current_angle_data.roll || last_angle_data.yaw != current_angle_data.yaw) {
         event = SYS_ANGLE_UPDATE;
-        osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
     }
 }
 
@@ -119,6 +138,6 @@ static void evnt_display_update(const env_data_t last_env_data, const env_data_t
     SYS_DataEventType_t event;
     if (last_env_data.temp != current_env_data.temp || last_env_data.humi != current_env_data.humi) {
         event = SYS_ENV_UPDATE;
-        osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
     }
 }

@@ -77,8 +77,8 @@ void ui_event_SliderVolume(lv_event_t *e);
 extern lv_obj_t *ui_SliderVolume;
 extern lv_obj_t *ui_PanelWifi1;
 extern lv_obj_t *ui_Label42;
-void ui_event_SwitchWifiSet(lv_event_t *e);
-extern lv_obj_t *ui_SwitchWifiSet;
+void ui_event_SwitchOnenet(lv_event_t *e);
+extern lv_obj_t *ui_SwitchOnenet;
 extern lv_obj_t *ui_PanelColor;
 extern lv_obj_t *ui_Label43;
 void ui_event_DropdownColor(lv_event_t *e);
@@ -144,6 +144,8 @@ extern lv_obj_t *ui_ButtonWeatherUpdate;
 extern lv_obj_t *ui_Label25;
 extern lv_obj_t *ui_Label24;
 extern lv_obj_t *ui_labelUpdateStatus;
+void ui_event_DropdownWeatherCity(lv_event_t *e);
+extern lv_obj_t *ui_DropdownWeatherCity;
 // CUSTOM VARIABLES
 
 // EVENTS

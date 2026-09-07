@@ -195,6 +195,16 @@ void SYS_DATA_SetBackgroundColor(uint8_t color_code) {
 
     osKernelRestoreLock(lock_state);
 }
+
+/**
+ * @brief 设置是否连接 OneNet
+ * @param connect 连接状态
+ */
+void SYS_DATA_SetOnenetSwitch(bool switch_connect) {
+    uint32_t lock_state = osKernelLock();
+    g_sysData->onenet_switch = switch_connect;
+    osKernelRestoreLock(lock_state);
+}
 // ============================================================
 //                   Get 函数实现（单值读取）
 // ============================================================
@@ -303,6 +313,15 @@ void SYS_DATA_GetVolume(uint8_t *vol) {
 void SYS_DATA_GetBackgroundColor(uint8_t *color_code) {
     uint32_t lock_state = osKernelLock();
     *color_code = g_sysData->background_color_code;
+    osKernelRestoreLock(lock_state);
+}
+
+/**
+ * @brief 获取是否连接 OneNet
+ */
+void SYS_DATA_GetOnenetSwitch(bool *switch_connect) {
+    uint32_t lock_state = osKernelLock();
+    *switch_connect = g_sysData->onenet_switch;
     osKernelRestoreLock(lock_state);
 }
 

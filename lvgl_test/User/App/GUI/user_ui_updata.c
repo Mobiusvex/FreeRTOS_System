@@ -4,6 +4,8 @@
 
 extern ThresholdType_t threshold_type;
 extern const ThresholdData_t thresholds_range[THRESHOLD_TYPE_NUM];
+extern char WeatherCity[12];
+
 void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data) {
     switch (event) {
     case SYS_WIFI_UPDATE:

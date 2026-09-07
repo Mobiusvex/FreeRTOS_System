@@ -60,8 +60,8 @@ void ui_event_SliderVolume(lv_event_t * e);
 lv_obj_t * ui_SliderVolume;
 lv_obj_t * ui_PanelWifi1;
 lv_obj_t * ui_Label42;
-void ui_event_SwitchWifiSet(lv_event_t * e);
-lv_obj_t * ui_SwitchWifiSet;
+void ui_event_SwitchOnenet(lv_event_t * e);
+lv_obj_t * ui_SwitchOnenet;
 lv_obj_t * ui_PanelColor;
 lv_obj_t * ui_Label43;
 void ui_event_DropdownColor(lv_event_t * e);
@@ -129,6 +129,8 @@ lv_obj_t * ui_ButtonWeatherUpdate;
 lv_obj_t * ui_Label25;
 lv_obj_t * ui_Label24;
 lv_obj_t * ui_labelUpdateStatus;
+void ui_event_DropdownWeatherCity(lv_event_t * e);
+lv_obj_t * ui_DropdownWeatherCity;
 // CUSTOM VARIABLES
 
 // EVENTS
@@ -186,12 +188,12 @@ void ui_event_SliderVolume(lv_event_t * e)
     }
 }
 
-void ui_event_SwitchWifiSet(lv_event_t * e)
+void ui_event_SwitchOnenet(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
-        event_wifi_switch_clicked(e);
+        event_onenet_switch_clicked(e);
     }
 }
 
@@ -264,6 +266,15 @@ void ui_event_ButtonWeatherUpdate(lv_event_t * e)
 
     if(event_code == LV_EVENT_CLICKED) {
         event_update_click(e);
+    }
+}
+
+void ui_event_DropdownWeatherCity(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_VALUE_CHANGED) {
+        event_WeatherCity_dropdown(e);
     }
 }
 

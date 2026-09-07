@@ -30,7 +30,8 @@ typedef struct
 typedef struct
 {
     uint8_t ConnectionError;
-    uint16_t update_time;
+    uint32_t time_fetch_interval;
+    uint32_t onenet_report_interval;
     SYS_StatusTypeDef data_status;
     SYS_StatusTypeDef (*Init)(void);
     SYS_StatusTypeDef (*Reset)(void);

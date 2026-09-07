@@ -218,8 +218,8 @@ void ui_ScreenWeather_screen_init(void)
     ui_ButtonWeatherUpdate = lv_btn_create(ui_ScreenWeather);
     lv_obj_set_width(ui_ButtonWeatherUpdate, 70);
     lv_obj_set_height(ui_ButtonWeatherUpdate, 30);
-    lv_obj_set_x(ui_ButtonWeatherUpdate, -4);
-    lv_obj_set_y(ui_ButtonWeatherUpdate, 111);
+    lv_obj_set_x(ui_ButtonWeatherUpdate, 55);
+    lv_obj_set_y(ui_ButtonWeatherUpdate, 118);
     lv_obj_set_align(ui_ButtonWeatherUpdate, LV_ALIGN_CENTER);
 
     ui_Label25 = lv_label_create(ui_ButtonWeatherUpdate);
@@ -246,7 +246,19 @@ void ui_ScreenWeather_screen_init(void)
     lv_obj_set_align(ui_labelUpdateStatus, LV_ALIGN_BOTTOM_MID);
     lv_label_set_text(ui_labelUpdateStatus, "");
 
+    ui_DropdownWeatherCity = lv_dropdown_create(ui_ScreenWeather);
+    lv_dropdown_set_options(ui_DropdownWeatherCity, "Beijing\nShanghai\nEnshi\nZhuhai");
+    lv_obj_set_width(ui_DropdownWeatherCity, 100);
+    lv_obj_set_height(ui_DropdownWeatherCity, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_DropdownWeatherCity, -60);
+    lv_obj_set_y(ui_DropdownWeatherCity, 119);
+    lv_obj_set_align(ui_DropdownWeatherCity, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_DropdownWeatherCity, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+
+
+
     lv_obj_add_event_cb(ui_Image1, ui_event_Image1, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_ButtonWeatherUpdate, ui_event_ButtonWeatherUpdate, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_DropdownWeatherCity, ui_event_DropdownWeatherCity, LV_EVENT_ALL, NULL);
 
 }

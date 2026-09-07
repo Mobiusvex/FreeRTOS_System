@@ -54,7 +54,7 @@ esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t
         if (state == CMD_STATE_DONE) {
             weather_sys_data_update();
             event = SYS_WEATHER_UPDATE; // 更新天气数据
-            osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+            osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
         }
         main_state = ESP8266_APP_STATE_GET_WEATHER;
         break;
@@ -72,12 +72,12 @@ esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t
         main_state = ESP8266_APP_STATE_IDLE; // 操作完成，回空闲
         SYS_DATA_SetWifiStatus(WIFI_STATE_CONNECTED);
         event = SYS_WIFI_UPDATE;
-        osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
     } else if (state == CMD_STATE_FAIL || state == CMD_STATE_TIMEOUT) {
         is_error = true;
         SYS_DATA_SetWifiStatus(WIFI_STATE_DISCONNECTED);
         event = SYS_WIFI_UPDATE;
-        osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
     }
     if (is_error) {
         main_state = ESP8266_APP_STATE_ERROR;

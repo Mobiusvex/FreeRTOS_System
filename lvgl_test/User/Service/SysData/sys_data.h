@@ -77,6 +77,7 @@ typedef struct {
     uint8_t volume;
     // 背景颜色
     uint8_t background_color_code;
+    bool onenet_switch;
 } SystemGlobalData_t;
 
 typedef struct {
@@ -99,6 +100,7 @@ void SYS_DATA_SetThreshold(ThresholdType_t type, int16_t high, uint16_t low);
 void SYS_DATA_SetWeatherUpdateDate(uint16_t year, uint8_t month, uint8_t day);
 void SYS_DATA_SetVolume(uint8_t vol);
 void SYS_DATA_SetBackgroundColor(uint8_t color_code);
+void SYS_DATA_SetOnenetSwitch(bool switch_connect);
 
 void SYS_DATA_GetWifiStatus(wifi_state_t *status);
 void SYS_DATA_GetSysTime(datetime_t *datetime);
@@ -110,6 +112,7 @@ void SYS_DATA_GetWeatherUpdateDate(uint16_t *year, uint8_t *month, uint8_t *day)
 void SYS_DATA_GetThreshold(ThresholdType_t type, int16_t *high, uint16_t *low);
 void SYS_DATA_GetVolume(uint8_t *vol);
 void SYS_DATA_GetBackgroundColor(uint8_t *color_code);
+void SYS_DATA_GetOnenetSwitch(bool *switch_connect);
 // ---- 读取快照（供UI任务使用） ----
 void SYS_DATA_GetSnapshot(SystemGlobalData_t *out);
 #endif

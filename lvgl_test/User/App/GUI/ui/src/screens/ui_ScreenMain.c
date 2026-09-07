@@ -291,6 +291,7 @@ void ui_ScreenMain_screen_init(void)
     lv_obj_set_align(ui_ImageWifi, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_ImageWifi, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
     lv_obj_clear_flag(ui_ImageWifi, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_radius(ui_ImageWifi, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_ImageWifi, lv_color_hex(0x6E7172), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_ImageWifi, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 

@@ -12,6 +12,7 @@
 StreamBufferHandle_t xESP8266StreamBuffer = NULL;
 osMessageQueueId_t xESP8266CmdQueue = NULL;
 osMessageQueueId_t xCmdDisplayQueue = NULL;
+osMessageQueueId_t xWeatherCityQueue = NULL;
 
 osThreadId_t user_HardwareInitTaskHandle;
 const osThreadAttr_t user_HardwareInitTaskAttr = {
@@ -76,7 +77,7 @@ void userTasksInit(void) {
         RTT_PRINTF("UART3 Failed to create xESP8266StreamBuffer\n");
     }
 
-    xESP8266CmdQueue = osMessageQueueNew(5, 1, NULL);
+    xESP8266CmdQueue = osMessageQueueNew(10, 1, NULL);
     if (xESP8266CmdQueue == NULL) {
         RTT_PRINTF("Failed to create xESP8266CmdQueue\n");
     }
@@ -84,7 +85,10 @@ void userTasksInit(void) {
     if (xCmdDisplayQueue == NULL) {
         RTT_PRINTF("Failed to create xCmdDisplayQueue\n");
     }
-
+    xWeatherCityQueue = osMessageQueueNew(1, 12, NULL);
+    if (xWeatherCityQueue == NULL) {
+        RTT_PRINTF("Failed to create xWeatherCityQueue\n");
+    }
     user_HardwareInitTaskHandle = osThreadNew(hardwareInitTask, NULL, &user_HardwareInitTaskAttr);
     if (user_HardwareInitTaskHandle == NULL) {
         RTT_PRINTF("Failed to create HardwareInitTask\n");

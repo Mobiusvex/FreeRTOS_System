@@ -7,22 +7,36 @@
 #include "user_sysDataStorageTask.h"
 #include "cmsis_os2.h"
 #include "sys_data.h"
+#include "net_manager.h"
 
 extern osThreadId_t user_sysDataStorageTaskHandle;
 extern osMessageQueueId_t xCmdDisplayQueue;
+extern osMessageQueueId_t xESP8266CmdQueue;
+extern osMessageQueueId_t xWeatherCityQueue;
 
 static int16_t threshold_high, threshold_low;
+char WeatherCity[12];
 ThresholdType_t threshold_type = THRESHOLD_TYPE_TEMP;
+
 void event_update_click(lv_event_t *e) {
     // Your code here
+    lv_dropdown_get_selected_str(ui_DropdownWeatherCity, WeatherCity, sizeof(WeatherCity));
+    osMessageQueueReset(xWeatherCityQueue);
+    osMessageQueuePut(xWeatherCityQueue, WeatherCity, 0, 50);
+
+    esp8266_cmd_t net_cmd = ESP8266_CMD_FETCH_WEATHER;
+    osMessageQueuePut(xESP8266CmdQueue, &net_cmd, 0, 50);
 }
 
 void event_volume_Slider(lv_event_t *e) {
     // Your code here
 }
 
-void event_wifi_switch_clicked(lv_event_t *e) {
+void event_onenet_switch_clicked(lv_event_t *e) {
     // Your code here
+    lv_obj_t *target = lv_event_get_target(e);
+    uint8_t onenet_switch_state = lv_obj_has_state(target, LV_STATE_CHECKED) ? 1 : 0;
+    SYS_DATA_SetOnenetSwitch(onenet_switch_state);
 }
 
 void event_background_dropdown(lv_event_t *e) {
@@ -32,7 +46,7 @@ void event_background_dropdown(lv_event_t *e) {
     lv_obj_t *target = lv_event_get_target(e);
     color = lv_dropdown_get_selected(target);
     SYS_DATA_SetBackgroundColor(color);
-    osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+    osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
 }
 
 void event_threshold_dropdown(lv_event_t *e) {
@@ -40,7 +54,7 @@ void event_threshold_dropdown(lv_event_t *e) {
     SYS_DataEventType_t event = SYS_THRESHOLD_UPDATE;
     lv_obj_t *target = lv_event_get_target(e);
     threshold_type = lv_dropdown_get_selected(target);
-    osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+    osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
 }
 
 void event_threshold_slider(lv_event_t *e) {
@@ -50,10 +64,14 @@ void event_threshold_slider(lv_event_t *e) {
     threshold_high = lv_slider_get_value(target);
     threshold_low = lv_slider_get_left_value(target);
     SYS_DATA_SetThreshold(threshold_type, threshold_high, threshold_low);
-    osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
+    osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
 }
 
 void event_save_button(lv_event_t *e) {
     // Your code here
     osThreadFlagsSet(user_sysDataStorageTaskHandle, FLAG_MSG_DATA_STORAGE);
+}
+
+void event_WeatherCity_dropdown(lv_event_t *e) {
+    // Your code here
 }
