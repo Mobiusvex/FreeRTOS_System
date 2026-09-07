@@ -6,6 +6,7 @@
 // ========== 静态变量 ==========
 static FlashStorage_t g_flashStorage;
 static volatile SystemGlobalData_t *const g_sysData = &g_flashStorage.data;
+const ThresholdData_t thresholds_range[THRESHOLD_TYPE_NUM] = {{-100, 100}, {0, 100}, {-180, 180}, {-180, 180}, {-180, 180}};
 
 static void sys_data_set_init(void);
 /**
@@ -40,21 +41,22 @@ SYS_StatusTypeDef SYS_DATA_Save(void) {
 // ============================================================
 
 static void sys_data_set_init(void) {
-    if (g_sysData->temp_threshold_high == 0 && g_sysData->temp_threshold_low == 0) {
-        SYS_DATA_SetTempThreshold(400, 200);
+    if (g_sysData->thresholds[THRESHOLD_TYPE_TEMP].threshold_high == g_sysData->thresholds[THRESHOLD_TYPE_TEMP].threshold_low) {
+        SYS_DATA_SetThreshold(THRESHOLD_TYPE_TEMP, 40, 20);
     }
-    if (g_sysData->humi_threshold_high == 0 && g_sysData->humi_threshold_low == 0) {
-        SYS_DATA_SetHumiThreshold(600, 400);
+    if (g_sysData->thresholds[THRESHOLD_TYPE_HUMI].threshold_high == g_sysData->thresholds[THRESHOLD_TYPE_HUMI].threshold_low) {
+        SYS_DATA_SetThreshold(THRESHOLD_TYPE_HUMI, 80, 20);
     }
-    if (g_sysData->pitch_threshold_high == 0 && g_sysData->pitch_threshold_low == 0) {
-        SYS_DATA_SetPitchThreshold(50, -50);
+    if (g_sysData->thresholds[THRESHOLD_TYPE_PITCH].threshold_high == g_sysData->thresholds[THRESHOLD_TYPE_PITCH].threshold_low) {
+        SYS_DATA_SetThreshold(THRESHOLD_TYPE_PITCH, 2, -2);
     }
-    if (g_sysData->roll_threshold_high == 0 && g_sysData->roll_threshold_low == 0) {
-        SYS_DATA_SetRollThreshold(50, -50);
+    if (g_sysData->thresholds[THRESHOLD_TYPE_ROLL].threshold_high == g_sysData->thresholds[THRESHOLD_TYPE_ROLL].threshold_low) {
+        SYS_DATA_SetThreshold(THRESHOLD_TYPE_ROLL, 2, -2);
     }
-    if (g_sysData->yaw_threshold_high == 0 && g_sysData->yaw_threshold_low == 0) {
-        SYS_DATA_SetYawThreshold(50, -50);
+    if (g_sysData->thresholds[THRESHOLD_TYPE_YAW].threshold_high == g_sysData->thresholds[THRESHOLD_TYPE_YAW].threshold_low) {
+        SYS_DATA_SetThreshold(THRESHOLD_TYPE_YAW, 2, -2);
     }
+
     if (g_sysData->volume == 0) {
         SYS_DATA_SetVolume(50);
     }
@@ -152,57 +154,25 @@ void SYS_DATA_SetWeatherUpdateDate(uint16_t year, uint8_t month, uint8_t day) {
 }
 
 /**
- * @brief 设置温度阈值
+ * @brief 设置阈值
+ * @param type 阈值类型
+ * @param high 阈值上限
+ * @param low 阈值下限
  */
-void SYS_DATA_SetTempThreshold(uint16_t temp_high, uint16_t temp_low) {
+void SYS_DATA_SetThreshold(ThresholdType_t type, int16_t high, uint16_t low) {
     uint32_t lock_state = osKernelLock();
-    g_sysData->temp_threshold_high = temp_high;
-    g_sysData->temp_threshold_low = temp_low;
+    ThresholdData_t *thresholds = g_sysData->thresholds;
+    if (type >= 0 && type < THRESHOLD_TYPE_NUM) {
+        thresholds[type].threshold_high = high;
+        thresholds[type].threshold_low = low;
 
-    osKernelRestoreLock(lock_state);
-}
-
-/**
- * @brief 设置湿度阈值
- */
-void SYS_DATA_SetHumiThreshold(uint16_t humi_high, uint16_t humi_low) {
-    uint32_t lock_state = osKernelLock();
-    g_sysData->humi_threshold_high = humi_high;
-    g_sysData->humi_threshold_low = humi_low;
-
-    osKernelRestoreLock(lock_state);
-}
-
-/**
- * @brief 设置pitch角度阈值
- */
-void SYS_DATA_SetPitchThreshold(uint8_t pitch_high, uint8_t pitch_low) {
-    uint32_t lock_state = osKernelLock();
-    g_sysData->pitch_threshold_high = pitch_high;
-    g_sysData->pitch_threshold_low = pitch_low;
-
-    osKernelRestoreLock(lock_state);
-}
-
-/**
- * @brief 设置roll角度阈值
- */
-void SYS_DATA_SetRollThreshold(uint8_t roll_high, uint8_t roll_low) {
-    uint32_t lock_state = osKernelLock();
-    g_sysData->roll_threshold_high = roll_high;
-    g_sysData->roll_threshold_low = roll_low;
-
-    osKernelRestoreLock(lock_state);
-}
-
-/**
- * @brief 设置yaw角度阈值
- */
-void SYS_DATA_SetYawThreshold(uint8_t yaw_high, uint8_t yaw_low) {
-    uint32_t lock_state = osKernelLock();
-    g_sysData->yaw_threshold_high = yaw_high;
-    g_sysData->yaw_threshold_low = yaw_low;
-
+        if (thresholds[type].threshold_high > thresholds_range[type].threshold_high) {
+            thresholds[type].threshold_high = thresholds_range[type].threshold_high;
+        }
+        if (thresholds[type].threshold_low < thresholds_range[type].threshold_low) {
+            thresholds[type].threshold_low = thresholds_range[type].threshold_low;
+        }
+    }
     osKernelRestoreLock(lock_state);
 }
 
@@ -300,52 +270,21 @@ void SYS_DATA_GetWeatherUpdateDate(uint16_t *year, uint8_t *month, uint8_t *day)
 }
 
 /**
- * @brief 获取温度阈值
+ * @brief 获取阈值
+ * @param type 阈值类型
+ * @param high 阈值上限
+ * @param low 阈值下限
  */
-void SYS_DATA_GetTempThreshold(uint16_t *high, uint16_t *low) {
+void SYS_DATA_GetThreshold(ThresholdType_t type, int16_t *high, uint16_t *low) {
     uint32_t lock_state = osKernelLock();
-    *high = g_sysData->temp_threshold_high;
-    *low = g_sysData->temp_threshold_low;
-    osKernelRestoreLock(lock_state);
-}
-
-/**
- * @brief 获取湿度阈值
- */
-void SYS_DATA_GetHumiThreshold(uint16_t *high, uint16_t *low) {
-    uint32_t lock_state = osKernelLock();
-    *high = g_sysData->humi_threshold_high;
-    *low = g_sysData->humi_threshold_low;
-    osKernelRestoreLock(lock_state);
-}
-
-/**
- * @brief 获取pitch角度阈值
- */
-void SYS_DATA_GetPitchThreshold(uint8_t *high, uint8_t *low) {
-    uint32_t lock_state = osKernelLock();
-    *high = g_sysData->pitch_threshold_high;
-    *low = g_sysData->pitch_threshold_low;
-    osKernelRestoreLock(lock_state);
-}
-
-/**
- * @brief 获取roll角度阈值
- */
-void SYS_DATA_GetRollThreshold(uint8_t *high, uint8_t *low) {
-    uint32_t lock_state = osKernelLock();
-    *high = g_sysData->roll_threshold_high;
-    *low = g_sysData->roll_threshold_low;
-    osKernelRestoreLock(lock_state);
-}
-
-/**
- * @brief 获取yaw角度阈值
- */
-void SYS_DATA_GetYawThreshold(uint8_t *high, uint8_t *low) {
-    uint32_t lock_state = osKernelLock();
-    *high = g_sysData->yaw_threshold_high;
-    *low = g_sysData->yaw_threshold_low;
+    ThresholdData_t *thresholds = g_sysData->thresholds;
+    if (type >= 0 && type < THRESHOLD_TYPE_NUM) {
+        *high = thresholds[type].threshold_high;
+        *low = thresholds[type].threshold_low;
+    } else {
+        *high = 0;
+        *low = 0;
+    }
     osKernelRestoreLock(lock_state);
 }
 

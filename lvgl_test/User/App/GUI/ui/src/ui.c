@@ -80,6 +80,7 @@ lv_obj_t * ui_Panel13;
 lv_obj_t * ui_Label1;
 void ui_event_SliderVolume1(lv_event_t * e);
 lv_obj_t * ui_SliderVolume1;
+void ui_event_Image23(lv_event_t * e);
 lv_obj_t * ui_Image23;
 void ui_event_ButtonSave(lv_event_t * e);
 lv_obj_t * ui_ButtonSave;
@@ -227,6 +228,15 @@ void ui_event_SliderVolume1(lv_event_t * e)
 
     if(event_code == LV_EVENT_RELEASED) {
         event_volume_Slider(e);
+    }
+}
+
+void ui_event_Image23(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_ScreenMain, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_ScreenMain_screen_init);
     }
 }
 

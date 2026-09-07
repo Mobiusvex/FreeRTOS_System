@@ -232,7 +232,7 @@ static cmd_state_t parseWeatherJSON(char *jsonData, weather_data_t *p_weatherDat
         // RTT_PRINTF("token:%s\r\n", token); // 打印解析到的字段
         token = strtok(NULL, cut_str);
     }
-    if (index == WEATHER_PARAM_NUM) {
+    if (index >= WEATHER_TEMPERATURE) {
         ret = CMD_STATE_SUCCESS;
     }
     return ret;

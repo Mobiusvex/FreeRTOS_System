@@ -260,6 +260,7 @@ void ui_ScreenSet_screen_init(void)
     lv_obj_add_event_cb(ui_DropdownThreshold, ui_event_DropdownThreshold, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_SliderThreshold, ui_event_SliderThreshold, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_SliderVolume1, ui_event_SliderVolume1, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_Image23, ui_event_Image23, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_ButtonSave, ui_event_ButtonSave, LV_EVENT_ALL, NULL);
 
 }

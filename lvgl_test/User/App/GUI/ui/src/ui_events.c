@@ -6,8 +6,13 @@
 #include "ui.h"
 #include "user_sysDataStorageTask.h"
 #include "cmsis_os2.h"
+#include "sys_data.h"
 
 extern osThreadId_t user_sysDataStorageTaskHandle;
+extern osMessageQueueId_t xCmdDisplayQueue;
+
+static int16_t threshold_high, threshold_low;
+ThresholdType_t threshold_type = THRESHOLD_TYPE_TEMP;
 void event_update_click(lv_event_t *e) {
     // Your code here
 }
@@ -22,14 +27,30 @@ void event_wifi_switch_clicked(lv_event_t *e) {
 
 void event_background_dropdown(lv_event_t *e) {
     // Your code here
+    uint16_t color;
+    SYS_DataEventType_t event = SYS_BACKGROUND_COLOR_UPDATE;
+    lv_obj_t *target = lv_event_get_target(e);
+    color = lv_dropdown_get_selected(target);
+    SYS_DATA_SetBackgroundColor(color);
+    osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
 }
 
 void event_threshold_dropdown(lv_event_t *e) {
     // Your code here
+    SYS_DataEventType_t event = SYS_THRESHOLD_UPDATE;
+    lv_obj_t *target = lv_event_get_target(e);
+    threshold_type = lv_dropdown_get_selected(target);
+    osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
 }
 
 void event_threshold_slider(lv_event_t *e) {
     // Your code here
+    lv_obj_t *target = lv_event_get_target(e);
+    SYS_DataEventType_t event = SYS_THRESHOLD_UPDATE;
+    threshold_high = lv_slider_get_value(target);
+    threshold_low = lv_slider_get_left_value(target);
+    SYS_DATA_SetThreshold(threshold_type, threshold_high, threshold_low);
+    osMessageQueuePut(xCmdDisplayQueue, &event, 0, osWaitForever);
 }
 
 void event_save_button(lv_event_t *e) {

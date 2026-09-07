@@ -97,6 +97,7 @@ extern lv_obj_t *ui_Panel13;
 extern lv_obj_t *ui_Label1;
 void ui_event_SliderVolume1(lv_event_t *e);
 extern lv_obj_t *ui_SliderVolume1;
+void ui_event_Image23(lv_event_t *e);
 extern lv_obj_t *ui_Image23;
 void ui_event_ButtonSave(lv_event_t *e);
 extern lv_obj_t *ui_ButtonSave;

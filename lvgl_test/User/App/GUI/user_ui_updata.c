@@ -1,6 +1,9 @@
 #include "user_ui_updata.h"
 #include "ui.h"
 #include "sys_data.h"
+
+extern ThresholdType_t threshold_type;
+extern const ThresholdData_t thresholds_range[THRESHOLD_TYPE_NUM];
 void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data) {
     switch (event) {
     case SYS_WIFI_UPDATE:
@@ -79,38 +82,15 @@ void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data)
 
         break;
     }
-    /* ---------- 温度阈值更新（设置屏幕） ---------- */
-    case SYS_TEMP_THRESHOLD_UPDATE:
-        lv_label_set_text_fmt(ui_LabelMinValue, "%d", p_data->temp_threshold_low);
-        lv_label_set_text_fmt(ui_LabelMaxValue, "%d", p_data->temp_threshold_high);
+    /* ---------- 阈值更新（设置屏幕） ---------- */
+    case SYS_THRESHOLD_UPDATE:
+        lv_label_set_text_fmt(ui_LabelMinValue, "%d", p_data->thresholds[threshold_type].threshold_low);
+        lv_label_set_text_fmt(ui_LabelMaxValue, "%d", p_data->thresholds[threshold_type].threshold_high);
+        lv_slider_set_value(ui_SliderThreshold, p_data->thresholds[threshold_type].threshold_high, LV_ANIM_OFF);
+        lv_slider_set_left_value(ui_SliderThreshold, p_data->thresholds[threshold_type].threshold_low, LV_ANIM_OFF);
         // 滑块可以设置为低阈值或平均，这里设为低阈值
-        lv_slider_set_value(ui_SliderThreshold, p_data->temp_threshold_low, LV_ANIM_OFF);
+        lv_slider_set_range(ui_SliderThreshold, thresholds_range[threshold_type].threshold_low, thresholds_range[threshold_type].threshold_high);
         break;
-
-    case SYS_HUMI_THRESHOLD_UPDATE:
-        lv_label_set_text_fmt(ui_LabelMinValue, "%d", p_data->humi_threshold_low);
-        lv_label_set_text_fmt(ui_LabelMaxValue, "%d", p_data->humi_threshold_high);
-        lv_slider_set_value(ui_SliderThreshold, p_data->humi_threshold_low, LV_ANIM_OFF);
-        break;
-
-    case SYS_PITCH_THRESHOLD_UPDATE:
-        lv_label_set_text_fmt(ui_LabelMinValue, "%d", p_data->pitch_threshold_low);
-        lv_label_set_text_fmt(ui_LabelMaxValue, "%d", p_data->pitch_threshold_high);
-        lv_slider_set_value(ui_SliderThreshold, p_data->pitch_threshold_low, LV_ANIM_OFF);
-        break;
-
-    case SYS_ROLL_THRESHOLD_UPDATE:
-        lv_label_set_text_fmt(ui_LabelMinValue, "%d", p_data->roll_threshold_low);
-        lv_label_set_text_fmt(ui_LabelMaxValue, "%d", p_data->roll_threshold_high);
-        lv_slider_set_value(ui_SliderThreshold, p_data->roll_threshold_low, LV_ANIM_OFF);
-        break;
-
-    case SYS_YAW_THRESHOLD_UPDATE:
-        lv_label_set_text_fmt(ui_LabelMinValue, "%d", p_data->yaw_threshold_low);
-        lv_label_set_text_fmt(ui_LabelMaxValue, "%d", p_data->yaw_threshold_high);
-        lv_slider_set_value(ui_SliderThreshold, p_data->yaw_threshold_low, LV_ANIM_OFF);
-        break;
-
     /* ---------- 音量更新 ---------- */
     case SYS_VOLUME_UPDATE:
         lv_slider_set_value(ui_SliderVolume, p_data->volume, LV_ANIM_OFF);
@@ -121,12 +101,13 @@ void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data)
         // background_color_code 为预设颜色索引，可根据需要映射
         lv_color_t color;
         switch (p_data->background_color_code) {
-        case 0: color = lv_color_hex(0x000000); break; // 黑色
-        case 1: color = lv_color_hex(0xFFFFFF); break; // 白色
-        case 2: color = lv_color_hex(0xFF0000); break; // 红色
-        case 3: color = lv_color_hex(0x00FF00); break; // 绿色
-        case 4: color = lv_color_hex(0x0000FF); break; // 蓝色
-        default: color = lv_color_hex(0x000000); break;
+        case 0: color = lv_color_hex(0xFFFFFF); break; // 白色
+        case 1: color = lv_color_hex(0xED9FD7); break; // 粉色
+        case 2: color = lv_color_hex(0x9FC3ED); break; // 蓝色
+        case 3: color = lv_color_hex(0xC196F5); break; // 紫色
+        default:
+            color = lv_color_hex(0xFFFFFF);
+            break;
         }
         // 设置主屏幕背景（可继续添加其他屏幕）
         lv_obj_set_style_bg_color(ui_ScreenMain, color, LV_PART_MAIN);
@@ -218,9 +199,12 @@ void user_ui_refresh_all(const SystemGlobalData_t *p_data) {
     // 阈值显示（由于只有一个滑块和一对高低标签，全部刷新时默认显示温度阈值）
     // 如果UI设计允许切换显示不同阈值，建议根据当前选中的类型单独更新，
     // 此处仅展示温度阈值作为示例，其他阈值事件请通过原事件函数单独触发。
-    lv_label_set_text_fmt(ui_LabelMinValue, "%d", p_data->temp_threshold_low);
-    lv_label_set_text_fmt(ui_LabelMaxValue, "%d", p_data->temp_threshold_high);
-    lv_slider_set_value(ui_SliderThreshold, p_data->temp_threshold_low, LV_ANIM_OFF);
+    lv_label_set_text_fmt(ui_LabelMinValue, "%d", p_data->thresholds[threshold_type].threshold_low);
+    lv_label_set_text_fmt(ui_LabelMaxValue, "%d", p_data->thresholds[threshold_type].threshold_high);
+    lv_slider_set_value(ui_SliderThreshold, p_data->thresholds[threshold_type].threshold_high, LV_ANIM_OFF);
+    lv_slider_set_left_value(ui_SliderThreshold, p_data->thresholds[threshold_type].threshold_low, LV_ANIM_OFF);
+    // 滑块可以设置为低阈值或平均，这里设为低阈值
+    lv_slider_set_range(ui_SliderThreshold, thresholds_range[threshold_type].threshold_low, thresholds_range[threshold_type].threshold_high);
 
     // 音量滑块
     lv_slider_set_value(ui_SliderVolume, p_data->volume, LV_ANIM_OFF);
@@ -233,8 +217,12 @@ void user_ui_refresh_all(const SystemGlobalData_t *p_data) {
         case 1: color = lv_color_hex(0xED9FD7); break; // 粉色
         case 2: color = lv_color_hex(0x9FC3ED); break; // 蓝色
         case 3: color = lv_color_hex(0xC196F5); break; // 紫色
-        default: color = lv_color_hex(0xFFFFFF); break;
+        default:
+            color = lv_color_hex(0xFFFFFF);
+            break;
         }
+        lv_dropdown_set_selected(ui_DropdownColor, p_data->background_color_code);
+
         lv_obj_set_style_bg_color(ui_ScreenMain, color, LV_PART_MAIN);
         // 如需同时修改其他屏幕背景，取消注释以下行
         lv_obj_set_style_bg_color(ui_ScreenWeather, color, LV_PART_MAIN);
