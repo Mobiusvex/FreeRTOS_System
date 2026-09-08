@@ -176,19 +176,40 @@ SYS_StatusTypeDef MPU6050_getAngle(float *pitch, float *roll, float *yaw) {
     short gyro[3], accel[3], sensors;
     unsigned char more;
     long quat[4];
-    dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors, &more);
+    SYS_StatusTypeDef ret;
+    // ★ 1. 安全哨兵：最多只允许连续读取 50 包（防止硬件卡死）
+#define MAX_FIFO_READS 50
+    uint8_t read_count = 0;
 
+    do {
+        // ★ 2. 强制限制次数，防止死循环
+        if (++read_count > MAX_FIFO_READS) {
+            return SYS_ERROR; // 返回错误，让上层任务Delay 1秒后重试
+        }
+
+        ret = dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors, &more);
+
+        // ★ 3. 检查硬件错误（I2C通信失败直接退出，避免死等）
+        if (ret != 0) {
+            return SYS_ERROR;
+        }
+
+        // 只要读到有效的四元数，就不断覆盖保存
+        if (sensors & INV_WXYZ_QUAT) {
+            q0 = quat[0] / q30;
+            q1 = quat[1] / q30;
+            q2 = quat[2] / q30;
+            q3 = quat[3] / q30;
+        } else {
+            // 如果读到的包不包含四元数（比如全是加速度计数据），也要计数，防止死循环
+            // 但DMP通常不会这样，为了严谨可以加上
+        }
+
+    } while (more);
     // attitude_update(0.005f, accX, accY, accZ, gyroX, gyroY, gyroZ); // 0.001s为时间间隔
-    if (sensors & INV_WXYZ_QUAT) {
-        q0 = quat[0] / q30;
-        q1 = quat[1] / q30;
-        q2 = quat[2] / q30;
-        q3 = quat[3] / q30;
 
-        *roll = asin(-2 * q1 * q3 + 2 * q0 * q2) * 57.3;                                     // pitch
-        *pitch = atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2 * q2 + 1) * 57.3;    // roll
-        *yaw = atan2(2 * (q1 * q2 + q0 * q3), q0 * q0 + q1 * q1 - q2 * q2 - q3 * q3) * 57.3; // yaw
-        return SYS_OK;
-    }
-    return SYS_ERROR;
+    *roll = asin(-2 * q1 * q3 + 2 * q0 * q2) * 57.3;                                     // pitch
+    *pitch = atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2 * q2 + 1) * 57.3;    // roll
+    *yaw = atan2(2 * (q1 * q2 + q0 * q3), q0 * q0 + q1 * q1 - q2 * q2 - q3 * q3) * 57.3; // yaw
+    return SYS_OK;
 }

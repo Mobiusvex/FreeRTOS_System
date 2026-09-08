@@ -6,6 +6,7 @@
 #include <string.h>
 #include "debug_func.h"
 #include "cmsis_os2.h"
+#include "sys_data.h"
 
 const char *onenet_devid = "QlVhcDm9e2";
 const char *onenet_product = "0001";
@@ -44,7 +45,6 @@ const char *net_cloud_fields[CLOUD_CODE_NUM] = {
 static char cloud_mqtt_buf[CLOUD_CMD_BUF_LENGTH];
 at_cmd_ctx_t net_cloud_step_ctx[NET_CLOUD_STEP_NUM];
 
-static cloud_updata_t net_cloud_updata = {10, 20, 30, 40, 50, true};
 static cloud_setdata_t net_cloud_setdata = {LED_OFF};
 
 static cmd_state_t parseCloudJSON(char *jsonData, cloud_setdata_t *p_setdata);
@@ -92,7 +92,7 @@ static void onenet_pubdata_get(char *buf, uint16_t buf_len, const char *devid, c
              "AT+MQTTPUB=0,\"$sys/%s/%s/thing/property/post\",\"{\\\"id\\\":\\\"123\\\"\\,\\\"params\\\":\
 {\\\"temp\\\":{\\\"value\\\":%d\\}\\,\\\"humi\\\":{\\\"value\\\":%d}\\,\\\"yaw\\\":{\\\"value\\\":%d}\\,\
 \\\"roll\\\":{\\\"value\\\":%d}\\,\\\"pitch\\\":{\\\"value\\\":%d}\\,\\\"led\\\":{\\\"value\\\":%d}}}\",0,0\r\n",
-             devid, product_id, cloud_updata.temp, cloud_updata.humi, cloud_updata.yaw, cloud_updata.roll, cloud_updata.pitch, cloud_updata.led);
+             devid, product_id, cloud_updata.temp / 10, cloud_updata.humi / 10, cloud_updata.yaw / 10, cloud_updata.roll / 10, cloud_updata.pitch / 10, cloud_updata.led);
 }
 /**
  * @brief 初始化云平台上下文
@@ -128,6 +128,7 @@ cmd_state_t net_cloud_mode_set(uint8_t *rx_buf, uint32_t rx_buf_size) {
     // at_cmd_ctx_t *ctx;
     static net_cloud_step_t net_cloud_current_step = NET_CLOUD_CWMODE1_SET;
     static net_cloud_step_t net_cloud_previous_step = NET_CLOUD_CWMODE1_SET;
+    cloud_updata_t cloud_updata;
 
     if (net_cloud_current_step < NET_CLOUD_STEP_NUM) { // 确保没有越界
         at_cmd_ctx_t *ctx = &net_cloud_step_ctx[net_cloud_current_step];
@@ -141,7 +142,9 @@ cmd_state_t net_cloud_mode_set(uint8_t *rx_buf, uint32_t rx_buf_size) {
                 onenet_subset_cmd_get(cloud_mqtt_buf, CLOUD_CMD_BUF_LENGTH, onenet_devid, onenet_product);
                 ctx->cmd = cloud_mqtt_buf;
             } else if (net_cloud_current_step == NET_CLOUD_MQTT_PUB_DATA) {
-                onenet_pubdata_get(cloud_mqtt_buf, CLOUD_CMD_BUF_LENGTH, onenet_devid, onenet_product, net_cloud_updata);
+                SYS_DATA_GetEnv(&cloud_updata.temp, &cloud_updata.humi);
+                SYS_DATA_GetAngle(&cloud_updata.pitch, &cloud_updata.roll, &cloud_updata.yaw);
+                onenet_pubdata_get(cloud_mqtt_buf, CLOUD_CMD_BUF_LENGTH, onenet_devid, onenet_product, cloud_updata);
                 ctx->cmd = cloud_mqtt_buf;
                 ctx->tx_timeout = 50;
             }
@@ -155,11 +158,15 @@ cmd_state_t net_cloud_mode_set(uint8_t *rx_buf, uint32_t rx_buf_size) {
             // 上报数据成功，下个步骤依旧是上报数据
             if (net_cloud_current_step == NET_CLOUD_MQTT_CLEAN) {
                 net_cloud_current_step = NET_CLOUD_MQTT_PUB_DATA;
-                return CMD_STATE_DONE;
+                state = CMD_STATE_DONE;
             } // 已经清除状态，重新连接
             else if (net_cloud_current_step == NET_CLOUD_STEP_NUM) {
                 net_cloud_current_step = NET_CLOUD_CWMODE1_SET;
-                return CMD_STATE_DONE;
+                state = CMD_STATE_DONE;
+            }
+            // 上报数据需要每次更新
+            if (net_cloud_current_step == NET_CLOUD_MQTT_PUB_DATA) {
+                net_cloud_previous_step = net_cloud_current_step - 1;
             }
         } else if (state == CMD_STATE_TIMEOUT || state == CMD_STATE_FAIL) {
             if (net_cloud_current_step == NET_CLOUD_MQTT_CLEAN) {
@@ -177,18 +184,6 @@ cmd_state_t net_cloud_mode_set(uint8_t *rx_buf, uint32_t rx_buf_size) {
  */
 void net_cloud_init(void) {
     net_cloud_init_ctx();
-}
-
-/**
- * @brief 更新上报数据
- * @param p_data 上报数据
- * @retval 无
- */
-void net_cloud_data_update(const cloud_updata_t *p_data) {
-    if (p_data != NULL) {
-        net_cloud_updata = *p_data;
-        onenet_pubdata_get(cloud_mqtt_buf, CLOUD_CMD_BUF_LENGTH, onenet_devid, onenet_product, net_cloud_updata);
-    }
 }
 
 /**

@@ -237,14 +237,25 @@ SYS_StatusTypeDef BSP_UART_Transmit_IT(BSP_UART_Bus_t bus, const uint8_t *data, 
  * @retval SYS_OK: 发送成功, SYS_TIMEOUT: 超时, SYS_ERROR: 其他错误
  */
 SYS_StatusTypeDef BSP_UART_Transmit_Block(BSP_UART_Bus_t bus, const uint8_t *data, uint16_t len, uint32_t timeout_ms) {
+    UART_Ctx_t *ctx = &s_uartCtx[bus];
+
+    // 减少漏发数据
+    uint32_t tick = osKernelGetTickCount();
+    while (ctx->tx_busy) {
+        if ((osKernelGetTickCount() - tick) > timeout_ms) {
+            return SYS_TIMEOUT; // 超时了还没空闲
+        }
+        osDelay(1); // 让出CPU，避免忙等
+    }
     // 1. 先尝试用中断方式启动发送
     SYS_StatusTypeDef ret = BSP_UART_Transmit_IT(bus, data, len);
+
     if (ret != SYS_OK) {
         return ret; // 启动失败（可能是繁忙或参数错误）
     }
 
     // 2. 等待信号量（发送完成回调中释放）
-    UART_Ctx_t *ctx = &s_uartCtx[bus];
+
     if (osSemaphoreAcquire(ctx->tx_sem, timeout_ms) == osOK) {
         return SYS_OK;
     } else {

@@ -27,6 +27,7 @@ esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t
     esp8266_app_state_t main_state = ESP8266_APP_STATE_IDLE;
     static bool is_error = false;
     uint32_t timestamp = 0;
+
     if (rx_buf_size > 0 && strstr(rx_buf, "MQTTSUBRECV")) {
         cloud_setdata_analysis(rx_buf, rx_buf_size);
         rx_buf_size = 0;
@@ -42,7 +43,7 @@ esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t
 
     case ESP8266_CMD_FETCH_TIME:
         state = net_time_mode_set(rx_buf, rx_buf_size); // 获取网络时间
-        if (state == CMD_STATE_DONE) {
+        if (state == CMD_STATE_DATA_ANALYSIS_OK) {
             timestamp = net_time_get_time();
             HW_Interface.RealTimeClock.SetTimestamp(timestamp);
         }
@@ -51,7 +52,7 @@ esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t
 
     case ESP8266_CMD_FETCH_WEATHER:
         state = net_weather_mode_set(rx_buf, rx_buf_size);
-        if (state == CMD_STATE_DONE) {
+        if (state == CMD_STATE_DATA_ANALYSIS_OK) {
             weather_sys_data_update();
             event = SYS_WEATHER_UPDATE; // 更新天气数据
             osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);

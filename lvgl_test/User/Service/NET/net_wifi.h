@@ -10,14 +10,15 @@ typedef enum {
 
 // 状态定义
 typedef enum {
-    CMD_STATE_IDLE = 0,   // 空闲，准备开始
-    CMD_STATE_SEND,       // 发送命令（或重发）
-    CMD_STATE_WAIT_REPLY, // 等待回复
-    CMD_STATE_REPLY_CMD,  // 成功收到命令响应
-    CMD_STATE_SUCCESS,    // 成功收到期望回复
-    CMD_STATE_FAIL,       // 收到错误回复（ERROR/FAIL）
-    CMD_STATE_TIMEOUT,    // 超时且重试次数用尽
-    CMD_STATE_DONE        // 整体流程完成（用于多步骤）
+    CMD_STATE_IDLE = 0,         // 空闲，准备开始
+    CMD_STATE_SEND,             // 发送命令（或重发）
+    CMD_STATE_WAIT_REPLY,       // 等待回复
+    CMD_STATE_REPLY_CMD,        // 成功收到命令响应
+    CMD_STATE_DATA_ANALYSIS_OK, // 数据分析（如解析IP地址）
+    CMD_STATE_SUCCESS,          // 成功收到期望回复
+    CMD_STATE_FAIL,             // 收到错误回复（ERROR/FAIL）
+    CMD_STATE_TIMEOUT,          // 超时且重试次数用尽
+    CMD_STATE_DONE              // 整体流程完成（用于多步骤）
 } cmd_state_t;
 
 typedef struct {

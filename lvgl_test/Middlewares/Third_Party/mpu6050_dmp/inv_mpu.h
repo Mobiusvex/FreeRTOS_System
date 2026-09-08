@@ -27,7 +27,7 @@
 #define INV_XYZ_GYRO (INV_X_GYRO | INV_Y_GYRO | INV_Z_GYRO)
 #define INV_XYZ_ACCEL (0x08)
 #define INV_XYZ_COMPASS (0x01)
-#define DEFAULT_MPU_HZ (50)
+#define DEFAULT_MPU_HZ (20)
 
 struct int_param_s {
 #if defined EMPL_TARGET_MSP430 || defined MOTION_DRIVER_TARGET_MSP430

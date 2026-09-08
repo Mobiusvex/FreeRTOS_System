@@ -179,9 +179,10 @@ cmd_state_t net_wifi_mode_set(uint8_t *rx_buf, uint32_t rx_buf_size) {
             net_wifi_current_step++;
             if (net_wifi_current_step == WIFI_STEP_NUM) {
                 net_wifi_current_step = 0;
-                return CMD_STATE_DONE; // 所有命令都成功
+                state = CMD_STATE_DONE; // 所有命令都成功
+            } else {
+                state = CMD_STATE_SUCCESS;
             }
-            return CMD_STATE_SUCCESS; // 本次流程完成
         } else if (state == CMD_STATE_TIMEOUT || state == CMD_STATE_FAIL) {
             net_wifi_current_step = 0;
         }

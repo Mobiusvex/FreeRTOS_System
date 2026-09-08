@@ -56,11 +56,11 @@ typedef struct {
     uint8_t second;
     uint8_t weekday; // 0-6
     // 环境
-    int16_t temperature;
-    int16_t humidity;
-    int16_t pitch;
-    int16_t roll;
-    int16_t yaw; // MPU6050
+    int16_t temperature; //*10
+    int16_t humidity;    //*10
+    int16_t pitch;       //*10
+    int16_t roll;        //*10
+    int16_t yaw;         //*10   MPU6050
     // 天气
     uint8_t weather_code; // 0晴 1云 2雨 3阴 4雪
     int8_t weather_temp;

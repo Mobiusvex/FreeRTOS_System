@@ -105,11 +105,14 @@ cmd_state_t net_time_mode_set(uint8_t *rx_buf, uint32_t rx_buf_size) {
         state = cmd_send_and_judge_process(ctx, rx_buf, rx_buf_size);
         if (state == CMD_STATE_SUCCESS || (!ctx->is_care_for_error && state == CMD_STATE_FAIL)) {
             net_time_current_step++;
-            if (net_time_current_step == NET_TIME_STEP_NUM) {
+            if (net_time_current_step == NET_TIME_EXIT_CIP_MODE1) {
+                state = CMD_STATE_DATA_ANALYSIS_OK;
+            } else if (net_time_current_step == NET_TIME_STEP_NUM) {
                 net_time_current_step = NET_TIME_CIP_MODE1_SET;
-                return CMD_STATE_DONE;
+                state = CMD_STATE_DONE;
+            } else {
+                state = CMD_STATE_SUCCESS; // 本次流程完成
             }
-            return CMD_STATE_SUCCESS; // 本次流程完成
         } else if (state == CMD_STATE_TIMEOUT || state == CMD_STATE_FAIL) {
             net_time_current_step = NET_TIME_CIP_MODE1_SET;
         }

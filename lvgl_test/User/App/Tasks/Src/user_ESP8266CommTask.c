@@ -20,7 +20,7 @@
 #define ESP8266_ERROR_REBOOT_INTERVAL 20000
 
 #define ESP8266_TASK_TIME_MAX_PERIOD_MS 3600000
-#define ESP8266_TASK_PERIOD 10
+#define ESP8266_TASK_PERIOD 20
 
 #define ESP8266_TASK_BUFFER_SIZE 512
 
@@ -37,7 +37,7 @@ void user_ESP8266CommTask(void *pvParameters) {
     uint32_t error_count = 0;
     esp8266_app_state_t state = ESP8266_APP_STATE_IDLE;
     esp8266_cmd_t next_cmd = ESP8266_CMD_REBOOT_WIFI;
-    static cloud_updata_t cloud_updata = {1, 2, 3, 4, 5};
+
     net_wifi_init();
     net_weather_init();
     net_time_init();

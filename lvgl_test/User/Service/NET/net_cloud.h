@@ -6,8 +6,8 @@
 #include "driver_led.h"
 
 typedef struct {
-    char temp;
-    char humi;
+    int16_t temp;
+    int16_t humi;
     int16_t yaw;
     int16_t pitch;
     int16_t roll;

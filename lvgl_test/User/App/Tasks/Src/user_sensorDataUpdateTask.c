@@ -10,7 +10,7 @@
 #include "sys_data.h"
 #include "net_manager.h"
 
-#define HW_UPDATE_TASK_PERIOD_MS 20
+#define HW_UPDATE_TASK_PERIOD_MS 50
 #define HW_UPDATE_TASK_MAX_PERID_S 86400 //(86400s = 24h * 60min * 60s)
 typedef struct {
     int16_t pitch;
@@ -85,12 +85,12 @@ void sensorDataUpdateTask(void *pvParameters) {
             SYS_DATA_GetOnenetSwitch(&onenet_switch); // 获取ONENET连接状态
             if (onenet_switch == true) {
                 net_cmd = ESP8266_CMD_UPLOAD_DATA;
-                // osMessageQueuePut(xESP8266CmdQueue, &net_cmd, 0, 50);
+                osMessageQueuePut(xESP8266CmdQueue, &net_cmd, 0, 50);
             }
         }
         if (time_counter % (HW_Interface.ESP8266.time_fetch_interval / HW_UPDATE_TASK_PERIOD_MS) == 0) {
             net_cmd = ESP8266_CMD_FETCH_TIME;
-            // osMessageQueuePut(xESP8266CmdQueue, &net_cmd, 0, 50);
+            osMessageQueuePut(xESP8266CmdQueue, &net_cmd, 0, 50);
         }
 
         // HACK: 任务周期非严格20ms，DHT11每次读取20ms，6050每次读取13ms
