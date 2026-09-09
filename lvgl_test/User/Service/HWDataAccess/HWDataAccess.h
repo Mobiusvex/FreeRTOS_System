@@ -3,6 +3,8 @@
 #include "cmsis_os2.h"
 #include "sys_defs.h"
 #include "time_convert.h"
+#include "driver_led.h"
+
 typedef struct {
     uint8_t ConnectionError;
     uint16_t update_time;
@@ -20,12 +22,6 @@ typedef struct
     SYS_StatusTypeDef (*GetAngle)(float *pitch, float *roll, float *yaw);
     void (*AngleFloatToInt)(float pitch, float roll, float yaw, int16_t *pitch_int, int16_t *roll_int, int16_t *yaw_int);
 } HW_MPU6050_InterfaceTypeDef;
-
-typedef struct
-{
-    uint16_t head;
-    uint16_t tail;
-} HW_Uart_ReceiverTypeDef;
 
 typedef struct
 {
@@ -47,10 +43,16 @@ typedef struct
 } HW_RTC_InterfaceTypeDef;
 
 typedef struct {
+    void (*SetLEDState)(LED_NAME_T led_name, LED_STATE_T led_state);
+    void (*GetLEDState)(LED_NAME_T led_name, LED_STATE_T *led_state);
+} HW_LED_InterfaceTypeDef;
+
+typedef struct {
     HW_DHT11_InterfaceTypeDef DHT11;
     HW_MPU6050_InterfaceTypeDef MPU6050;
     HW_ESP8266_InterfaceTypeDef ESP8266;
     HW_RTC_InterfaceTypeDef RealTimeClock;
+    HW_LED_InterfaceTypeDef LED;
 } HW_InterfaceTypeDef;
 
 extern HW_InterfaceTypeDef HW_Interface;

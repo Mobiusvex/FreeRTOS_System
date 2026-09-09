@@ -4,7 +4,6 @@
 #include "net_weather.h"
 #include "net_cloud.h"
 #include "net_time.h"
-#include "net_cloud.h"
 #include "HWDataAccess.h"
 #include "string.h"
 #include "sys_data.h"
@@ -27,9 +26,14 @@ esp8266_app_state_t ESP8266_APP_Run(esp8266_cmd_t cmd, uint8_t *rx_buf, uint32_t
     esp8266_app_state_t main_state = ESP8266_APP_STATE_IDLE;
     static bool is_error = false;
     uint32_t timestamp = 0;
+    cloud_setdata_t cloud_data;
 
     if (rx_buf_size > 0 && strstr(rx_buf, "MQTTSUBRECV")) {
-        cloud_setdata_analysis(rx_buf, rx_buf_size);
+        state = cloud_setdata_analysis(rx_buf, rx_buf_size);
+        if (state == CMD_STATE_SUCCESS) {
+            cloud_data = net_cloud_get_setdata();
+            HW_Interface.LED.SetLEDState(LED_BLUE, cloud_data.led);
+        }
         rx_buf_size = 0;
     }
     switch (cmd) {

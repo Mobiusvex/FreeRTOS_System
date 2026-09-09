@@ -110,6 +110,14 @@ SYS_StatusTypeDef HW_Time_SetRTC(uint32_t timestamp_sec) {
     return BSP_RTC_SetTimeUnix(timestamp_sec - TIMESTAMP_TIME_2000_OFFSET);
 }
 
+void HW_LED_SetState(LED_NAME_T led_name, LED_STATE_T led_state) {
+    led_set_state(led_name, led_state);
+}
+
+void HW_LED_GetState(LED_NAME_T led_name, LED_STATE_T *led_state) {
+    led_get_state(led_name, led_state);
+}
+
 HW_InterfaceTypeDef HW_Interface = {
     .DHT11 = {
         .ConnectionError = 1,
@@ -136,4 +144,7 @@ HW_InterfaceTypeDef HW_Interface = {
                       .GetTimeString = HW_Time_GetString,
                       .SetTimedata = HW_Time_Getdata,
                       .SetTimestamp = HW_Time_SetRTC},
+    .LED = {//
+            .SetLEDState = HW_LED_SetState,
+            .GetLEDState = HW_LED_GetState},
 };

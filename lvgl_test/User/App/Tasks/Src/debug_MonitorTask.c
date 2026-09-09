@@ -37,6 +37,11 @@ void debug_MonitorTask(void *pvParameters) {
         }
         // 打印监控任务自身（用于调试监控任务是否爆栈）
         uxWaterMark[5] = uxTaskGetStackHighWaterMark(NULL);
+        // HeapStats_t stats = {0};
+        // vPortGetHeapStats(&stats);
+
+        // RTT_PRINTF("Maximum contiguous free block: %d B\r\n", stats.xSizeOfLargestFreeBlockInBytes);
+        // RTT_PRINTF("Free blocks: %d\r\n", stats.xNumberOfFreeBlocks);
         // RTT_PRINTF("LvHandler Task Stack Free: %u words\r\n", uxWaterMark[0]);
         // RTT_PRINTF("sensorDataUpdate Task Stack Free: %u words\r\n", uxWaterMark[1]);
         // RTT_PRINTF("uart1Receive Task Stack Free: %u words\r\n", uxWaterMark[2]);

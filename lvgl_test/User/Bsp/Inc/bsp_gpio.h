@@ -29,6 +29,9 @@ typedef enum {
     BSP_GPIO_ESP8266_UART_RX,
     BSP_GPIO_ESP8266_EN,
     BSP_GPIO_ESP8266_RST,
+    BSP_GPIO_LED_GREEN, // 蓝色指示灯
+    BSP_GPIO_LED_RED,   // 红色指示灯
+    BSP_GPIO_LED_BLUE,  // 蓝色指示灯
     // 总数量（必须放在最后）
     BSP_GPIO_NUMBER
 } BSP_GPIO_Name_t;

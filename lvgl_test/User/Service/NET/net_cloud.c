@@ -7,6 +7,7 @@
 #include "debug_func.h"
 #include "cmsis_os2.h"
 #include "sys_data.h"
+#include "HWDataAccess.h"
 
 const char *onenet_devid = "QlVhcDm9e2";
 const char *onenet_product = "0001";
@@ -129,7 +130,6 @@ cmd_state_t net_cloud_mode_set(uint8_t *rx_buf, uint32_t rx_buf_size) {
     static net_cloud_step_t net_cloud_current_step = NET_CLOUD_CWMODE1_SET;
     static net_cloud_step_t net_cloud_previous_step = NET_CLOUD_CWMODE1_SET;
     cloud_updata_t cloud_updata;
-
     if (net_cloud_current_step < NET_CLOUD_STEP_NUM) { // 确保没有越界
         at_cmd_ctx_t *ctx = &net_cloud_step_ctx[net_cloud_current_step];
         // 合成命令
@@ -144,6 +144,7 @@ cmd_state_t net_cloud_mode_set(uint8_t *rx_buf, uint32_t rx_buf_size) {
             } else if (net_cloud_current_step == NET_CLOUD_MQTT_PUB_DATA) {
                 SYS_DATA_GetEnv(&cloud_updata.temp, &cloud_updata.humi);
                 SYS_DATA_GetAngle(&cloud_updata.pitch, &cloud_updata.roll, &cloud_updata.yaw);
+                HW_Interface.LED.GetLEDState(LED_BLUE, &cloud_updata.led);
                 onenet_pubdata_get(cloud_mqtt_buf, CLOUD_CMD_BUF_LENGTH, onenet_devid, onenet_product, cloud_updata);
                 ctx->cmd = cloud_mqtt_buf;
                 ctx->tx_timeout = 50;
