@@ -39,13 +39,10 @@ static uint16_t XPT2046_ReadAdc(uint8_t ucChannel) {
     uint8_t tx_data[3] = {ucChannel, 0x00, 0X00};
     uint8_t rx_data[3];
     uint16_t res = 0;
-#if SPI_TEST
-    // TODO:时序好像有问题，会导致触摸屏失效
-    BSP_SPI_TransmitReceive(BSP_SPI_BUS_XPT2046, tx_data, &res, 1, 0);
-#else
-    BSP_SPI_TransmitReceive(BSP_SPI_BUS_XPT2046, tx_data, rx_data, 3, 0);
+
+    BSP_SPI_WriteRead(BSP_SPI_BUS_XPT2046, BSP_GPIO_XPT2046_SPI_CS, tx_data, rx_data, 3, 10);
     res = (uint16_t)(rx_data[1] << 4 | rx_data[2] >> 4);
-#endif
+
     return res;
 }
 

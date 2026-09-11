@@ -29,6 +29,7 @@ static const GPIO_Map_t s_gpioMap[BSP_GPIO_NUMBER] = {
     [BSP_GPIO_LED_GREEN] = {GPIOB, GPIO_PIN_0},
     [BSP_GPIO_LED_RED] = {GPIOB, GPIO_PIN_5},
     [BSP_GPIO_LED_BLUE] = {GPIOB, GPIO_PIN_1},
+    [BSP_GPIO_W25Q64_CS] = {GPIOA, GPIO_PIN_4},
 };
 
 /**

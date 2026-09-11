@@ -24,7 +24,6 @@ void hardwareInitTask(void *pvParameters) {
     HAL_TIM_Base_Start(&htim7);
 
     SEGGER_RTT_Init();
-    XPT2046_CS_DISABLE();
     RTT_PRINTF("RTT Init OK\n");
 
     lv_init();

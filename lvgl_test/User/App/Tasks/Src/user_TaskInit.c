@@ -7,9 +7,11 @@
 #include "user_ESP8266CommTask.h"
 #include "debug_MonitorTask.h"
 #include "user_sysDataStorageTask.h"
+#include "user_PCCommTask.h"
 #include "debug_func.h"
 
 StreamBufferHandle_t xESP8266StreamBuffer = NULL;
+StreamBufferHandle_t xPCStreamBuffer = NULL;
 osMessageQueueId_t xESP8266CmdQueue = NULL;
 osMessageQueueId_t xCmdDisplayQueue = NULL;
 osMessageQueueId_t xWeatherCityQueue = NULL;
@@ -66,15 +68,26 @@ const osThreadAttr_t debug_MonitorTaskAttr = {
     .priority = (osPriority_t)osPriorityLow,
 };
 
+osThreadId_t user_PCCommTaskHandle;
+const osThreadAttr_t user_PCCommTaskAttr = {
+    .name = "PCCommTask",
+    .stack_size = 1024,
+    .priority = (osPriority_t)osPriorityLow5,
+};
+
 /**
  * @brief Initialize all tasks
  * @param None
  * @retval None
  */
 void userTasksInit(void) {
-    xESP8266StreamBuffer = xStreamBufferCreate(1024, 1);
+    xESP8266StreamBuffer = xStreamBufferCreate(512, 1);
     if (xESP8266StreamBuffer == NULL) {
         RTT_PRINTF("UART3 Failed to create xESP8266StreamBuffer\n");
+    }
+    xPCStreamBuffer = xStreamBufferCreate(512, 1);
+    if (xPCStreamBuffer == NULL) {
+        RTT_PRINTF("UART1 Failed to create xPCStreamBuffer\n");
     }
 
     xESP8266CmdQueue = osMessageQueueNew(10, 1, NULL);
@@ -116,6 +129,10 @@ void userTasksInit(void) {
     user_sysDataStorageTaskHandle = osThreadNew(user_sysDataStorageTask, NULL, &user_sysDataStorageTaskAttr);
     if (user_sysDataStorageTaskHandle == NULL) {
         RTT_PRINTF("Failed to create sysDataStorageTask\n");
+    }
+    user_PCCommTaskHandle = osThreadNew(user_PCCommTask, NULL, &user_PCCommTaskAttr);
+    if (user_PCCommTaskHandle == NULL) {
+        RTT_PRINTF("Failed to create PCCommTask\n");
     }
 #if (DEBUG_FUNC_ENABLE == 1)
     debug_MonitorTaskHandle = osThreadNew(debug_MonitorTask, NULL, &debug_MonitorTaskAttr);

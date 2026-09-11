@@ -15,6 +15,7 @@ typedef enum {
 typedef enum {
     // BSP_GPIO_SPEAKER_EN,    // 8002A 功放使能引脚 (高电平工作)
     // BSP_GPIO_LED_STATUS,    // 板载状态灯
+    BSP_GPIO_NONE = -1,
     BSP_GPIO_XPT2046_SPI_CS, // XPT2046 SPI CS 引脚
     BSP_GPIO_XPT2046_SPI_CLK,
     BSP_GPIO_XPT2046_SPI_MOSI,
@@ -32,6 +33,7 @@ typedef enum {
     BSP_GPIO_LED_GREEN, // 蓝色指示灯
     BSP_GPIO_LED_RED,   // 红色指示灯
     BSP_GPIO_LED_BLUE,  // 蓝色指示灯
+    BSP_GPIO_W25Q64_CS, // W25Q64 SPI CS 引脚
     // 总数量（必须放在最后）
     BSP_GPIO_NUMBER
 } BSP_GPIO_Name_t;
