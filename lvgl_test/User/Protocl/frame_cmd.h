@@ -1,12 +1,20 @@
 #ifndef FRAME_CMD_H
 #define FRAME_CMD_H
 
-/* 所有指令集中定义，业务层和协议层共用 */
-#define CMD_OTA_START 0x11
-#define CMD_OTA_DATA 0x12
-#define CMD_OTA_ACK 0x13
-#define CMD_OTA_END 0x14
-#define CMD_QUERY_STATUS 0x20
-#define CMD_SET_PARAM 0x21
+/* ============ OTA 相关 ============ */
+#define CMD_OTA_START 0x11 /* 上位机→STM32：起始包 */
+#define CMD_OTA_DATA 0x12  /* 上位机→STM32：数据包 */
+#define CMD_OTA_ACK 0x13   /* STM32→上位机：应答(0x66成功/0x55失败) */
+#define CMD_OTA_END 0x14   /* 上位机→STM32：结束包 */
 
-#endif // FRAME_CMD_H
+/* ============ 通用命令 ============ */
+// #define CMD_QUERY_STATUS     0x20    /* 查询设备状态 */
+// #define CMD_SET_PARAM        0x21    /* 设置参数 */
+// #define CMD_GET_PARAM        0x22    /* 读取参数 */
+// #define CMD_REBOOT           0x23    /* 重启设备 */
+
+/* ============ ACK 数据字段 ============ */
+#define ACK_OK 0x66
+#define ACK_FAIL 0x55
+
+#endif /* FRAME_CMD_H */

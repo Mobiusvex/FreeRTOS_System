@@ -19,7 +19,7 @@ void uart1ReceiveTask(void *pvParameters) {
                                     osWaitForever);
 
         if (ulFlags & 0x01) {
-            uint16_t len = BSP_UART_ReadFromBuffer(BSP_UART_PC, buffer, sizeof(buffer));
+            buf_len = BSP_UART_ReadFromBuffer(BSP_UART_PC, buffer, sizeof(buffer));
             // BSP_UART_Transmit_Block(BSP_UART_ESP8266, buffer, len, 100);
         }
         if (buf_len > 0) {

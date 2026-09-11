@@ -26,7 +26,7 @@ const osThreadAttr_t user_HardwareInitTaskAttr = {
 osThreadId_t user_LvHandlerTaskHandle;
 const osThreadAttr_t user_LvHandlerTaskAttr = {
     .name = "LvHandlerTask",
-    .stack_size = 1024 * 4,
+    .stack_size = 1024 * 3 + 512,
     .priority = (osPriority_t)osPriorityLow2,
 };
 
@@ -71,7 +71,7 @@ const osThreadAttr_t debug_MonitorTaskAttr = {
 osThreadId_t user_PCCommTaskHandle;
 const osThreadAttr_t user_PCCommTaskAttr = {
     .name = "PCCommTask",
-    .stack_size = 1024,
+    .stack_size = 1024 + 512,
     .priority = (osPriority_t)osPriorityLow5,
 };
 
