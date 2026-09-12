@@ -6,6 +6,7 @@
 #include "debug_func.h"
 #include "sys_data.h"
 #include "user_ui_updata.h"
+#include "user_ui_popup.h"
 
 extern osMessageQueueId_t xCmdDisplayQueue;
 /**

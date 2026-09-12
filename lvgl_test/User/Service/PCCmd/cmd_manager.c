@@ -1,6 +1,8 @@
 #include "cmd_manager.h"
 #include "frame_cmd.h"
 #include "cmd_ota.h"
+#include "sys_data.h"
+
 /* 命令处理函数原型 */
 typedef void (*CmdHandler_t)(const Frame_t *frame);
 
@@ -24,5 +26,4 @@ void Cmd_Dispatch(const Frame_t *frame) {
             return;
         }
     }
-    /* 未知CMD，可选回复错误帧 */
 }

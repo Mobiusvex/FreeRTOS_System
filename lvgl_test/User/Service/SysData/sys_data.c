@@ -41,6 +41,8 @@ SYS_StatusTypeDef SYS_DATA_Save(void) {
 // ============================================================
 
 static void sys_data_set_init(void) {
+    SYS_DATA_SetVersion(SYS_DATA_VERSION);
+    SYS_DATA_SetNewPaketState(SYS_NEW_PAKET_NULL);
     if (g_sysData->thresholds[THRESHOLD_TYPE_TEMP].threshold_high == g_sysData->thresholds[THRESHOLD_TYPE_TEMP].threshold_low) {
         SYS_DATA_SetThreshold(THRESHOLD_TYPE_TEMP, 40, 20);
     }
@@ -62,6 +64,11 @@ static void sys_data_set_init(void) {
     }
 }
 
+void SYS_DATA_SetVersion(uint16_t version) {
+    uint32_t lock_state = osKernelLock();
+    g_sysData->version = version;
+    osKernelRestoreLock(lock_state);
+}
 void SYS_DATA_SetWifiStatus(wifi_state_t status) {
     uint32_t lock_state = osKernelLock();
     g_sysData->wifi_status = status;
@@ -205,9 +212,29 @@ void SYS_DATA_SetOnenetSwitch(bool switch_connect) {
     g_sysData->onenet_switch = switch_connect;
     osKernelRestoreLock(lock_state);
 }
+
+void SYS_DATA_SetPaketUpdateData(PaketUpdateState_t status, uint8_t progress) {
+    uint32_t lock_state = osKernelLock();
+    g_sysData->paket_update_status = status;
+    g_sysData->paket_update_progress = progress;
+    osKernelRestoreLock(lock_state);
+}
+void SYS_DATA_SetNewPaketState(SYS_UPGRADE_t status) {
+    uint32_t lock_state = osKernelLock();
+    g_sysData->new_paket_status = status;
+    osKernelRestoreLock(lock_state);
+}
 // ============================================================
 //                   Get 函数实现（单值读取）
 // ============================================================
+
+void SYS_DATA_GetVersion(uint16_t *version) {
+    if (version) {
+        uint32_t lock_state = osKernelLock(); // 加锁
+        *version = g_sysData->version;
+        osKernelRestoreLock(lock_state); // 解锁
+    }
+}
 
 void SYS_DATA_GetWifiStatus(wifi_state_t *status) {
     if (status) {
@@ -322,6 +349,17 @@ void SYS_DATA_GetBackgroundColor(uint8_t *color_code) {
 void SYS_DATA_GetOnenetSwitch(bool *switch_connect) {
     uint32_t lock_state = osKernelLock();
     *switch_connect = g_sysData->onenet_switch;
+    osKernelRestoreLock(lock_state);
+}
+void SYS_DATA_GetPaketUpdateData(PaketUpdateState_t *status, uint8_t *progress) {
+    uint32_t lock_state = osKernelLock();
+    *status = g_sysData->paket_update_status;
+    *progress = g_sysData->paket_update_progress;
+    osKernelRestoreLock(lock_state);
+}
+void SYS_DATA_GetNewPaketState(SYS_UPGRADE_t *status) {
+    uint32_t lock_state = osKernelLock();
+    *status = g_sysData->new_paket_status;
     osKernelRestoreLock(lock_state);
 }
 

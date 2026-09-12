@@ -12,6 +12,7 @@
 #include "lv_port_indev_template.h"
 #include "tim.h"
 #include "ui.h"
+#include "user_ui_popup.h"
 /**
  * @brief Hardware initialization task
  * @param pvParameters Task parameters
@@ -52,6 +53,7 @@ void hardwareInitTask(void *pvParameters) {
     // lv_obj_align(switch_obj, LV_ALIGN_TOP_LEFT, 10, 10);
 
     ui_init();
+    popup_init();
     osKernelRestoreLock(lock_state);
     osThreadExit();
 }

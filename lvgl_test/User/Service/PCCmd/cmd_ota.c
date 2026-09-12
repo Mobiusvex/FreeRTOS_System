@@ -8,6 +8,8 @@
 #include "debug_func.h"
 #include "cmsis_os2.h"
 #include <string.h>
+#include "sys_data.h"
+#include "user_sysDataStorageTask.h"
 
 /* ============================================================
  *  常量定义
@@ -49,11 +51,16 @@ static const uint8_t KEY_STREAM[OTA_KEY_STREAM_LEN] = {
     0x32, 0x6E, 0xB8, 0x1D, 0x68, 0x1C, 0x43, 0x2E, 0x2D, 0xEB, 0x4A, 0x5C, 0xFB, 0xB2, 0x8A, 0x4B,
     0xEA, 0x1F, 0xB3, 0x56, 0x4E, 0x1B, 0x95, 0x85, 0x2C, 0x37, 0x1A, 0xC9, 0xAC, 0x86, 0x1C, 0x07};
 
+typedef enum {
+    OTA_STATE_IDLE = 0,
+    OTA_STATE_START,
+    OTA_STATE_OK
+} OTA_State_t;
 /* ============================================================
  *  OTA 上下文
  * ============================================================ */
 typedef struct {
-    bool active;                   /* 是否正在 OTA 流程中 */
+    OTA_State_t active;            /* 0:未开始，1:正在写入，2:写入完成 */
     uint16_t total_packets;        /* 总包数 */
     uint32_t firmware_size;        /* 原始固件字节数（补齐前） */
     uint16_t received_packets;     /* 已成功写入的包数 */
@@ -61,6 +68,8 @@ typedef struct {
 } OTA_Context_t;
 
 static OTA_Context_t s_ota_ctx;
+
+extern osThreadId_t user_sysDataStorageTaskHandle;
 
 /* ============================================================
  *  工具：小端读写
@@ -202,7 +211,7 @@ void OTA_HandleStart(const Frame_t *frame) {
     RTT_PRINTF("OTA Start: fw_size=%u, total_packets=%u\n", fw_size, total);
 
     /* 4. 初始化上下文 */
-    s_ota_ctx.active = true;
+    s_ota_ctx.active = OTA_STATE_START;
     s_ota_ctx.total_packets = total;
     s_ota_ctx.firmware_size = fw_size;
     s_ota_ctx.received_packets = 0;
@@ -317,7 +326,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
         RTT_PRINTF("OTA End: only %u/%u packets received\n",
                    s_ota_ctx.received_packets, s_ota_ctx.total_packets);
         ota_send_ack(frame->seq, ACK_FRAME_LACK);
-        s_ota_ctx.active = false;
+        s_ota_ctx.active = OTA_STATE_IDLE;
         return;
     }
 
@@ -329,7 +338,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     if (!ota_verify_and_calc_crc(s_ota_ctx.total_packets, &calc_crc)) {
         RTT_PRINTF("OTA End: verify failed\n");
         ota_send_ack(frame->seq, ACK_PAGE_CRC_ERROR);
-        s_ota_ctx.active = false;
+        s_ota_ctx.active = OTA_STATE_IDLE;
         return;
     }
 
@@ -339,7 +348,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     if (calc_crc != recv_crc) {
         RTT_PRINTF("OTA End: CRC mismatch!\n");
         ota_send_ack(frame->seq, ACK_PAKET_CRC_ERROR);
-        s_ota_ctx.active = false;
+        s_ota_ctx.active = OTA_STATE_IDLE;
         return;
     }
 
@@ -359,7 +368,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     if (!BSP_W25Qxx_SectorErase(OTA_META_ADDR)) {
         RTT_PRINTF("OTA End: erase meta sector failed\n");
         ota_send_ack(frame->seq, ACK_FLASH_ERROR);
-        s_ota_ctx.active = false;
+        s_ota_ctx.active = OTA_STATE_IDLE;
         return;
     }
 
@@ -367,16 +376,53 @@ void OTA_HandleEnd(const Frame_t *frame) {
     if (!BSP_W25Qxx_BufferWrite(meta, OTA_META_ADDR, sizeof(meta))) {
         RTT_PRINTF("OTA End: write meta failed\n");
         ota_send_ack(frame->seq, ACK_FLASH_ERROR);
-        s_ota_ctx.active = false;
+        s_ota_ctx.active = OTA_STATE_IDLE;
         return;
     }
 
     /* 9. 全部完成 */
     RTT_PRINTF("OTA End: complete! meta written.\n");
-    s_ota_ctx.active = false;
+    s_ota_ctx.active = OTA_STATE_OK;
     ota_send_ack(frame->seq, ACK_OK);
 
     /* ★ 可选：设置升级标志 + 复位，让 Bootloader 在下一轮启动时校验并跳转 */
     /* OTA_SetBootFlag();
        NVIC_SystemReset(); */
+}
+extern osMessageQueueId_t xCmdDisplayQueue;
+
+bool ota_sys_data_update(void) {
+    static uint8_t index = 0;
+    static OTA_State_t last_state = OTA_STATE_IDLE;
+    SYS_DataEventType_t event;
+    bool update = false;
+    bool ret = false;
+
+    if (last_state != s_ota_ctx.active) {
+        update = true;
+        index = 0;
+    }
+    if ((index++) == 30) {
+        update = true;
+        index = 0;
+    }
+    if (update) {
+        SYS_DATA_SetPaketUpdateData(s_ota_ctx.active, s_ota_ctx.received_packets * 100 / s_ota_ctx.total_packets);
+        event = SYS_PAKET_UPDATE; // 更新OTA显示
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
+        ret = true;
+    }
+    if (s_ota_ctx.active == OTA_STATE_OK) {
+        SYS_DATA_SetNewPaketState(SYS_NEW_PAKET_READY);
+        osThreadFlagsSet(user_sysDataStorageTaskHandle, FLAG_MSG_DATA_STORAGE);
+    }
+    last_state = s_ota_ctx.active;
+    return ret;
+}
+
+void ota_display_clean() {
+    SYS_DataEventType_t event;
+    SYS_DATA_SetPaketUpdateData(0, 0);
+    event = SYS_PAKET_UPDATE; // 更新OTA显示
+    osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
 }

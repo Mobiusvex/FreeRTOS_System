@@ -1,6 +1,7 @@
 #include "user_ui_updata.h"
 #include "ui.h"
 #include "sys_data.h"
+#include "user_ui_popup.h"
 
 extern ThresholdType_t threshold_type;
 extern const ThresholdData_t thresholds_range[THRESHOLD_TYPE_NUM];
@@ -98,6 +99,22 @@ void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data)
         lv_slider_set_value(ui_SliderVolume, p_data->volume, LV_ANIM_OFF);
         break;
 
+    case SYS_PAKET_UPDATE:
+        if (p_data->paket_update_status == PAKET_UPDATE_DOWNLOAD) {
+            lv_label_set_text(s_popup_label, "Downloading...");
+            popup_clear_hidden();
+
+        } else if (p_data->paket_update_status == PAKET_UPDATE_RESTART) {
+            lv_label_set_text(s_popup_label, "Restarting...");
+            popup_clear_hidden();
+        } else {
+            popup_hide();
+        }
+        // 第二行：更新进度条
+        uint8_t v = (p_data->paket_update_progress > 100) ? 100 : p_data->paket_update_progress;
+        lv_bar_set_value(s_popup_bar, v, LV_ANIM_OFF);
+        break;
+
     /* ---------- 背景颜色更新 ---------- */
     case SYS_BACKGROUND_COLOR_UPDATE: {
         // background_color_code 为预设颜色索引，可根据需要映射
@@ -131,6 +148,7 @@ void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data)
  */
 void user_ui_refresh_all(const SystemGlobalData_t *p_data) {
     /* ========== 主屏幕 (ui_ScreenMain) ========== */
+    lv_label_set_text_fmt(ui_LabelVersion, "version:%x.%x", (p_data->version >> 8), p_data->version & 0xFF);
     // 时间、日期、星期
     lv_label_set_text_fmt(ui_LabelTime, "%02d:%02d", p_data->hour, p_data->minute);
     lv_label_set_text_fmt(ui_LabelSecond, "%02d", p_data->second);

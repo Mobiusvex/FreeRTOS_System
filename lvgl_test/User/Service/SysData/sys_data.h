@@ -5,6 +5,12 @@
 #include "time_convert.h"
 #include "stdbool.h"
 #include "net_wifi.h"
+
+#define SYS_DATA_VERSION 0X0001
+typedef enum {
+    SYS_NEW_PAKET_NULL = 0X00,
+    SYS_NEW_PAKET_READY = 0XAA
+} SYS_UPGRADE_t;
 // ========== 1. 数据结构定义 ==========
 
 typedef enum {
@@ -19,6 +25,7 @@ typedef enum {
     SYS_WEATHER_UPDATE,
     SYS_THRESHOLD_UPDATE,
     SYS_VOLUME_UPDATE,
+    SYS_PAKET_UPDATE,
     SYS_BACKGROUND_COLOR_UPDATE,
 } SYS_DataEventType_t;
 
@@ -45,7 +52,14 @@ typedef enum {
     THRESHOLD_TYPE_NUM
 } ThresholdType_t;
 
+typedef enum {
+    PAKET_UPDATE_NONE,
+    PAKET_UPDATE_DOWNLOAD,
+    PAKET_UPDATE_RESTART
+} PaketUpdateState_t;
+
 typedef struct {
+    uint16_t version;
     wifi_state_t wifi_status; // 0未连接 1已连接
     // 时间
     uint16_t year;
@@ -78,6 +92,9 @@ typedef struct {
     // 背景颜色
     uint8_t background_color_code;
     bool onenet_switch;
+    PaketUpdateState_t paket_update_status;
+    uint8_t paket_update_progress; // 0-100
+    SYS_UPGRADE_t new_paket_status;
 } SystemGlobalData_t;
 
 typedef struct {
@@ -89,6 +106,7 @@ typedef struct {
 SYS_StatusTypeDef SYS_DATA_Init(void); // 初始化（从Storage恢复）
 SYS_StatusTypeDef SYS_DATA_Save(void);
 // ---- 更新函数（带内部锁，供各任务调用） ----
+void SYS_DATA_SetVersion(uint16_t version);
 void SYS_DATA_SetWifiStatus(wifi_state_t status);
 void SYS_DATA_SetSysTime(datetime_t datetime);
 void SYS_DATA_SetEnv(int16_t temp, int16_t humi);
@@ -101,7 +119,10 @@ void SYS_DATA_SetWeatherUpdateDate(uint16_t year, uint8_t month, uint8_t day);
 void SYS_DATA_SetVolume(uint8_t vol);
 void SYS_DATA_SetBackgroundColor(uint8_t color_code);
 void SYS_DATA_SetOnenetSwitch(bool switch_connect);
+void SYS_DATA_SetPaketUpdateData(PaketUpdateState_t status, uint8_t progress);
+void SYS_DATA_SetNewPaketState(SYS_UPGRADE_t status);
 
+void SYS_DATA_GetVersion(uint16_t *version);
 void SYS_DATA_GetWifiStatus(wifi_state_t *status);
 void SYS_DATA_GetSysTime(datetime_t *datetime);
 void SYS_DATA_GetEnv(int16_t *temp, int16_t *humi);
@@ -113,6 +134,8 @@ void SYS_DATA_GetThreshold(ThresholdType_t type, int16_t *high, uint16_t *low);
 void SYS_DATA_GetVolume(uint8_t *vol);
 void SYS_DATA_GetBackgroundColor(uint8_t *color_code);
 void SYS_DATA_GetOnenetSwitch(bool *switch_connect);
+void SYS_DATA_GetPaketUpdateData(PaketUpdateState_t *status, uint8_t *progress);
+void SYS_DATA_GetNewPaketState(SYS_UPGRADE_t *status);
 // ---- 读取快照（供UI任务使用） ----
 void SYS_DATA_GetSnapshot(SystemGlobalData_t *out);
 #endif
