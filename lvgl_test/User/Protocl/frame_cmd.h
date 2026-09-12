@@ -15,6 +15,13 @@
 
 /* ============ ACK 数据字段 ============ */
 #define ACK_OK 0x66
-#define ACK_FAIL 0x55
+#define ACK_FAIL 0x50
+#define ACK_PARAM_ERROR 0x51
+#define ACK_OTA_SIZE_ERROR 0x52
+#define ACK_CMD_ERROR 0x53
+#define ACK_FLASH_ERROR 0x54
+#define ACK_PAGE_CRC_ERROR 0x55
+#define ACK_PAKET_CRC_ERROR 0x56
+#define ACK_FRAME_LACK 0x57
 
 #endif /* FRAME_CMD_H */

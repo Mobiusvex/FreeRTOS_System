@@ -52,7 +52,7 @@ void user_ESP8266CommTask(void *pvParameters) {
         if (osMessageQueueGet(xWeatherCityQueue, WeatherCity, 0, 0) == osOK) {
             set_weather_city(WeatherCity);
         }
-        buf_len = xStreamBufferReceive(xESP8266StreamBuffer, buffer, 512, 0);
+        buf_len = xStreamBufferReceive(xESP8266StreamBuffer, buffer, ESP8266_TASK_BUFFER_SIZE, 0);
         // 接收到ESP8266发来的数据，立即执行
         if (buf_len > 0) {
             state = ESP8266_APP_Run(next_cmd, buffer, buf_len);

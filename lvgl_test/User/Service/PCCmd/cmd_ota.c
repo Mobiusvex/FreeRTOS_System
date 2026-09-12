@@ -178,7 +178,7 @@ void OTA_HandleStart(const Frame_t *frame) {
     /* 1. 数据长度校验 */
     if (frame->data_len != 6) {
         RTT_PRINTF("OTA Start: bad data_len=%u\n", frame->data_len);
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_PARAM_ERROR);
         return;
     }
 
@@ -188,14 +188,14 @@ void OTA_HandleStart(const Frame_t *frame) {
 
     if (total == 0 || fw_size == 0 || fw_size > OTA_CODE_MAX_SIZE) {
         RTT_PRINTF("OTA Start: invalid params total=%u size=%u\n", total, fw_size);
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_OTA_SIZE_ERROR);
         return;
     }
 
     /* 3. 包数合理性检查：total*240 必须 >= fw_size */
     if ((uint32_t)total * OTA_DATA_PER_PAGE < fw_size) {
         RTT_PRINTF("OTA Start: total_packets too small\n");
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_PARAM_ERROR);
         return;
     }
 
@@ -227,14 +227,14 @@ void OTA_HandleData(const Frame_t *frame) {
     /* 2. 长度检查 */
     if (frame->data_len == 0 || frame->data_len > OTA_DATA_PER_PAGE) {
         RTT_PRINTF("OTA Data: bad data_len=%u\n", frame->data_len);
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_PARAM_ERROR);
         return;
     }
 
     /* 3. 序号检查 */
     if (frame->seq >= s_ota_ctx.total_packets) {
         RTT_PRINTF("OTA Data: seq %u out of range\n", frame->seq);
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_PARAM_ERROR);
         return;
     }
 
@@ -250,7 +250,7 @@ void OTA_HandleData(const Frame_t *frame) {
 
         if (!BSP_W25Qxx_SectorErase(sector_addr)) {
             RTT_PRINTF("OTA Data: erase sector %u failed\n", sector_idx);
-            ota_send_ack(frame->seq, ACK_FAIL);
+            ota_send_ack(frame->seq, ACK_FLASH_ERROR);
             return;
         }
 
@@ -271,7 +271,7 @@ void OTA_HandleData(const Frame_t *frame) {
     /* 7. 写入 Flash 页 */
     if (!ota_write_data_page(frame->seq, data, frame->data_len)) {
         RTT_PRINTF("OTA Data: write page %u failed\n", frame->seq);
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_FLASH_ERROR);
         return;
     }
 
@@ -300,7 +300,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     /* 2. 长度检查 */
     if (frame->data_len != 4) {
         RTT_PRINTF("OTA End: bad data_len=%u\n", frame->data_len);
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_PARAM_ERROR);
         return;
     }
 
@@ -308,7 +308,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     if (frame->seq != s_ota_ctx.total_packets) {
         RTT_PRINTF("OTA End: seq %u != total %u\n",
                    frame->seq, s_ota_ctx.total_packets);
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_PARAM_ERROR);
         return;
     }
 
@@ -316,7 +316,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     if (s_ota_ctx.received_packets != s_ota_ctx.total_packets) {
         RTT_PRINTF("OTA End: only %u/%u packets received\n",
                    s_ota_ctx.received_packets, s_ota_ctx.total_packets);
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_FRAME_LACK);
         s_ota_ctx.active = false;
         return;
     }
@@ -328,7 +328,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     uint32_t calc_crc;
     if (!ota_verify_and_calc_crc(s_ota_ctx.total_packets, &calc_crc)) {
         RTT_PRINTF("OTA End: verify failed\n");
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_PAGE_CRC_ERROR);
         s_ota_ctx.active = false;
         return;
     }
@@ -338,7 +338,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     /* 7. 比对 */
     if (calc_crc != recv_crc) {
         RTT_PRINTF("OTA End: CRC mismatch!\n");
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_PAKET_CRC_ERROR);
         s_ota_ctx.active = false;
         return;
     }
@@ -358,7 +358,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     /* 擦除元信息扇区 */
     if (!BSP_W25Qxx_SectorErase(OTA_META_ADDR)) {
         RTT_PRINTF("OTA End: erase meta sector failed\n");
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_FLASH_ERROR);
         s_ota_ctx.active = false;
         return;
     }
@@ -366,7 +366,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     /* 写入元信息 */
     if (!BSP_W25Qxx_BufferWrite(meta, OTA_META_ADDR, sizeof(meta))) {
         RTT_PRINTF("OTA End: write meta failed\n");
-        ota_send_ack(frame->seq, ACK_FAIL);
+        ota_send_ack(frame->seq, ACK_FLASH_ERROR);
         s_ota_ctx.active = false;
         return;
     }

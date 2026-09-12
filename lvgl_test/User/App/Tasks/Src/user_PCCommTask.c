@@ -20,7 +20,7 @@ void user_PCCommTask(void *pvParameters) {
     uint32_t buf_len = 0;
     while (1) {
         uint32_t tick = osKernelGetTickCount();
-        buf_len = xStreamBufferReceive(xPCStreamBuffer, buffer, 512, 0);
+        buf_len = xStreamBufferReceive(xPCStreamBuffer, buffer, PC_TASK_BUFFER_SIZE, 0);
         if (buf_len > 0) {
             // 处理
             FrameStatus_t st = FrameParser_Feed(&s_parser, buffer, buf_len, &frame);
