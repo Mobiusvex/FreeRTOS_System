@@ -92,7 +92,7 @@ void sensorDataUpdateTask(void *pvParameters) {
             net_cmd = ESP8266_CMD_FETCH_TIME;
             osMessageQueuePut(xESP8266CmdQueue, &net_cmd, 0, 50);
         }
-
+        SYS_DATA_UpdateAlarmStatus();
         // HACK: 任务周期非严格20ms，DHT11每次读取20ms，6050每次读取13ms
         // RTT_PRINTF("Time: %dms\n", osKernelGetTickCount() - tick); // Print current time to RTT
         tick += HW_UPDATE_TASK_PERIOD_MS;

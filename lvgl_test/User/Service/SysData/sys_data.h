@@ -59,6 +59,25 @@ typedef enum {
 } PaketUpdateState_t;
 
 typedef struct {
+    uint16_t temp_high_alarm : 1;
+    uint16_t temp_low_alarm : 1;
+    uint16_t humi_high_alarm : 1;
+    uint16_t humi_low_alarm : 1;
+    uint16_t pitch_high_alarm : 1;
+    uint16_t pitch_low_alarm : 1;
+    uint16_t roll_high_alarm : 1;
+    uint16_t roll_low_alarm : 1;
+    uint16_t yaw_high_alarm : 1;
+    uint16_t yaw_low_alarm : 1;
+    uint16_t resererved : 6;
+} AlarmStatus_t;
+
+typedef union {
+    AlarmStatus_t alarm_bits;
+    uint16_t alarm_status_raw;
+} AlarmStatusUnion_t;
+
+typedef struct {
     uint16_t version;
     wifi_state_t wifi_status; // 0未连接 1已连接
     // 时间
@@ -95,6 +114,7 @@ typedef struct {
     PaketUpdateState_t paket_update_status;
     uint8_t paket_update_progress; // 0-100
     SYS_UPGRADE_t new_paket_status;
+    AlarmStatusUnion_t alarm_status;
 } SystemGlobalData_t;
 
 typedef struct {
@@ -121,6 +141,7 @@ void SYS_DATA_SetBackgroundColor(uint8_t color_code);
 void SYS_DATA_SetOnenetSwitch(bool switch_connect);
 void SYS_DATA_SetPaketUpdateData(PaketUpdateState_t status, uint8_t progress);
 void SYS_DATA_SetNewPaketState(SYS_UPGRADE_t status);
+void SYS_DATA_UpdateAlarmStatus(void);
 
 void SYS_DATA_GetVersion(uint16_t *version);
 void SYS_DATA_GetWifiStatus(wifi_state_t *status);
@@ -136,6 +157,12 @@ void SYS_DATA_GetBackgroundColor(uint8_t *color_code);
 void SYS_DATA_GetOnenetSwitch(bool *switch_connect);
 void SYS_DATA_GetPaketUpdateData(PaketUpdateState_t *status, uint8_t *progress);
 void SYS_DATA_GetNewPaketState(SYS_UPGRADE_t *status);
+void SYS_DATA_GetAlarmStatus(AlarmStatusUnion_t *status);
+bool SYS_DATA_IsTempAlarm(void);
+bool SYS_DATA_IsHumiAlarm(void);
+bool SYS_DATA_IsPitchAlarm(void);
+bool SYS_DATA_IsRollAlarm(void);
+bool SYS_DATA_IsYawAlarm(void);
 // ---- 读取快照（供UI任务使用） ----
 void SYS_DATA_GetSnapshot(SystemGlobalData_t *out);
 #endif

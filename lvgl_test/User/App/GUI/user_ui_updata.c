@@ -11,6 +11,7 @@ extern char WeatherCity[12];
 const char *weekday[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
 void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data) {
+    AlarmStatus_t *p_status = &p_data->alarm_status.alarm_bits;
     switch (event) {
     case SYS_WIFI_UPDATE:
         if (p_data->wifi_status == WIFI_STATE_CONNECTED) {
@@ -36,6 +37,18 @@ void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data)
     case SYS_ENV_UPDATE:
         lv_label_set_text_fmt(ui_LabelTemp, "%.1f", (float)p_data->temperature / 10.0f);
         lv_label_set_text_fmt(ui_LabelHumi, "%.1f", p_data->humidity / 10.0f);
+        if (p_status->temp_high_alarm || p_status->temp_low_alarm) {
+            lv_obj_set_style_text_color(ui_LabelTemp, lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+        } else {
+            lv_obj_set_style_text_color(ui_LabelTemp, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+        if (p_status->humi_high_alarm || p_status->humi_low_alarm) {
+            lv_obj_set_style_text_color(ui_LabelHumi, lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+        } else {
+            lv_obj_set_style_text_color(ui_LabelHumi, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+        // lv_obj_set_style_text_opa(ui_LabelTemp, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+        // lv_obj_set_style_text_opa(ui_LabelHumi, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
         break;
 
     /* ----- 姿态角更新（主屏幕） ----- */
@@ -43,6 +56,24 @@ void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data)
         lv_label_set_text_fmt(ui_LabelPitch, "%.1f", p_data->pitch / 10.0f);
         lv_label_set_text_fmt(ui_LabelRoll, "%.1f", p_data->roll / 10.0f);
         lv_label_set_text_fmt(ui_LabelYaw, "%.1f", p_data->yaw / 10.0f);
+        if (p_status->pitch_high_alarm || p_status->pitch_low_alarm) {
+            lv_obj_set_style_text_color(ui_LabelPitch, lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+        } else {
+            lv_obj_set_style_text_color(ui_LabelPitch, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+        if (p_status->roll_high_alarm || p_status->roll_low_alarm) {
+            lv_obj_set_style_text_color(ui_LabelRoll, lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+        } else {
+            lv_obj_set_style_text_color(ui_LabelRoll, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+        if (p_status->yaw_high_alarm || p_status->yaw_low_alarm) {
+            lv_obj_set_style_text_color(ui_LabelYaw, lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+        } else {
+            lv_obj_set_style_text_color(ui_LabelYaw, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+        // lv_obj_set_style_text_opa(ui_LabelPitch, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+        // lv_obj_set_style_text_opa(ui_LabelRoll, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+        // lv_obj_set_style_text_opa(ui_LabelYaw, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
         break;
     case SYS_WEATHER_UPDATE: {
         uint8_t code = p_data->weather_code;

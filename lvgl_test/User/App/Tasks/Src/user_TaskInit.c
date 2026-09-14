@@ -59,7 +59,7 @@ osThreadId_t user_sysDataStorageTaskHandle;
 const osThreadAttr_t user_sysDataStorageTaskAttr = {
     .name = "sysDataStorageTask",
     .stack_size = 1024,
-    .priority = (osPriority_t)osPriorityLow1,
+    .priority = (osPriority_t)osPriorityLow6,
 };
 osThreadId_t debug_MonitorTaskHandle;
 const osThreadAttr_t debug_MonitorTaskAttr = {

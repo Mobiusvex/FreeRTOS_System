@@ -62,6 +62,7 @@ static void sys_data_set_init(void) {
     if (g_sysData->volume == 0) {
         SYS_DATA_SetVolume(50);
     }
+    SYS_DATA_UpdateAlarmStatus();
 }
 
 void SYS_DATA_SetVersion(uint16_t version) {
@@ -224,6 +225,48 @@ void SYS_DATA_SetNewPaketState(SYS_UPGRADE_t status) {
     g_sysData->new_paket_status = status;
     osKernelRestoreLock(lock_state);
 }
+
+void SYS_DATA_UpdateAlarmStatus(void) {
+    uint32_t lock_state = osKernelLock();
+
+    /* 先全部清零（union 保证 raw 和 bits 共享内存） */
+    g_sysData->alarm_status.alarm_status_raw = 0;
+
+    AlarmStatus_t *p_status = &g_sysData->alarm_status.alarm_bits;
+
+    /* 温度 */
+    if (g_sysData->temperature > g_sysData->thresholds[THRESHOLD_TYPE_TEMP].threshold_high * 10)
+        p_status->temp_high_alarm = 1;
+    if (g_sysData->temperature < g_sysData->thresholds[THRESHOLD_TYPE_TEMP].threshold_low * 10)
+        p_status->temp_low_alarm = 1;
+
+    /* 湿度 */
+    if (g_sysData->humidity > g_sysData->thresholds[THRESHOLD_TYPE_HUMI].threshold_high * 10)
+        p_status->humi_high_alarm = 1;
+    if (g_sysData->humidity < g_sysData->thresholds[THRESHOLD_TYPE_HUMI].threshold_low * 10)
+        p_status->humi_low_alarm = 1;
+
+    /* 俯仰 */
+    if (g_sysData->pitch > g_sysData->thresholds[THRESHOLD_TYPE_PITCH].threshold_high * 10)
+        p_status->pitch_high_alarm = 1;
+    if (g_sysData->pitch < g_sysData->thresholds[THRESHOLD_TYPE_PITCH].threshold_low * 10)
+        p_status->pitch_low_alarm = 1;
+
+    /* 横滚 */
+    if (g_sysData->roll > g_sysData->thresholds[THRESHOLD_TYPE_ROLL].threshold_high * 10)
+        p_status->roll_high_alarm = 1;
+    if (g_sysData->roll < g_sysData->thresholds[THRESHOLD_TYPE_ROLL].threshold_low * 10)
+        p_status->roll_low_alarm = 1;
+
+    /* 偏航 */
+    if (g_sysData->yaw > g_sysData->thresholds[THRESHOLD_TYPE_YAW].threshold_high * 10)
+        p_status->yaw_high_alarm = 1;
+    if (g_sysData->yaw < g_sysData->thresholds[THRESHOLD_TYPE_YAW].threshold_low * 10)
+        p_status->yaw_low_alarm = 1;
+
+    osKernelRestoreLock(lock_state);
+}
+
 // ============================================================
 //                   Get 函数实现（单值读取）
 // ============================================================
@@ -361,6 +404,47 @@ void SYS_DATA_GetNewPaketState(SYS_UPGRADE_t *status) {
     uint32_t lock_state = osKernelLock();
     *status = g_sysData->new_paket_status;
     osKernelRestoreLock(lock_state);
+}
+
+void SYS_DATA_GetAlarmStatus(AlarmStatusUnion_t *status) {
+    uint32_t lock_state = osKernelLock();
+    *status = g_sysData->alarm_status;
+    osKernelRestoreLock(lock_state);
+}
+bool SYS_DATA_IsTempAlarm(void) {
+    uint32_t lock_state = osKernelLock();
+    AlarmStatus_t *p_status = &g_sysData->alarm_status.alarm_bits;
+    bool ret = p_status->temp_high_alarm || p_status->temp_low_alarm;
+    osKernelRestoreLock(lock_state);
+    return ret;
+}
+bool SYS_DATA_IsHumiAlarm(void) {
+    uint32_t lock_state = osKernelLock();
+    AlarmStatus_t *p_status = &g_sysData->alarm_status.alarm_bits;
+    bool ret = p_status->humi_high_alarm || p_status->humi_low_alarm;
+    osKernelRestoreLock(lock_state);
+    return ret;
+}
+bool SYS_DATA_IsPitchAlarm(void) {
+    uint32_t lock_state = osKernelLock();
+    AlarmStatus_t *p_status = &g_sysData->alarm_status.alarm_bits;
+    bool ret = p_status->pitch_high_alarm || p_status->pitch_low_alarm;
+    osKernelRestoreLock(lock_state);
+    return ret;
+}
+bool SYS_DATA_IsRollAlarm(void) {
+    uint32_t lock_state = osKernelLock();
+    AlarmStatus_t *p_status = &g_sysData->alarm_status.alarm_bits;
+    bool ret = p_status->roll_high_alarm || p_status->roll_low_alarm;
+    osKernelRestoreLock(lock_state);
+    return ret;
+}
+bool SYS_DATA_IsYawAlarm(void) {
+    uint32_t lock_state = osKernelLock();
+    AlarmStatus_t *p_status = &g_sysData->alarm_status.alarm_bits;
+    bool ret = p_status->yaw_high_alarm || p_status->yaw_low_alarm;
+    osKernelRestoreLock(lock_state);
+    return ret;
 }
 
 void SYS_DATA_GetSnapshot(SystemGlobalData_t *out) {
