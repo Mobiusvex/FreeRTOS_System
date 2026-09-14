@@ -7,6 +7,9 @@ extern ThresholdType_t threshold_type;
 extern const ThresholdData_t thresholds_range[THRESHOLD_TYPE_NUM];
 extern char WeatherCity[12];
 
+// 星期
+const char *weekday[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
 void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data) {
     switch (event) {
     case SYS_WIFI_UPDATE:
@@ -27,7 +30,6 @@ void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data)
         break;
     case SYS_DATE_UPDATE:
         lv_label_set_text_fmt(ui_LabelDate, "%04d-%02d-%02d", p_data->year, p_data->month, p_data->day);
-        const char *weekday[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
         lv_label_set_text(ui_LabelWeek, weekday[p_data->weekday > 7 ? 6 : p_data->weekday - 1]);
         break;
     /* ----- 环境数据更新（主屏幕） ----- */
@@ -154,8 +156,6 @@ void user_ui_refresh_all(const SystemGlobalData_t *p_data) {
     lv_label_set_text_fmt(ui_LabelSecond, "%02d", p_data->second);
     lv_label_set_text_fmt(ui_LabelDate, "%04d-%02d-%02d", p_data->year, p_data->month, p_data->day);
 
-    // 星期
-    const char *weekday[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     lv_label_set_text(ui_LabelWeek, weekday[p_data->weekday > 7 ? 6 : p_data->weekday - 1]);
 
     // 环境温湿度（温度、湿度均为整型，除以10得到一位小数）

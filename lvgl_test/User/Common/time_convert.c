@@ -45,6 +45,7 @@ void timestamp_to_datetime(uint32_t timestamp, datetime_t *dt) {
 
     // 2. 计算天数（从2000-01-01开始）
     uint32_t days = seconds / 86400;
+    uint32_t total_days = days;
 
     // 3. 推算年份
     uint16_t year = 2000;
@@ -63,7 +64,8 @@ void timestamp_to_datetime(uint32_t timestamp, datetime_t *dt) {
         month++;
     }
     dt->month = month;
-    dt->day = days + 1; // 因为days从0开始
+    dt->day = days + 1;                                // 因为days从0开始
+    dt->weekday = (uint8_t)((total_days + 5) % 7 + 1); // 2000年1月1日是星期六
 }
 
 /**

@@ -423,6 +423,7 @@ bool ota_sys_data_update(void) {
 void ota_display_clean() {
     SYS_DataEventType_t event;
     SYS_DATA_SetPaketUpdateData(0, 0);
+    s_ota_ctx.active = OTA_STATE_IDLE;
     event = SYS_PAKET_UPDATE; // 更新OTA显示
     osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
 }

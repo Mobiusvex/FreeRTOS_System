@@ -3,5 +3,5 @@
 #include "stdint.h"
 
 void BSP_SystemReset(void);
-
+void OTA_ResetToBootloader(void);
 #endif

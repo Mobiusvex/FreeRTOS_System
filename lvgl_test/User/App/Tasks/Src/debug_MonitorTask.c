@@ -11,11 +11,12 @@ extern osThreadId_t user_sensorDataUpdateHandle;
 extern osThreadId_t user_uart1ReceiveTaskHandle;
 extern osThreadId_t user_uart3ReceiveTaskHandle;
 extern osThreadId_t user_ESP8266CommTaskHandle;
+extern osThreadId_t user_PCCommTaskHandle;
 
 void debug_MonitorTask(void *pvParameters) {
     const TickType_t xDelay = pdMS_TO_TICKS(5000); // 每 5 秒更新一次
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    static UBaseType_t uxWaterMark[6];
+    static UBaseType_t uxWaterMark[7];
     // 注意：监控任务自身栈极小，千万不要在这里定义大数组（如 char buf[256]）
     while (1) {
         vTaskDelayUntil(&xLastWakeTime, xDelay);
@@ -35,18 +36,22 @@ void debug_MonitorTask(void *pvParameters) {
         if (user_ESP8266CommTaskHandle != NULL) {
             uxWaterMark[4] = uxTaskGetStackHighWaterMark(user_ESP8266CommTaskHandle);
         }
+        if (user_PCCommTaskHandle != NULL) {
+            uxWaterMark[5] = uxTaskGetStackHighWaterMark(user_PCCommTaskHandle);
+        }
         // 打印监控任务自身（用于调试监控任务是否爆栈）
-        uxWaterMark[5] = uxTaskGetStackHighWaterMark(NULL);
-        // HeapStats_t stats = {0};
-        // vPortGetHeapStats(&stats);
+        uxWaterMark[6] = uxTaskGetStackHighWaterMark(NULL);
+        HeapStats_t stats = {0};
+        vPortGetHeapStats(&stats);
 
-        // RTT_PRINTF("Maximum contiguous free block: %d B\r\n", stats.xSizeOfLargestFreeBlockInBytes);
-        // RTT_PRINTF("Free blocks: %d\r\n", stats.xNumberOfFreeBlocks);
-        // RTT_PRINTF("LvHandler Task Stack Free: %u words\r\n", uxWaterMark[0]);
-        // RTT_PRINTF("sensorDataUpdate Task Stack Free: %u words\r\n", uxWaterMark[1]);
-        // RTT_PRINTF("uart1Receive Task Stack Free: %u words\r\n", uxWaterMark[2]);
-        // RTT_PRINTF("uart3Receive Task Stack Free: %u words\r\n", uxWaterMark[3]);
-        // RTT_PRINTF("ESP8266Comm Task Stack Free: %u words\r\n", uxWaterMark[4]);
-        // RTT_PRINTF("Monitor Task Stack Free: %u words\r\n", uxWaterMark[5]);
+        RTT_PRINTF("Maximum contiguous free block: %d B\r\n", stats.xSizeOfLargestFreeBlockInBytes);
+        RTT_PRINTF("Free blocks: %d\r\n", stats.xNumberOfFreeBlocks);
+        RTT_PRINTF("LvHandler Task Stack Free: %u words\r\n", uxWaterMark[0]);
+        RTT_PRINTF("sensorDataUpdate Task Stack Free: %u words\r\n", uxWaterMark[1]);
+        RTT_PRINTF("uart1Receive Task Stack Free: %u words\r\n", uxWaterMark[2]);
+        RTT_PRINTF("uart3Receive Task Stack Free: %u words\r\n", uxWaterMark[3]);
+        RTT_PRINTF("ESP8266Comm Task Stack Free: %u words\r\n", uxWaterMark[4]);
+        RTT_PRINTF("PCCom Task Stack Free: %u words\r\n", uxWaterMark[5]);
+        RTT_PRINTF("Monitor Task Stack Free: %u words\r\n", uxWaterMark[6]);
     }
 }

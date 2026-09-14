@@ -34,11 +34,11 @@ void user_PCCommTask(void *pvParameters) {
             // 处理
             FrameStatus_t st = FrameParser_Feed(&s_parser, buffer, buf_len, &frame);
             while (st == FRAME_OK) {
-                update_time = osKernelGetTickCount();
                 ota_clean = true;
                 Cmd_Dispatch(&frame);
                 st = FrameParser_Feed(&s_parser, NULL, 0, &frame);
                 ota_sys_data_update();
+                update_time = osKernelGetTickCount();
             }
             if (st == FRAME_CRC_ERROR) {
                 RTT_PRINTF("Frame CRC error, resyncing...\n");

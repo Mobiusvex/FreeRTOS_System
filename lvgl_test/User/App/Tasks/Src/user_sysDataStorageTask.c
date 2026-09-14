@@ -19,8 +19,8 @@ void user_sysDataStorageTask(void *pvParameters) {
             }
             SYS_DATA_GetNewPaketState(&is_upgrade);
             if (retry < DATA_STORAGE_RETRY_MAX && is_upgrade == SYS_NEW_PAKET_READY) {
-                osDelay(3000);
-                BSP_SystemReset();
+                osDelay(1000);
+                OTA_ResetToBootloader();
             } else {
                 SYS_DATA_SetNewPaketState(SYS_NEW_PAKET_NULL);
             }

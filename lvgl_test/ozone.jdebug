@@ -64,34 +64,34 @@ void OnProjectLoad (void) {
 *
 **********************************************************************
 */
-//void TargetReset (void) {
-//
-//  unsigned int SP;
-//  unsigned int PC;
-//  unsigned int VectorTableAddr;
-//
-//  VectorTableAddr = Elf.GetBaseAddr();
-//  //
-//  // Set up initial stack pointer
-//  //
-//  if (VectorTableAddr != 0xFFFFFFFF) {
-//    SP = Target.ReadU32(VectorTableAddr);
-//    Target.SetReg("SP", SP);
-//  }
-//  //
-//  // Set up entry point PC
-//  //
-//  PC = Elf.GetEntryPointPC();
-//
-//  if (PC != 0xFFFFFFFF) {
-//    Target.SetReg("PC", PC);
-//  } else if (VectorTableAddr != 0xFFFFFFFF) {
-//    PC = Target.ReadU32(VectorTableAddr + 4);
-//    Target.SetReg("PC", PC);
-//  } else {
-//    Util.Error("Project file error: failed to set entry point PC", 1);
-//  }
-//}
+void TargetReset (void) {
+
+  unsigned int SP;
+  unsigned int PC;
+  unsigned int VectorTableAddr;
+
+  VectorTableAddr = Elf.GetBaseAddr();
+  //
+  // Set up initial stack pointer
+  //
+  if (VectorTableAddr != 0xFFFFFFFF) {
+    SP = Target.ReadU32(VectorTableAddr);
+    Target.SetReg("SP", SP);
+  }
+  //
+  // Set up entry point PC
+  //
+  PC = Elf.GetEntryPointPC();
+
+  if (PC != 0xFFFFFFFF) {
+    Target.SetReg("PC", PC);
+  } else if (VectorTableAddr != 0xFFFFFFFF) {
+    PC = Target.ReadU32(VectorTableAddr + 4);
+    Target.SetReg("PC", PC);
+  } else {
+    Util.Error("Project file error: failed to set entry point PC", 1);
+  }
+}
 
 /*********************************************************************
 *
@@ -116,7 +116,7 @@ void OnProjectLoad (void) {
 **********************************************************************
 */
 void AfterTargetReset (void) {
-  //_SetupTarget();
+  SetupTarget();
 }
 
 /*********************************************************************
@@ -202,8 +202,8 @@ void AfterTargetReset (void) {
 **********************************************************************
 */
 void AfterTargetDownload (void) {
-  //_SetupTarget();
-  // 增加一个小延时，等待芯片稳定（单位：毫秒）
+  SetupTarget();
+
 }
 
 /*********************************************************************
@@ -362,4 +362,5 @@ void _SetupTarget(void) {
   } else {
     Util.Error("Project script error: failed to set up entry point PC", 1);
   }
+   
 }
