@@ -1,6 +1,6 @@
-# STM32F103 FreeRTOS 多线程物联网环境监测系统
+# STM32F103 FreeRTOS 多任务物联网环境监测系统
 
-基于 STM32F103 + FreeRTOS 的多线程物联网环境监测系统，集成 DHT11 温湿度采集、MPU6050 三轴角度采集、ESP8266 Wi-Fi 通信、OneNET 云平台双向通信、RTC 计时与校时、心知天气、LVGL 触摸屏交互、阈值报警、参数断电保存与高可靠 OTA 升级。
+基于 STM32F103 + FreeRTOS 的多任务物联网环境监测系统，集成 DHT11 温湿度采集、MPU6050 三轴角度采集、ESP8266 Wi-Fi 通信、OneNET 云平台双向通信、RTC 计时与校时、心知天气、LVGL 触摸屏交互、阈值报警、参数断电保存与高可靠 OTA 升级。
 
 ## 项目简介
 
@@ -8,7 +8,7 @@
 
 设备可定时将温湿度、三轴角度等数据上传至 OneNET 云平台，并接收云端下发的控制指令，用于控制 LED 等外设；同时支持 RTC 本地计时，并定期获取服务器时间戳对 RTC 进行校准。天气功能内置四个地址，用户点击更新后可获取心知天气数据并显示在屏幕上。
 
-本地采用 240×320 电阻触摸屏 + LVGL 构建交互界面，用户可以拖动滑条设置温湿度、角度报警阈值，超限数据会变红示警；设置可保存到非易失存储，断电重启后自动恢复。
+交互界面采用 240×320 电阻触摸屏 + LVGL 构建，用户可以拖动滑条设置温湿度、角度报警阈值，超限数据会变红示警；设置可保存到非易失存储，断电重启后自动恢复。
 
 系统还实现了高可靠 OTA 升级：上位机通过串口发送加密固件包，STM32 接收后保存到外部 Flash，每页保存校验信息，Bootloader 校验通过后更新固件，降低升级失败或数据被篡改的风险。
 
@@ -28,7 +28,7 @@
 
 ## 功能特性
 
-- **多线程系统**：基于 FreeRTOS 创建采集、显示、通信、OTA 等任务。
+- **多任务系统**：基于 FreeRTOS 创建采集、显示、通信、OTA 等任务。
 - **环境采集**：DHT11 采集温湿度，MPU6050 采集三轴角度。
 - **云端通信**：ESP8266 连接 Wi-Fi，与 OneNET 云平台进行数据上传和指令下发。
 - **云端控制**：OneNET 下发数据到 STM32，控制 LED 开关。
@@ -47,8 +47,8 @@
 | 任务 | 职责 |
 |---|---|
 | `HardwareInitTask` | 系统初始化，优先级最高，负责 LCD、触摸、DHT11、MPU6050、ESP8266 等初始化。 |
-| `uart3ReceiveTask` | 接收 ESP8266 串口数据，写入 `xESP8266StreamBuffer`。 |
-| `uart1ReceiveTask` | 接收 PC 上位机串口数据，写入 `xPCStreamBuffer`，用于 OTA。 |
+| `uart3ReceiveTask` | 读出 ESP8266 串口 DMA buffer 数据，写入 `xESP8266StreamBuffer`。 |
+| `uart1ReceiveTask` | 读出 PC 上位机串口DMA buffer 数据，写入 `xPCStreamBuffer`，用于 OTA。 |
 | `ESP8266CommTask` | 处理 ESP8266 通信、OneNET 数据上传与下行控制、心知天气请求、服务器时间戳校时。 |
 | `PCCommTask` | 处理 PC 串口 OTA 数据，包括解析、解密、写外部 Flash 和校验。 |
 | `sensorDataUpdateTask` | 周期采集 DHT11 温湿度和 MPU6050 三轴角度和 RTC 时间获取，并进行阈值判断。 |
