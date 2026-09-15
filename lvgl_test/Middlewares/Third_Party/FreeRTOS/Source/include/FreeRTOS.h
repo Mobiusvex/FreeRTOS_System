@@ -893,8 +893,8 @@ the tick count is returned to the standard critical section macros. */
 #define portTICK_TYPE_SET_INTERRUPT_MASK_FROM_ISR() portSET_INTERRUPT_MASK_FROM_ISR()
 #define portTICK_TYPE_CLEAR_INTERRUPT_MASK_FROM_ISR(x) portCLEAR_INTERRUPT_MASK_FROM_ISR((x))
 #else
-    /* The tick type can be read atomically, so critical sections used when the
-    tick count is returned can be defined away. */
+/* The tick type can be read atomically, so critical sections used when the
+tick count is returned can be defined away. */
 #define portTICK_TYPE_ENTER_CRITICAL()
 #define portTICK_TYPE_EXIT_CRITICAL()
 #define portTICK_TYPE_SET_INTERRUPT_MASK_FROM_ISR() 0

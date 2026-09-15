@@ -1,0 +1,12 @@
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:12:10:BL_CRC32	32	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:29:17:get_u16_le	16	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:34:17:get_u32_le	16	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:42:6:Bootloader_CheckMeta	48	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:90:6:Bootloader_VerifyFirmware	304	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:150:6:Bootloader_LoadFirmware	312	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:233:6:Bootloader_InvalidateMeta	8	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:242:6:Bootloader_IsAppValid	24	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:269:6:Bootloader_JumpToApp	32	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:313:6:InternalFlash_Erase	48	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:346:6:InternalFlash_Write	40	static
+E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\user\bootloader.c:381:6:Bootloader_Run	24	static

@@ -44,14 +44,32 @@ void debug_MonitorTask(void *pvParameters) {
         HeapStats_t stats = {0};
         vPortGetHeapStats(&stats);
 
-        RTT_PRINTF("Maximum contiguous free block: %d B\r\n", stats.xSizeOfLargestFreeBlockInBytes);
-        RTT_PRINTF("Free blocks: %d\r\n", stats.xNumberOfFreeBlocks);
-        RTT_PRINTF("LvHandler Task Stack Free: %u words\r\n", uxWaterMark[0]);
-        RTT_PRINTF("sensorDataUpdate Task Stack Free: %u words\r\n", uxWaterMark[1]);
-        RTT_PRINTF("uart1Receive Task Stack Free: %u words\r\n", uxWaterMark[2]);
-        RTT_PRINTF("uart3Receive Task Stack Free: %u words\r\n", uxWaterMark[3]);
-        RTT_PRINTF("ESP8266Comm Task Stack Free: %u words\r\n", uxWaterMark[4]);
-        RTT_PRINTF("PCCom Task Stack Free: %u words\r\n", uxWaterMark[5]);
-        RTT_PRINTF("Monitor Task Stack Free: %u words\r\n", uxWaterMark[6]);
+        // RTT_PRINTF("Maximum contiguous free block: %d B\r\n", stats.xSizeOfLargestFreeBlockInBytes);
+        // RTT_PRINTF("Free blocks: %d\r\n", stats.xNumberOfFreeBlocks);
+        // RTT_PRINTF("LvHandler Task Stack Free: %u words\r\n", uxWaterMark[0]);
+        // RTT_PRINTF("sensorDataUpdate Task Stack Free: %u words\r\n", uxWaterMark[1]);
+        // RTT_PRINTF("uart1Receive Task Stack Free: %u words\r\n", uxWaterMark[2]);
+        // RTT_PRINTF("uart3Receive Task Stack Free: %u words\r\n", uxWaterMark[3]);
+        // RTT_PRINTF("ESP8266Comm Task Stack Free: %u words\r\n", uxWaterMark[4]);
+        // RTT_PRINTF("PCCom Task Stack Free: %u words\r\n", uxWaterMark[5]);
+        // RTT_PRINTF("Monitor Task Stack Free: %u words\r\n", uxWaterMark[6]);
+    }
+}
+
+void SYS_DumpTaskStats(void) {
+    static char buf[1024];
+    RTT_PRINTF("\n===== Task Runtime Stats =====\n");
+    vTaskGetRunTimeStats(buf);
+    RTT_PRINTF(buf);
+    RTT_PRINTF("===============================\n");
+}
+void vApplicationIdleHook(void) {
+    static uint32_t last_print = 0;
+    uint32_t now = xTaskGetTickCount();
+
+    /* 每 10 秒打印一次 */
+    if (now - last_print >= pdMS_TO_TICKS(10000)) {
+        last_print = now;
+        SYS_DumpTaskStats();
     }
 }

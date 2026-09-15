@@ -1,0 +1,66 @@
+{
+	"version": "2.0.0",
+    "options": {
+	    "cwd": "${workspaceFolder}/build/Debug"
+	},
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "build",
+			"command": "mingw32-make",
+			"args": [
+				"-j16"
+			],
+            "problemMatcher": [],
+		},
+
+
+		// {
+		// 	"type": "shell",
+		// 	"label": "rebuild",  // clean+build
+		// 	"command": "rmdir -r ${workspaceFolder}/build/Debug/CMakeFiles; mingw32-make -j16" ,   
+        //     "options": {
+        //         "cwd": "${workspaceFolder}"   // 覆盖全局的 build/Debug，因为要删除 build 目录
+        //     },
+        //     "problemMatcher": [],
+		// },
+        
+		{
+			"type": "shell",
+			"label": "jlink-flash",
+			"command": "JFlash",
+			"args": [
+				"-openprj", "jflash.jflash", // 注意这个文件需要准备好
+				"-open", "${workspaceFolder}/build/lvgl_test.hex,0x8000000",  // 修改xxx为当前工程名
+				"-auto",
+				"-startapp",
+				"-exit"
+			],
+			"problemMatcher": [],
+    	},
+
+		{
+            "type": "shell",
+            "label": "jlink-debug-ozone",
+            "command": "ozone",
+            "args": [
+                "-project", "${workspaceFolder}/ozone.jdebug", // // 注意这个文件需要准备好
+                "-device", "stm32f103ze",  // 指定芯片
+                "-programfile", "${workspaceFolder}/build/Debug/bootloader.elf"  // 修改xxx为当前工程名
+            ],
+            "problemMatcher": [],
+        },
+		{
+            "type": "shell",
+            "label": "generate-bin",
+            "command": "arm-none-eabi-objcopy",
+            "args": [
+                "-O", "binary",
+                "${workspaceFolder}/build/Debug/lvgl_test.elf",   // 输入 .elf
+                "${workspaceFolder}/build/Debug/lvgl_test.bin"    // 输出 .bin
+            ],
+            "problemMatcher": [],
+            "dependsOn": ["build"]   // 可选：依赖 build，先编译再转换
+        },
+	]
+}
