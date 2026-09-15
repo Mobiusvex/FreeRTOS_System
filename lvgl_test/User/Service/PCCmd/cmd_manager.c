@@ -18,7 +18,11 @@ static const CmdEntry_t cmd_table[] = {
     {CMD_OTA_END, OTA_HandleEnd},
 };
 
-/* 统一入口：处理任务收到一帧后调用 */
+/**
+ * @brief 处理任务收到一帧后调用
+ * @param frame 任务收到的一帧数据
+ * @retval 无
+ */
 void Cmd_Dispatch(const Frame_t *frame) {
     for (uint8_t i = 0; i < sizeof(cmd_table) / sizeof(cmd_table[0]); i++) {
         if (cmd_table[i].cmd == frame->cmd) {

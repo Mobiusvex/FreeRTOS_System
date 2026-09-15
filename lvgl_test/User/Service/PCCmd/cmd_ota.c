@@ -92,27 +92,37 @@ static uint32_t get_u32_le(const uint8_t *p) {
            | ((uint32_t)p[3] << 24);
 }
 
-/* ============================================================
- *  内部：异或解密
- *  abs_offset = 该字节在整个固件中的绝对偏移
- * ============================================================ */
+/**
+ * @brief 异或解密数据
+ * @param data 要解密的数据
+ * @param len 数据长度
+ * @param abs_offset 该字节在整个固件中的绝对偏移
+ * @retval void
+ */
 static void ota_decrypt(uint8_t *data, uint16_t len, uint32_t abs_offset) {
     for (uint16_t i = 0; i < len; i++) {
         data[i] ^= KEY_STREAM[(abs_offset + i) % OTA_KEY_STREAM_LEN];
     }
 }
 
-/* ============================================================
- *  内部：发送 OTA ACK
- * ============================================================ */
+/**
+ * @brief 发送 OTA ACK
+ * @param seq 序号
+ * @param ack ACK 码
+ * @retval void
+ */
 static void ota_send_ack(uint16_t seq, uint8_t ack) {
     Frame_Send(BSP_UART_PC, seq, CMD_OTA_ACK, &ack, 1, OTA_ACK_TIMEOUT_MS);
 }
 
-/* ============================================================
- *  内部：写一页数据到 W25Q64
+/**
+ * @brief 写入一页数据到 Flash
  *  页布局：[0..239]数据 | [240..243]页CRC32 | [244..255]保留0xFF
- * ============================================================ */
+ * @param page_idx 页索引
+ * @param data 要写入的数据
+ * @param data_len 数据长度
+ * @retval true 写入成功，false 写入失败
+ */
 static bool ota_write_data_page(uint16_t page_idx,
                                 const uint8_t *data,
                                 uint16_t data_len) {
@@ -137,9 +147,12 @@ static bool ota_write_data_page(uint16_t page_idx,
     return BSP_W25Qxx_PageWrite(page, addr, OTA_PAGE_SIZE);
 }
 
-/* ============================================================
- *  内部：从 Flash 读回全量数据，逐页校验 + 计算总 CRC32
- * ============================================================ */
+/**
+ * @brief 验证并计算总 CRC32
+ * @param total_packets 总包数
+ * @param out_crc 输出总 CRC32
+ * @retval true 校验通过，false 校验失败
+ */
 static bool ota_verify_and_calc_crc(uint16_t total_packets, uint32_t *out_crc) {
     uint32_t crc = 0xFFFFFFFFU;
     uint8_t page[OTA_PAGE_SIZE];
@@ -179,10 +192,11 @@ static bool ota_verify_and_calc_crc(uint16_t total_packets, uint32_t *out_crc) {
     return true;
 }
 
-/* ============================================================
- *  处理起始包（CMD 0x11）
- *  数据布局：[总包数(2) | 固件大小(4)]，共 6 字节，均为小端
- * ============================================================ */
+/**
+ * @brief 处理起始包（CMD 0x11）
+ * @param frame 帧数据
+ * @retval void
+ */
 void OTA_HandleStart(const Frame_t *frame) {
     /* 1. 数据长度校验 */
     if (frame->data_len != 6) {
@@ -221,10 +235,11 @@ void OTA_HandleStart(const Frame_t *frame) {
     ota_send_ack(frame->seq, ACK_OK);
 }
 
-/* ============================================================
- *  处理数据包（CMD 0x12）
- *  数据布局：[加密后的固件块]，长度 1~240
- * ============================================================ */
+/**
+ * @brief 处理数据包（CMD 0x12)
+ * @param frame 帧数据
+ * @retval void
+ */
 void OTA_HandleData(const Frame_t *frame) {
     /* 1. 状态检查 */
     if (!s_ota_ctx.active) {
@@ -295,10 +310,11 @@ void OTA_HandleData(const Frame_t *frame) {
     ota_send_ack(frame->seq, ACK_OK);
 }
 
-/* ============================================================
- *  处理结束包（CMD 0x14）
- *  数据布局：[总CRC32(4)]，小端
- * ============================================================ */
+/**
+ * @brief 处理结束包（CMD 0x14）
+ * @param frame 帧数据
+ * @retval void
+ */
 void OTA_HandleEnd(const Frame_t *frame) {
     /* 1. 状态检查 */
     if (!s_ota_ctx.active) {
@@ -391,6 +407,12 @@ void OTA_HandleEnd(const Frame_t *frame) {
 }
 extern osMessageQueueId_t xCmdDisplayQueue;
 
+/**
+ * @brief OTA 系统数据更新
+ * @retval true 更新成功，false 更新失败
+ * @retval
+ * @note 状态改变立即更新，数据包进度条30包更新一次
+ */
 bool ota_sys_data_update(void) {
     static uint8_t index = 0;
     static OTA_State_t last_state = OTA_STATE_IDLE;
@@ -420,6 +442,10 @@ bool ota_sys_data_update(void) {
     return ret;
 }
 
+/**
+ * @brief OTA 显示清理
+ * @retval void
+ */
 void ota_display_clean() {
     SYS_DataEventType_t event;
     SYS_DATA_SetPaketUpdateData(0, 0);
