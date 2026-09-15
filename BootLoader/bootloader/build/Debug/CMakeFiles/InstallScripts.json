@@ -1,8 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"E:/STM32/LVGL/LVGL_PROJECT/LVGL_TEST/BootLoader/bootloader/build/Debug/cmake_install.cmake",
-		"E:/STM32/LVGL/LVGL_PROJECT/LVGL_TEST/BootLoader/bootloader/build/Debug/cmake/stm32cubemx/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

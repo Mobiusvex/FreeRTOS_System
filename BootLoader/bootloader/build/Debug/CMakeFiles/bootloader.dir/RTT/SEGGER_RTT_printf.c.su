@@ -1,5 +1,0 @@
-E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\RTT\SEGGER_RTT_printf.c:111:13:_StoreChar	24	static
-E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\RTT\SEGGER_RTT_printf.c:136:13:_PrintUnsigned	48	static
-E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\RTT\SEGGER_RTT_printf.c:226:13:_PrintInt	40	static
-E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\RTT\SEGGER_RTT_printf.c:320:5:SEGGER_RTT_vprintf	96	static
-E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\BootLoader\bootloader\RTT\SEGGER_RTT_printf.c:514:5:SEGGER_RTT_printf	28	static
