@@ -247,6 +247,9 @@ void user_ui_refresh_all(const SystemGlobalData_t *p_data) {
     }
 
     /* ========== 设置屏幕 (ui_ScreenSet) ========== */
+    if (p_data->onenet_switch) {
+        lv_obj_add_state(ui_SwitchOnenet, LV_STATE_CHECKED);
+    }
     // 阈值显示（由于只有一个滑块和一对高低标签，全部刷新时默认显示温度阈值）
     // 如果UI设计允许切换显示不同阈值，建议根据当前选中的类型单独更新，
     // 此处仅展示温度阈值作为示例，其他阈值事件请通过原事件函数单独触发。

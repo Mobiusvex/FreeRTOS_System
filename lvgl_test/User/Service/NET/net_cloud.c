@@ -8,10 +8,11 @@
 #include "cmsis_os2.h"
 #include "sys_data.h"
 #include "HWDataAccess.h"
+#include "app_config.h"
 
-const char *onenet_devid = "QlVhcDm9e2";
-const char *onenet_product = "0001";
-const char *token = "version=2018-10-31&res=products%2FQlVhcDm9e2%2Fdevices%2F0001&et=2719970983&method=md5&sign=n3OIqsKc1Tuq%2FZSMFV0HNA%3D%3D";
+const char *onenet_devid = ONENET_PRODUCT_ID;
+const char *onenet_product = ONENET_DEVICE_NAME;
+const char *token = ONENET_TOKEN_INFO;
 
 #define CLOUD_CMD_BUF_LENGTH 300
 enum {

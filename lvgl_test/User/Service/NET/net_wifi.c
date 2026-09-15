@@ -4,6 +4,7 @@
 #include "bsp_delay.h"
 #include "string.h"
 #include "debug_func.h"
+#include "app_config.h"
 
 typedef enum {
     START_AT,
@@ -19,7 +20,7 @@ static const step_config_t net_wifi_step[] = {
     {"AT+RST\r\n", "OK", 3, 3, 5000}, // 注意 RST 回复 "ready"
     {"AT+CWMODE=1\r\n", "OK", 3, 3, 3000},
     {"AT+CIPMUX=0\r\n", "OK", 3, 3, 3000},
-    {"AT+CWJAP=\"WifiTest\",\"qwerty789\"\r\n", "OK", 3, 3, 15000} // 等待IP
+    {"AT+CWJAP=\"" WIFI_SSID "\",\"" WIFI_PASSWORD "\"\r\n", "OK", 3, 3, 15000} // 等待IP
 };
 
 static at_cmd_ctx_t net_wifi_step_ctxs[WIFI_STEP_NUM];

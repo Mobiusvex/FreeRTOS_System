@@ -7,6 +7,7 @@
 #include "debug_func.h"
 #include "cmsis_os2.h"
 #include "sys_data.h"
+#include "app_config.h"
 
 #define WEATHER_GET_CMD_LENGTH 256
 enum {
@@ -176,7 +177,8 @@ void net_weather_init(void) {
 static uint16_t build_weather_request(char *buffer, uint16_t buf_size, const char *city) {
     // 直接格式化：将 %s 替换为传入的城市名
     return snprintf(buffer, buf_size,
-                    "GET https://api.seniverse.com/v3/weather/now.json?key=SNcrC_jZnh627Quf_&location=%s&language=en&unit=c\r\n",
+                    "GET https://api.seniverse.com/v3/weather/now.json?key=" XINZHI_API_KEY
+                    "&location=%s&language=en&unit=c\r\n",
                     city);
 }
 
