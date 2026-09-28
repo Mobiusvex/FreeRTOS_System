@@ -46,6 +46,11 @@ void hardwareInitTask(void *pvParameters) {
         count--;
         HW_Interface.ESP8266.ConnectionError = HW_Interface.ESP8266.Init();
     }
+    count = 3;
+    while (count && HW_Interface.AUDIO.ConnectionError) {
+        count--;
+        HW_Interface.AUDIO.ConnectionError = HW_Interface.AUDIO.Init();
+    }
     HAL_TIM_Base_Start_IT(&htim2);
     // lv_obj_t *switch_obj = lv_switch_create(lv_scr_act());
 

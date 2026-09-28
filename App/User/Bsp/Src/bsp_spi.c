@@ -32,7 +32,12 @@ static SPI_Private_t s_spiBus[BSP_SPI_BUS_NUMBER] = {
         .is_software = false,
         // 硬件相关
         .hw_handle = &hspi1,
-    }};
+    },
+    [BSP_SPI_BUS_2] = {
+        .is_software = false,
+        .hw_handle = &hspi2,
+    },
+};
 
 /**
  * @brief 初始化SPI总线

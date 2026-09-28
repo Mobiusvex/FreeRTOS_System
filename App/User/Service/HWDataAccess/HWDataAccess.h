@@ -48,11 +48,20 @@ typedef struct {
 } HW_LED_InterfaceTypeDef;
 
 typedef struct {
+    uint8_t ConnectionError;
+    SYS_StatusTypeDef (*Init)(void);
+    void (*Reset)(void);
+    void (*PlayVoice)(uint8_t slot);
+    void (*StopVoice)(void);
+} HW_AUDIO_InterfaceTypeDef;
+
+typedef struct {
     HW_DHT11_InterfaceTypeDef DHT11;
     HW_MPU6050_InterfaceTypeDef MPU6050;
     HW_ESP8266_InterfaceTypeDef ESP8266;
     HW_RTC_InterfaceTypeDef RealTimeClock;
     HW_LED_InterfaceTypeDef LED;
+    HW_AUDIO_InterfaceTypeDef AUDIO;
 } HW_InterfaceTypeDef;
 
 extern HW_InterfaceTypeDef HW_Interface;

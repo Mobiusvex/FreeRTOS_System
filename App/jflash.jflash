@@ -3,8 +3,8 @@
 [GENERAL]
   aATEModuleSel[24] = 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
   ConnectMode = 0
-  CurrentFile = ""
-  DataFileSAddr = 0x00000000
+  CurrentFile = "E:\STM32\RESOURCE\Àý³Ì\MP3²¥·ÅÆ÷¡ªVS1053\2.VS1053_SD¿¨¶Á¸è\Project\RVMDK£¨uv5£©\Template.bin"
+  DataFileSAddr = 0x08000000
   GUIMode = 0
   HostName = ""
   TargetIF = 1

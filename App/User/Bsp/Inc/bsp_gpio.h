@@ -30,10 +30,14 @@ typedef enum {
     BSP_GPIO_ESP8266_UART_RX,
     BSP_GPIO_ESP8266_EN,
     BSP_GPIO_ESP8266_RST,
-    BSP_GPIO_LED_GREEN, // 蓝色指示灯
-    BSP_GPIO_LED_RED,   // 红色指示灯
-    BSP_GPIO_LED_BLUE,  // 蓝色指示灯
-    BSP_GPIO_W25Q64_CS, // W25Q64 SPI CS 引脚
+    BSP_GPIO_LED_GREEN,   // 蓝色指示灯
+    BSP_GPIO_LED_RED,     // 红色指示灯
+    BSP_GPIO_LED_BLUE,    // 蓝色指示灯
+    BSP_GPIO_W25Q64_CS,   // W25Q64 SPI CS 引脚
+    BSP_GPIO_VS1053_XCS,  // VS1053B SPI 命令片选
+    BSP_GPIO_VS1053_XDCS, // VS1053B SPI 数据片选
+    BSP_GPIO_VS1053_DREQ, // VS1053B 数据请求引脚
+    BSP_GPIO_VS1053_RST,  // VS1053B 硬件复位引脚
     // 总数量（必须放在最后）
     BSP_GPIO_NUMBER
 } BSP_GPIO_Name_t;

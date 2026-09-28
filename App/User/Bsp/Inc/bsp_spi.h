@@ -10,7 +10,7 @@
 typedef enum {
     BSP_SPI_BUS_XPT2046 = 0, // 软件模拟SPI1 (接XPT2046)
     BSP_SPI_BUS_1,           // 硬件SPI1 (接W25Q64)
-    // BSP_SPI_BUS_2,      // 硬件SPI2 (预留)
+    BSP_SPI_BUS_2,           // 硬件SPI2 (接VS1053B))
     BSP_SPI_BUS_NUMBER
 } BSP_SPI_Bus_t;
 

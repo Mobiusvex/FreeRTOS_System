@@ -3,8 +3,11 @@
 #include "driver_dht11.h"
 #include "driver_mpu6050.h"
 #include "driver_esp8266.h"
+#include "driver_vs1053b.h"
+#include "cmd_audio.h"
 #include <string.h>
 #include "bsp_rtc.h"
+#include "debug_func.h"
 
 #include "stdio.h"
 /**
@@ -118,6 +121,63 @@ void HW_LED_GetState(LED_NAME_T led_name, LED_STATE_T *led_state) {
     led_get_state(led_name, led_state);
 }
 
+SYS_StatusTypeDef HW_AUDIO_Init(void) {
+    if (!VS1053_Init()) {
+        return SYS_ERROR;
+    }
+    return SYS_OK;
+}
+
+void HW_AUDIO_Reset(void) {
+    VS1053_Reset();
+}
+
+void HW_AUDIO_Play(uint8_t slot) {
+    char filename[20];
+    uint32_t file_size = 0;
+
+    /* 1. 读取文件信息 */
+    if (!AUDIO_GetInfo(slot, filename, &file_size)) {
+        RTT_PRINTF("Voice: slot %u empty\n", slot);
+        return;
+    }
+
+    RTT_PRINTF("Playing '%s' (%u bytes)\n", filename, file_size);
+
+    /* 2. 设置音量 */
+    VS1053_SetVolume(0x20, 0x20);
+
+    /* 3. 流式读取 Flash 并发送到 VS1053B */
+    uint8_t buf[512];
+    uint32_t offset = 0;
+
+    while (offset < file_size) {
+        uint32_t chunk = file_size - offset;
+        if (chunk > sizeof(buf)) chunk = sizeof(buf);
+
+        /* 从 Flash 读取 PCM 数据 */
+        if (!AUDIO_ReadData(slot, offset, buf, (uint16_t)chunk)) {
+            RTT_PRINTF("Voice read @%u failed\n", offset);
+            break;
+        }
+
+        /* 发送到 VS1053B SDI */
+        if (!VS1053_WriteSdiBlocking(buf, (uint16_t)chunk)) {
+            RTT_PRINTF("VS1053 SDI write failed\n");
+            break;
+        }
+
+        offset += chunk;
+    }
+
+    /* 4. 结束播放 */
+    VS1053_StopPlay();
+    RTT_PRINTF("Play done\n");
+}
+
+void HW_AUDIO_Stop(void) {
+    VS1053_StopPlay();
+}
 HW_InterfaceTypeDef HW_Interface = {
     .DHT11 = {
         .ConnectionError = 1,
@@ -147,4 +207,10 @@ HW_InterfaceTypeDef HW_Interface = {
     .LED = {//
             .SetLEDState = HW_LED_SetState,
             .GetLEDState = HW_LED_GetState},
+    .AUDIO = {//
+              .ConnectionError = 1,
+              .Init = HW_AUDIO_Init,
+              .Reset = HW_AUDIO_Reset,
+              .PlayVoice = HW_AUDIO_Play,
+              .StopVoice = HW_AUDIO_Stop},
 };
