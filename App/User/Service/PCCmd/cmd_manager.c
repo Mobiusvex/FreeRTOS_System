@@ -2,6 +2,7 @@
 #include "frame_cmd.h"
 #include "cmd_ota.h"
 #include "sys_data.h"
+#include "cmd_audio.h"
 
 /* 命令处理函数原型 */
 typedef void (*CmdHandler_t)(const Frame_t *frame);
@@ -16,6 +17,9 @@ static const CmdEntry_t cmd_table[] = {
     {CMD_OTA_START, OTA_HandleStart},
     {CMD_OTA_DATA, OTA_HandleData},
     {CMD_OTA_END, OTA_HandleEnd},
+    {CMD_AUDIO_START, AUDIO_HandleStart},
+    {CMD_AUDIO_DATA, AUDIO_HandleData},
+    {CMD_AUDIO_END, AUDIO_HandleEnd},
 };
 
 /**

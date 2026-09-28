@@ -7,6 +7,12 @@
 #define CMD_OTA_ACK 0x13   /* STM32→上位机：应答(0x66成功/0x55失败) */
 #define CMD_OTA_END 0x14   /* 上位机→STM32：结束包 */
 
+/* ============ 语音下载相关 ============ */
+#define CMD_AUDIO_START 0x21 /* 上位机→STM32：起始包 */
+#define CMD_AUDIO_DATA 0x22  /* 上位机→STM32：数据包 */
+#define CMD_AUDIO_ACK 0x23   /* STM32→上位机：应答 */
+#define CMD_AUDIO_END 0x24   /* 上位机→STM32：结束包 */
+
 /* ============ 通用命令 ============ */
 // #define CMD_QUERY_STATUS     0x20    /* 查询设备状态 */
 // #define CMD_SET_PARAM        0x21    /* 设置参数 */

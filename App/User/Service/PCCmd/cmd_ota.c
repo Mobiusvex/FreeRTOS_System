@@ -10,21 +10,18 @@
 #include <string.h>
 #include "sys_data.h"
 #include "user_sysDataStorageTask.h"
+#include "tools_func.h"
 
 /* ============================================================
  *  常量定义
  * ============================================================ */
-#define OTA_KEY_STREAM_LEN 240U    /* 密钥流长度 */
-#define OTA_DATA_PER_PAGE 240U     /* 每页有效数据字节数 */
-#define OTA_PAGE_SIZE 256U         /* W25Q64 页大小 */
-#define OTA_RESERVED_SIZE 12U      /* 页内保留区大小 */
-#define OTA_META_SIZE 16U          /* 元信息有效长度 */
-#define OTA_META_SECTOR_SIZE 4096U /* W25Q64 扇区大小 */
-#define OTA_PAGES_PER_SECTOR (OTA_META_SECTOR_SIZE / OTA_PAGE_SIZE)
+#define OTA_KEY_STREAM_LEN 240U /* 密钥流长度 */
+#define OTA_DATA_PER_PAGE 240U  /* 每页有效数据字节数 */
+#define OTA_META_SIZE 16U       /* 元信息有效长度 */
 
-#define OTA_CODE_MAX_SIZE 0X7A800U   /* 最大固件字节数 */
-#define OTA_META_ADDR 0x000000U      /* 元信息扇区地址 */
-#define OTA_DATA_BASE_ADDR 0x001000U /* 数据区起始地址 */
+#define OTA_RESERVED_SIZE 12U /* 页内保留区大小 */
+
+#define OTA_CODE_MAX_SIZE 0X7A800U /* 最大固件字节数 */
 
 #define OTA_MAGIC 0x4F544131U   /* "OTA1" */
 #define OTA_ACK_TIMEOUT_MS 100U /* ACK 发送超时 */
@@ -71,27 +68,6 @@ static OTA_Context_t s_ota_ctx;
 
 extern osThreadId_t user_sysDataStorageTaskHandle;
 
-/* ============================================================
- *  工具：小端读写
- * ============================================================ */
-static void put_u32_le(uint8_t *p, uint32_t v) {
-    p[0] = (uint8_t)(v);
-    p[1] = (uint8_t)(v >> 8);
-    p[2] = (uint8_t)(v >> 16);
-    p[3] = (uint8_t)(v >> 24);
-}
-
-static uint16_t get_u16_le(const uint8_t *p) {
-    return (uint16_t)p[0] | ((uint16_t)p[1] << 8);
-}
-
-static uint32_t get_u32_le(const uint8_t *p) {
-    return (uint32_t)p[0]
-           | ((uint32_t)p[1] << 8)
-           | ((uint32_t)p[2] << 16)
-           | ((uint32_t)p[3] << 24);
-}
-
 /**
  * @brief 异或解密数据
  * @param data 要解密的数据
@@ -126,7 +102,7 @@ static void ota_send_ack(uint16_t seq, uint8_t ack) {
 static bool ota_write_data_page(uint16_t page_idx,
                                 const uint8_t *data,
                                 uint16_t data_len) {
-    uint8_t page[OTA_PAGE_SIZE];
+    uint8_t page[FLASH_PAGE_SIZE];
 
     /* 1. 拷贝有效数据 */
     memcpy(page, data, data_len);
@@ -143,8 +119,8 @@ static bool ota_write_data_page(uint16_t page_idx,
     memset(&page[OTA_DATA_PER_PAGE + 4], 0xFF, OTA_RESERVED_SIZE);
 
     /* 5. 写入 Flash（地址天然 256 对齐，一次写满一页） */
-    uint32_t addr = OTA_DATA_BASE_ADDR + (uint32_t)page_idx * OTA_PAGE_SIZE;
-    return BSP_W25Qxx_PageWrite(page, addr, OTA_PAGE_SIZE);
+    uint32_t addr = OTA_DATA_BASE_ADDR + (uint32_t)page_idx * FLASH_PAGE_SIZE;
+    return BSP_W25Qxx_PageWrite(page, addr, FLASH_PAGE_SIZE);
 }
 
 /**
@@ -155,12 +131,12 @@ static bool ota_write_data_page(uint16_t page_idx,
  */
 static bool ota_verify_and_calc_crc(uint16_t total_packets, uint32_t *out_crc) {
     uint32_t crc = 0xFFFFFFFFU;
-    uint8_t page[OTA_PAGE_SIZE];
+    uint8_t page[FLASH_PAGE_SIZE];
 
     for (uint16_t i = 0; i < total_packets; i++) {
         /* 1. 读一整页 */
-        uint32_t addr = OTA_DATA_BASE_ADDR + (uint32_t)i * OTA_PAGE_SIZE;
-        if (!BSP_W25Qxx_BufferRead(page, addr, OTA_PAGE_SIZE)) {
+        uint32_t addr = OTA_DATA_BASE_ADDR + (uint32_t)i * FLASH_PAGE_SIZE;
+        if (!BSP_W25Qxx_BufferRead(page, addr, FLASH_PAGE_SIZE)) {
             RTT_PRINTF("OTA Verify: read page %u failed\n", i);
             return false;
         }
@@ -263,11 +239,11 @@ void OTA_HandleData(const Frame_t *frame) {
     }
 
     /* ★ 4. 按需擦除：检查当前包所在扇区是否已擦过 */
-    uint16_t sector_idx = frame->seq / OTA_PAGES_PER_SECTOR;
+    uint16_t sector_idx = frame->seq / FLASH_PAGES_PER_SECTOR;
 
     if (sector_idx >= s_ota_ctx.next_sector_to_erase) {
         uint32_t sector_addr = OTA_DATA_BASE_ADDR
-                               + (uint32_t)sector_idx * OTA_META_SECTOR_SIZE;
+                               + (uint32_t)sector_idx * FLASH_SECTOR_SIZE;
 
         RTT_PRINTF("OTA Data: erase sector %u (addr=0x%08X)\n",
                    sector_idx, sector_addr);
