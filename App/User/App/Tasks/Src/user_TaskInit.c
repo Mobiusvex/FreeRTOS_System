@@ -81,11 +81,14 @@ const osThreadAttr_t user_PCCommTaskAttr = {
  * @retval None
  */
 void userTasksInit(void) {
-    xESP8266StreamBuffer = xStreamBufferCreate(512, 1);
+    DEFINE_EXTRAM_STREAM_BUFFER(esp8266_stream, 2048);
+    xESP8266StreamBuffer = CREATE_EXTRAM_STREAM_BUFFER(esp8266_stream, 2048, 1);
     if (xESP8266StreamBuffer == NULL) {
         RTT_PRINTF("UART3 Failed to create xESP8266StreamBuffer\n");
     }
-    xPCStreamBuffer = xStreamBufferCreate(512, 1);
+
+    DEFINE_EXTRAM_STREAM_BUFFER(pccom_stream, 2048);
+    xPCStreamBuffer = CREATE_EXTRAM_STREAM_BUFFER(pccom_stream, 2048, 1);
     if (xPCStreamBuffer == NULL) {
         RTT_PRINTF("UART1 Failed to create xPCStreamBuffer\n");
     }

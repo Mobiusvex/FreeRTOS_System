@@ -57,6 +57,7 @@ MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 64K
 FLASH (rx)      : ORIGIN = 0x8004000, LENGTH = 490K
+EXTRAM (xrw)   : ORIGIN = 0x68000000,   LENGTH = 1024K
 }
 
 /* Highest address of the user mode stack */
@@ -237,8 +238,6 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-
-
   /* Remove information from the standard libraries */
   /DISCARD/ :
   {
@@ -247,4 +246,19 @@ SECTIONS
     libgcc.a:* ( * )
   }
 
+}
+
+SECTIONS
+{
+  /* ... 其他段 ... */
+
+  .extram (NOLOAD) :
+  {
+    . = ALIGN(4);
+    . = . + 48K;        /* 为 LVGL 内存池预留 48KB，链接器从这里之后开始分配 */
+    . = ALIGN(4);
+    *(.extram)          /* 收集所有带 .extram 属性的变量 */
+    *(.extram*)
+    . = ALIGN(4);
+  } >EXTRAM
 }
