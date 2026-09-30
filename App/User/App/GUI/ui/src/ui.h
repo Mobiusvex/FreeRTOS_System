@@ -108,8 +108,29 @@ extern lv_obj_t *ui_Label2;
 void ui_ScreenMusic_screen_init(void);
 extern lv_obj_t *ui_ScreenMusic;
 extern lv_obj_t *ui_ContainerFunSet4;
+void ui_event_Image17(lv_event_t *e);
 extern lv_obj_t *ui_Image17;
 extern lv_obj_t *ui_Label21;
+void ui_event_ButtonMusicSlot1(lv_event_t *e);
+extern lv_obj_t *ui_ButtonMusicSlot1;
+extern lv_obj_t *ui_BarMusicSlot1;
+extern lv_obj_t *ui_LabelMusicSlot1;
+void ui_event_ButtonMusicSlot2(lv_event_t *e);
+extern lv_obj_t *ui_ButtonMusicSlot2;
+extern lv_obj_t *ui_BarMusicSlot2;
+extern lv_obj_t *ui_LabelMusicSlot2;
+void ui_event_ButtonMusicSlot3(lv_event_t *e);
+extern lv_obj_t *ui_ButtonMusicSlot3;
+extern lv_obj_t *ui_BarMusicSlot3;
+extern lv_obj_t *ui_LabelMusicSlot3;
+void ui_event_ButtonMusicSlot4(lv_event_t *e);
+extern lv_obj_t *ui_ButtonMusicSlot4;
+extern lv_obj_t *ui_BarMusicSlot4;
+extern lv_obj_t *ui_LabelMusicSlot4;
+void ui_event_ButtonMusicSlot5(lv_event_t *e);
+extern lv_obj_t *ui_ButtonMusicSlot5;
+extern lv_obj_t *ui_BarMusicSlot5;
+extern lv_obj_t *ui_LabelMusicSlot5;
 // CUSTOM VARIABLES
 
 // SCREEN: ui_ScreenWeather

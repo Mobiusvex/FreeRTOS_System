@@ -92,8 +92,29 @@ lv_obj_t * ui_Label2;
 void ui_ScreenMusic_screen_init(void);
 lv_obj_t * ui_ScreenMusic;
 lv_obj_t * ui_ContainerFunSet4;
+void ui_event_Image17(lv_event_t * e);
 lv_obj_t * ui_Image17;
 lv_obj_t * ui_Label21;
+void ui_event_ButtonMusicSlot1(lv_event_t * e);
+lv_obj_t * ui_ButtonMusicSlot1;
+lv_obj_t * ui_BarMusicSlot1;
+lv_obj_t * ui_LabelMusicSlot1;
+void ui_event_ButtonMusicSlot2(lv_event_t * e);
+lv_obj_t * ui_ButtonMusicSlot2;
+lv_obj_t * ui_BarMusicSlot2;
+lv_obj_t * ui_LabelMusicSlot2;
+void ui_event_ButtonMusicSlot3(lv_event_t * e);
+lv_obj_t * ui_ButtonMusicSlot3;
+lv_obj_t * ui_BarMusicSlot3;
+lv_obj_t * ui_LabelMusicSlot3;
+void ui_event_ButtonMusicSlot4(lv_event_t * e);
+lv_obj_t * ui_ButtonMusicSlot4;
+lv_obj_t * ui_BarMusicSlot4;
+lv_obj_t * ui_LabelMusicSlot4;
+void ui_event_ButtonMusicSlot5(lv_event_t * e);
+lv_obj_t * ui_ButtonMusicSlot5;
+lv_obj_t * ui_BarMusicSlot5;
+lv_obj_t * ui_LabelMusicSlot5;
 // CUSTOM VARIABLES
 
 
@@ -248,6 +269,60 @@ void ui_event_ButtonSave(lv_event_t * e)
 
     if(event_code == LV_EVENT_CLICKED) {
         event_save_button(e);
+    }
+}
+
+void ui_event_Image17(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_ScreenMain, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_ScreenMain_screen_init);
+    }
+}
+
+void ui_event_ButtonMusicSlot1(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        event_music_clicked_button(e);
+    }
+}
+
+void ui_event_ButtonMusicSlot2(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        event_music_clicked_button(e);
+    }
+}
+
+void ui_event_ButtonMusicSlot3(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        event_music_clicked_button(e);
+    }
+}
+
+void ui_event_ButtonMusicSlot4(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        event_music_clicked_button(e);
+    }
+}
+
+void ui_event_ButtonMusicSlot5(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        event_music_clicked_button(e);
     }
 }
 

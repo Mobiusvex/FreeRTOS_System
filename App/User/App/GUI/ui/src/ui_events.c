@@ -75,3 +75,6 @@ void event_save_button(lv_event_t *e) {
 void event_WeatherCity_dropdown(lv_event_t *e) {
     // Your code here
 }
+void event_music_clicked_button(lv_event_t *e) {
+    // Your code here
+}
