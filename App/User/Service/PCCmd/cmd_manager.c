@@ -20,6 +20,7 @@ static const CmdEntry_t cmd_table[] = {
     {CMD_AUDIO_START, AUDIO_HandleStart},
     {CMD_AUDIO_DATA, AUDIO_HandleData},
     {CMD_AUDIO_END, AUDIO_HandleEnd},
+    {CMD_AUDIO_PLAY, AUDIO_HandlePlay},
 };
 
 /**

@@ -3,8 +3,8 @@
 [GENERAL]
   aATEModuleSel[24] = 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
   ConnectMode = 0
-  CurrentFile = "E:\STM32\RESOURCE\Àý³Ì\MP3²¥·ÅÆ÷¡ªVS1053\2.VS1053_SD¿¨¶Á¸è\Project\RVMDK£¨uv5£©\Template.bin"
-  DataFileSAddr = 0x08000000
+  CurrentFile = "E:\STM32\LVGL\LVGL_PROJECT\LVGL_TEST\FreeRTOS_System\App\build\Debug\lvgl_test.bin"
+  DataFileSAddr = 0x08004000
   GUIMode = 0
   HostName = ""
   TargetIF = 1

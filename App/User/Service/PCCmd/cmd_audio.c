@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include "tools_func.h"
 #include "cmd_audio.h"
+#include "HWDataAccess.h"
 
 /* ============ 信息页格式（32字节） ============ */
 /*
@@ -174,6 +175,7 @@ void AUDIO_HandleStart(const Frame_t *frame) {
                frame->seq, file_size, total, s_audio_ctx.filename);
 
     audio_send_ack(frame->seq, ACK_OK);
+    HW_Interface.AUDIO.PlayVoicePut(AUDIO_SLOT_NONE); // 通知播放器停止播放
 }
 
 /**
@@ -371,4 +373,14 @@ bool AUDIO_ReadData(enum_slot_t slot, uint32_t offset, uint8_t *buf, uint32_t le
 
     uint32_t addr = AUDIO_SLOT_BASE(slot) + offset;
     return BSP_W25Qxx_BufferRead(buf, addr, (uint16_t)len);
+}
+
+void AUDIO_HandlePlay(const Frame_t *frame) {
+    if (frame->data[0] < 1 || frame->data[0] > AUDIO_SLOT_COUNT) {
+        RTT_PRINTF("Audio Start: invalid slot %u\n", frame->seq);
+        audio_send_ack(frame->seq, ACK_FAIL);
+        return;
+    }
+    HW_Interface.AUDIO.PlayVoicePut(frame->data[0]);
+    audio_send_ack(frame->seq, ACK_OK);
 }

@@ -13,6 +13,9 @@
 #define CMD_AUDIO_ACK 0x23   /* STM32→上位机：应答 */
 #define CMD_AUDIO_END 0x24   /* 上位机→STM32：结束包 */
 
+/* ============ 语音播放相关 ============ */
+#define CMD_AUDIO_PLAY 0x51 /* 上位机→STM32：播放包 */
+
 /* ============ 通用命令 ============ */
 // #define CMD_QUERY_STATUS     0x20    /* 查询设备状态 */
 // #define CMD_SET_PARAM        0x21    /* 设置参数 */

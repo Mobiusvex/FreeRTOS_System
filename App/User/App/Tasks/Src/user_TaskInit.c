@@ -8,6 +8,7 @@
 #include "debug_MonitorTask.h"
 #include "user_sysDataStorageTask.h"
 #include "user_PCCommTask.h"
+#include "user_AudioTask.h"
 #include "debug_func.h"
 
 StreamBufferHandle_t xESP8266StreamBuffer = NULL;
@@ -15,6 +16,7 @@ StreamBufferHandle_t xPCStreamBuffer = NULL;
 osMessageQueueId_t xESP8266CmdQueue = NULL;
 osMessageQueueId_t xCmdDisplayQueue = NULL;
 osMessageQueueId_t xWeatherCityQueue = NULL;
+osMessageQueueId_t xAudioCmdQueue = NULL;
 
 osThreadId_t user_HardwareInitTaskHandle;
 const osThreadAttr_t user_HardwareInitTaskAttr = {
@@ -59,7 +61,7 @@ osThreadId_t user_sysDataStorageTaskHandle;
 const osThreadAttr_t user_sysDataStorageTaskAttr = {
     .name = "sysDataStorageTask",
     .stack_size = 1024,
-    .priority = (osPriority_t)osPriorityLow6,
+    .priority = (osPriority_t)osPriorityLow7,
 };
 osThreadId_t debug_MonitorTaskHandle;
 const osThreadAttr_t debug_MonitorTaskAttr = {
@@ -71,8 +73,15 @@ const osThreadAttr_t debug_MonitorTaskAttr = {
 osThreadId_t user_PCCommTaskHandle;
 const osThreadAttr_t user_PCCommTaskAttr = {
     .name = "PCCommTask",
-    .stack_size = 1024 + 512,
+    .stack_size = 1024 * 2,
     .priority = (osPriority_t)osPriorityLow5,
+};
+
+osThreadId_t user_AudioTaskHandle;
+const osThreadAttr_t user_AudioTaskAttr = {
+    .name = "AudioTask",
+    .stack_size = 1024,
+    .priority = (osPriority_t)osPriorityLow6,
 };
 
 /**
@@ -105,6 +114,11 @@ void userTasksInit(void) {
     if (xWeatherCityQueue == NULL) {
         RTT_PRINTF("Failed to create xWeatherCityQueue\n");
     }
+    xAudioCmdQueue = osMessageQueueNew(1, 1, NULL);
+    if (xAudioCmdQueue == NULL) {
+        RTT_PRINTF("Failed to create xAudioCmdQueue\n");
+    }
+
     user_HardwareInitTaskHandle = osThreadNew(hardwareInitTask, NULL, &user_HardwareInitTaskAttr);
     if (user_HardwareInitTaskHandle == NULL) {
         RTT_PRINTF("Failed to create HardwareInitTask\n");
@@ -136,6 +150,10 @@ void userTasksInit(void) {
     user_PCCommTaskHandle = osThreadNew(user_PCCommTask, NULL, &user_PCCommTaskAttr);
     if (user_PCCommTaskHandle == NULL) {
         RTT_PRINTF("Failed to create PCCommTask\n");
+    }
+    user_AudioTaskHandle = osThreadNew(user_AudioTask, NULL, &user_AudioTaskAttr);
+    if (user_AudioTaskHandle == NULL) {
+        RTT_PRINTF("Failed to create AudioTask\n");
     }
 #if (DEBUG_FUNC_ENABLE == 1)
     debug_MonitorTaskHandle = osThreadNew(debug_MonitorTask, NULL, &debug_MonitorTaskAttr);

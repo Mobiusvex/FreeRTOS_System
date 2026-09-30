@@ -8,8 +8,9 @@
 #include <string.h>
 #include "bsp_rtc.h"
 #include "debug_func.h"
-
 #include "stdio.h"
+
+extern osMessageQueueId_t xAudioCmdQueue;
 /**
  * @brief DHT11传感器初始化
  * @retval 初始化成功返回SYS_OK，初始化失败返回SYS_ERROR
@@ -132,51 +133,45 @@ void HW_AUDIO_Reset(void) {
     VS1053_Reset();
 }
 
-void HW_AUDIO_Play(uint8_t slot) {
+enum_slot_t HW_AUDIO_Play(enum_slot_t slot) {
     char filename[20];
-    uint32_t file_size = 0;
+    uint32_t file_size;
+    uint8_t buf[512];
 
-    /* 1. 读取文件信息 */
     if (!AUDIO_GetInfo(slot, filename, &file_size)) {
         RTT_PRINTF("Voice: slot %u empty\n", slot);
-        return;
+        return AUDIO_SLOT_NONE;
     }
-
     RTT_PRINTF("Playing '%s' (%u bytes)\n", filename, file_size);
 
-    /* 2. 设置音量 */
     VS1053_SetVolume(0x20, 0x20);
 
-    /* 3. 流式读取 Flash 并发送到 VS1053B */
-    uint8_t buf[512];
-    uint32_t offset = 0;
+    for (uint32_t off = 0; off < file_size;) {
+        uint8_t next;
+        if (osMessageQueueGet(xAudioCmdQueue, &next, NULL, 0) == osOK) /* 被打断 */
+            return next;
 
-    while (offset < file_size) {
-        uint32_t chunk = file_size - offset;
+        uint32_t chunk = file_size - off;
         if (chunk > sizeof(buf)) chunk = sizeof(buf);
 
-        /* 从 Flash 读取 PCM 数据 */
-        if (!AUDIO_ReadData(slot, offset, buf, (uint16_t)chunk)) {
-            RTT_PRINTF("Voice read @%u failed\n", offset);
+        if (!AUDIO_ReadData(slot, off, buf, (uint16_t)chunk) || !VS1053_WriteSdiBlocking(buf, (uint16_t)chunk)) {
+            RTT_PRINTF("play slot %u fail @%u\n", slot, off);
             break;
         }
-
-        /* 发送到 VS1053B SDI */
-        if (!VS1053_WriteSdiBlocking(buf, (uint16_t)chunk)) {
-            RTT_PRINTF("VS1053 SDI write failed\n");
-            break;
-        }
-
-        offset += chunk;
+        off += chunk;
     }
-
-    /* 4. 结束播放 */
-    VS1053_StopPlay();
-    RTT_PRINTF("Play done\n");
+    return AUDIO_SLOT_NONE;
 }
 
 void HW_AUDIO_Stop(void) {
     VS1053_StopPlay();
+}
+
+void HW_AUDIO_PUT(enum_slot_t slot) {
+    if (xAudioCmdQueue == NULL) return;
+
+    osMessageQueueReset(xAudioCmdQueue); /* 丢掉旧请求 */
+    osMessageQueuePut(xAudioCmdQueue, &slot, 0, 0);
 }
 HW_InterfaceTypeDef HW_Interface = {
     .DHT11 = {
@@ -212,5 +207,6 @@ HW_InterfaceTypeDef HW_Interface = {
               .Init = HW_AUDIO_Init,
               .Reset = HW_AUDIO_Reset,
               .PlayVoice = HW_AUDIO_Play,
-              .StopVoice = HW_AUDIO_Stop},
+              .StopVoice = HW_AUDIO_Stop,
+              .PlayVoicePut = HW_AUDIO_PUT},
 };

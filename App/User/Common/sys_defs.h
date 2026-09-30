@@ -44,4 +44,5 @@ typedef enum {
 /* 信息页地址（每 slot 末尾的 4KB 扇区） */
 #define AUDIO_META_ADDR(n) (AUDIO_SLOT_BASE(n) + AUDIO_DATA_SIZE)
 
+#define EXTRAM_SECTION __attribute__((section(".extram"), aligned(4)))
 #endif

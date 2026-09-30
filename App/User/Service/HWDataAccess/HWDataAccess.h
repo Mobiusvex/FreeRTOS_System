@@ -4,6 +4,7 @@
 #include "sys_defs.h"
 #include "time_convert.h"
 #include "driver_led.h"
+#include "cmd_audio.h"
 
 typedef struct {
     uint8_t ConnectionError;
@@ -51,8 +52,9 @@ typedef struct {
     uint8_t ConnectionError;
     SYS_StatusTypeDef (*Init)(void);
     void (*Reset)(void);
-    void (*PlayVoice)(uint8_t slot);
+    enum_slot_t (*PlayVoice)(enum_slot_t slot);
     void (*StopVoice)(void);
+    void (*PlayVoicePut)(enum_slot_t slot);
 } HW_AUDIO_InterfaceTypeDef;
 
 typedef struct {

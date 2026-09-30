@@ -3,8 +3,7 @@
 #include "cmsis_os2.h"
 #include "FreeRTOS.h"
 #include "stream_buffer.h"
-
-#define EXTRAM_SECTION __attribute__((section(".extram"), aligned(4)))
+#include "sys_defs.h"
 
 /* 定义 StreamBuffer 的存储区和结构体 */
 #define DEFINE_EXTRAM_STREAM_BUFFER(name, size)         \
