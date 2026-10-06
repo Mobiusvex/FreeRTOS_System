@@ -55,9 +55,9 @@ bool BSP_SPI_Init(BSP_SPI_Bus_t bus, const BSP_SPI_Config_t *cfg) {
 
     if (priv->is_software) {
         // 软件SPI：只需要保存延迟时间，GPIO已在 BSP_GPIO_Init 中配置为输出
-        priv->sw_delay_us = (cfg->baudrate > 0) ? (1000000 / cfg->baudrate) : 2;
+        // priv->sw_delay_us = (cfg->baudrate > 0) ? (1000000 / cfg->baudrate) : 2;
         // 设置空闲电平 (根据CPOL)
-        BSP_GPIO_Write(priv->sw_sck, (cfg->cpol == 0) ? BSP_GPIO_LOW : BSP_GPIO_HIGH);
+        // BSP_GPIO_Write(priv->sw_sck, (cfg->cpol == 0) ? BSP_GPIO_LOW : BSP_GPIO_HIGH);
         return true;
     } else {
     }
@@ -180,7 +180,7 @@ bool spi_transfer_internal(BSP_SPI_Bus_t bus,
     }
 
     SPI_Private_t *priv = &s_spiBus[bus];
-    if (!osMutexAcquire(priv->mutex, timeout_ms)) return false;
+    if ((priv->mutex != NULL) && osMutexAcquire(priv->mutex, timeout_ms)) return false;
     if (cs != BSP_GPIO_NONE) {
         BSP_GPIO_Write(cs, BSP_GPIO_LOW);
     }

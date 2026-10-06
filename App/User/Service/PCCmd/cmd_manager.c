@@ -32,7 +32,12 @@ void Cmd_Dispatch(const Frame_t *frame) {
     for (uint8_t i = 0; i < sizeof(cmd_table) / sizeof(cmd_table[0]); i++) {
         if (cmd_table[i].cmd == frame->cmd) {
             cmd_table[i].handler(frame);
-            return;
+            break;
         }
+    }
+    if ((frame->cmd & CMD_MASK) == CMD_OTA_MASK) {
+        ota_sys_data_update();
+    } else if ((frame->cmd & CMD_MASK) == CMD_AUDIO_MASK) {
+        audio_sys_data_update();
     }
 }

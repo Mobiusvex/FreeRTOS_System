@@ -10,15 +10,18 @@
 extern "C" {
 #endif
 
-void event_volume_Slider(lv_event_t * e);
-void event_onenet_switch_clicked(lv_event_t * e);
-void event_background_dropdown(lv_event_t * e);
-void event_threshold_dropdown(lv_event_t * e);
-void event_threshold_slider(lv_event_t * e);
-void event_save_button(lv_event_t * e);
-void event_music_clicked_button(lv_event_t * e);
-void event_update_click(lv_event_t * e);
-void event_WeatherCity_dropdown(lv_event_t * e);
+void event_volume_Slider(lv_event_t *e);
+void event_onenet_switch_clicked(lv_event_t *e);
+void event_background_dropdown(lv_event_t *e);
+void event_threshold_dropdown(lv_event_t *e);
+void event_threshold_slider(lv_event_t *e);
+void event_save_button(lv_event_t *e);
+void event_music_clicked_button(lv_event_t *e);
+void event_update_click(lv_event_t *e);
+void event_WeatherCity_dropdown(lv_event_t *e);
+uint8_t get_current_slot(void);
+lv_obj_t *get_slot_bar(uint8_t slot);
+lv_obj_t *get_slot_button(uint8_t slot);
 
 #ifdef __cplusplus
 } /*extern "C"*/

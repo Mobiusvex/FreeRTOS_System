@@ -2,6 +2,7 @@
 #include "ui.h"
 #include "sys_data.h"
 #include "user_ui_popup.h"
+#include "audio_data.h"
 
 extern ThresholdType_t threshold_type;
 extern const ThresholdData_t thresholds_range[THRESHOLD_TYPE_NUM];
@@ -12,6 +13,8 @@ const char *weekday[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
 
 void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data) {
     AlarmStatus_t *p_status = &p_data->alarm_status.alarm_bits;
+
+    char music_filename[AUDIO_META_NAME_LEN];
     switch (event) {
     case SYS_WIFI_UPDATE:
         if (p_data->wifi_status == WIFI_STATE_CONNECTED) {
@@ -169,7 +172,45 @@ void user_ui_updata(SYS_DataEventType_t event, const SystemGlobalData_t *p_data)
         lv_obj_set_style_bg_color(ui_ScreenSet, color, LV_PART_MAIN);
         break;
     }
-
+        /* ========== 音乐屏幕 (ui_ScreenMusic) ========== */
+    case SYS_MUSIC_SLOT1_NAME_UPDATE:
+        if (AudioNames_Get(1, music_filename, sizeof(music_filename))) {
+            lv_label_set_text(ui_LabelMusicSlot1, music_filename);
+        }
+        break;
+    case SYS_MUSIC_SLOT2_NAME_UPDATE:
+        if (AudioNames_Get(2, music_filename, sizeof(music_filename))) {
+            lv_label_set_text(ui_LabelMusicSlot2, music_filename);
+        }
+        break;
+    case SYS_MUSIC_SLOT3_NAME_UPDATE:
+        if (AudioNames_Get(3, music_filename, sizeof(music_filename))) {
+            lv_label_set_text(ui_LabelMusicSlot3, music_filename);
+        }
+        break;
+    case SYS_MUSIC_SLOT4_NAME_UPDATE:
+        if (AudioNames_Get(4, music_filename, sizeof(music_filename))) {
+            lv_label_set_text(ui_LabelMusicSlot4, music_filename);
+        }
+        break;
+    case SYS_MUSIC_SLOT5_NAME_UPDATE:
+        if (AudioNames_Get(5, music_filename, sizeof(music_filename))) {
+            lv_label_set_text(ui_LabelMusicSlot5, music_filename);
+        }
+        break;
+    case SYS_MUSIC_PLAYER_PROGRESS_UPDATE:
+        uint8_t slot = get_current_slot();
+        lv_obj_t *bar = get_slot_bar(slot);
+        lv_obj_t *button = get_slot_button(slot);
+        if (bar) {
+            lv_bar_set_value(bar, p_data->audio_player_progress, LV_ANIM_OFF);
+            if (p_data->audio_player_progress == 100) {
+                lv_bar_set_value(bar, 0, LV_ANIM_OFF);
+                if (button) {
+                    lv_obj_clear_state(button, LV_STATE_CHECKED);
+                }
+            }
+        }
     default:
         break;
     }
@@ -283,4 +324,16 @@ void user_ui_refresh_all(const SystemGlobalData_t *p_data) {
         lv_obj_set_style_bg_color(ui_ScreenMusic, color, LV_PART_MAIN);
         lv_obj_set_style_bg_color(ui_ScreenSet, color, LV_PART_MAIN);
     }
+    /* ========== 音乐屏幕 (ui_ScreenMusic) ========== */
+    char music_filename[AUDIO_META_NAME_LEN]; // 用同一常量
+    if (AudioNames_Get(1, music_filename, sizeof(music_filename)))
+        lv_label_set_text(ui_LabelMusicSlot1, music_filename);
+    if (AudioNames_Get(2, music_filename, sizeof(music_filename)))
+        lv_label_set_text(ui_LabelMusicSlot2, music_filename);
+    if (AudioNames_Get(3, music_filename, sizeof(music_filename)))
+        lv_label_set_text(ui_LabelMusicSlot3, music_filename);
+    if (AudioNames_Get(4, music_filename, sizeof(music_filename)))
+        lv_label_set_text(ui_LabelMusicSlot4, music_filename);
+    if (AudioNames_Get(5, music_filename, sizeof(music_filename)))
+        lv_label_set_text(ui_LabelMusicSlot5, music_filename);
 }

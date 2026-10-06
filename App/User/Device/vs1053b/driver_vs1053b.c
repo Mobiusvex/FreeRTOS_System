@@ -262,3 +262,23 @@ void VS1053_StopPlay(void) {
         if (!VS1053_WriteSdi(fill_buf, sizeof(fill_buf))) break;
     }
 }
+
+/**
+ * @brief  设置音量百分比
+ * @param  vol: 音量百分比（0~100）
+ */
+void VS1053_SetVolumePercent(uint8_t vol) {
+    if (vol > 100) vol = 100;
+
+    uint8_t reg;
+    if (vol == 0) {
+        reg = 0xFE; /* 完全静音 */
+    } else {
+        /* 1~100 映射到 -60dB ~ 0dB，每 0.5dB 一格
+         * -60dB 对应 120 格（0x78）
+         */
+        reg = (uint8_t)(((100 - vol) * 120) / 100);
+    }
+
+    VS1053_SetVolume(reg, reg);
+}

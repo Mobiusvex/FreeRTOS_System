@@ -4,7 +4,7 @@
 #include "sys_defs.h"
 #include "time_convert.h"
 #include "driver_led.h"
-#include "cmd_audio.h"
+#include "audio_data.h"
 
 typedef struct {
     uint8_t ConnectionError;

@@ -29,9 +29,31 @@ typedef enum {
  *   信息页:  [slot*0x100000U + 1MB - 4KB, [slot*0x100000U + 1MB)   4KB
  */
 
-#define OTA_META_ADDR 0x000000U      /* OTA固件元信息扇区地址 */
-#define OTA_DATA_BASE_ADDR 0x001000U /* OTA固件数据区起始地址 */
+/* ============================ OTA固件元信息扇区地址 =============================== */
+#define OTA_META_ADDR 0x000000U /* OTA固件元信息扇区地址 */
+/* ============ OTA信息页格式（16字节） ============ */
+/*
+ * [0..3]   魔数  "OTA" = 0x4F544131U
+ * [4..7]   文件大小（4字节小端）
+ * [8..11] 固件包所有字节的CRC32（4字节小端）
+ * [12..15]OTA信息页前12字节的CRC32（4字节小端）
+ */
+#define OTA_META_SIZE 16U     /* 元信息有效长度 */
+#define OTA_MAGIC 0x4F544131U /* "OTA" */
 
+/* ============ OTA数据区起始地址 ============ */
+#define OTA_DATA_BASE_ADDR 0x001000U
+/* ============ OTA固件数据页格式（256字节一页） ============ */
+/*
+ * [0..239]     数据区（240字节）
+ * [240..243]  CRC32区（34字节）
+ * [244..255]  页内保留区(12字节)
+ */
+#define OTA_KEY_STREAM_LEN 240U /* 密钥流长度 */
+#define OTA_DATA_PER_PAGE 240U  /* 每页有效数据字节数 */
+#define OTA_RESERVED_SIZE 12U   /* 页内保留区大小 */
+
+/* ============================== 语音文件分区 ======================================*/
 /* 语音文件 slot 数量 */
 #define AUDIO_SLOT_COUNT 5U
 
@@ -43,6 +65,17 @@ typedef enum {
 
 /* 信息页地址（每 slot 末尾的 4KB 扇区） */
 #define AUDIO_META_ADDR(n) (AUDIO_SLOT_BASE(n) + AUDIO_DATA_SIZE)
+
+/* ============ AUDIO信息页格式（32字节） ============ */
+/*
+ * [0..3]   魔数  "VOICE" = 0x564F4943
+ * [4..7]   文件大小（4字节小端）
+ * [8..27]  文件名（20字节，末尾'\0'）
+ * [28..31] 前28字节的CRC32（4字节小端）
+ */
+#define AUDIO_META_MAGIC 0x564F4943U
+#define AUDIO_META_SIZE 32U
+#define AUDIO_META_NAME_LEN 20U
 
 #define EXTRAM_SECTION __attribute__((section(".extram"), aligned(4)))
 #endif

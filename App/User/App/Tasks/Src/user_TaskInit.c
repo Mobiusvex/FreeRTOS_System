@@ -66,7 +66,7 @@ const osThreadAttr_t user_sysDataStorageTaskAttr = {
 osThreadId_t debug_MonitorTaskHandle;
 const osThreadAttr_t debug_MonitorTaskAttr = {
     .name = "monitorTask",
-    .stack_size = 512,
+    .stack_size = 1024,
     .priority = (osPriority_t)osPriorityLow,
 };
 
@@ -80,7 +80,7 @@ const osThreadAttr_t user_PCCommTaskAttr = {
 osThreadId_t user_AudioTaskHandle;
 const osThreadAttr_t user_AudioTaskAttr = {
     .name = "AudioTask",
-    .stack_size = 1024,
+    .stack_size = 1024 + 512,
     .priority = (osPriority_t)osPriorityLow6,
 };
 

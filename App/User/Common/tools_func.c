@@ -31,3 +31,18 @@ void put_u32_le(uint8_t *p, uint32_t v) {
 uint16_t get_u16_le(const uint8_t *p) {
     return (uint16_t)p[0] | ((uint16_t)p[1] << 8);
 }
+
+/* ============================================================
+ *  CRC32（标准反射算法，与 Python binascii.crc32 结果一致）
+ *  多项式: 0xEDB88320，初值 0xFFFFFFFF，输出异或 0xFFFFFFFF
+ * ============================================================ */
+uint32_t Soft_CRC32(const uint8_t *data, uint32_t len) {
+    uint32_t crc = 0xFFFFFFFFU;
+    for (uint32_t i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (int k = 0; k < 8; k++) {
+            crc = (crc & 1) ? (0xEDB88320U ^ (crc >> 1)) : (crc >> 1);
+        }
+    }
+    return crc ^ 0xFFFFFFFFU;
+}

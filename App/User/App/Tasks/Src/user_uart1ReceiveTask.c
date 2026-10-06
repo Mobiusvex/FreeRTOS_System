@@ -8,7 +8,6 @@
 
 extern StreamBufferHandle_t xPCStreamBuffer;
 void uart1ReceiveTask(void *pvParameters) {
-    BSP_UART_Init(BSP_UART_PC, NULL);
     BSP_UART_RegisterTask(BSP_UART_PC, osThreadGetId());
     uint32_t ulFlags;
     static uint8_t buffer[512];

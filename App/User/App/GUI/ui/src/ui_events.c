@@ -8,6 +8,7 @@
 #include "cmsis_os2.h"
 #include "sys_data.h"
 #include "net_manager.h"
+#include "HWDataAccess.h"
 
 extern osThreadId_t user_sysDataStorageTaskHandle;
 extern osMessageQueueId_t xCmdDisplayQueue;
@@ -30,6 +31,9 @@ void event_update_click(lv_event_t *e) {
 
 void event_volume_Slider(lv_event_t *e) {
     // Your code here
+    lv_obj_t *target = lv_event_get_target(e);
+    uint8_t volume = lv_slider_get_value(target);
+    SYS_DATA_SetVolume(volume);
 }
 
 void event_onenet_switch_clicked(lv_event_t *e) {
@@ -75,6 +79,59 @@ void event_save_button(lv_event_t *e) {
 void event_WeatherCity_dropdown(lv_event_t *e) {
     // Your code here
 }
+
+lv_obj_t *get_slot_button(uint8_t slot) {
+    switch (slot) {
+    case 1: return ui_ButtonMusicSlot1;
+    case 2: return ui_ButtonMusicSlot2;
+    case 3: return ui_ButtonMusicSlot3;
+    case 4: return ui_ButtonMusicSlot4;
+    case 5: return ui_ButtonMusicSlot5;
+    default: return NULL;
+    }
+}
+
+lv_obj_t *get_slot_bar(uint8_t slot) {
+    switch (slot) {
+    case 1: return ui_BarMusicSlot1;
+    case 2: return ui_BarMusicSlot2;
+    case 3: return ui_BarMusicSlot3;
+    case 4: return ui_BarMusicSlot4;
+    case 5: return ui_BarMusicSlot5;
+    default: return NULL;
+    }
+}
+
+static uint8_t s_current_slot = 0;
+
+uint8_t get_current_slot(void) {
+    return s_current_slot;
+}
+
 void event_music_clicked_button(lv_event_t *e) {
-    // Your code here
+    lv_obj_t *target = lv_event_get_current_target(e);
+    uint8_t slot = 0;
+    for (uint8_t i = 1; i <= AUDIO_SLOT_COUNT; i++) {
+        if (get_slot_button(i) == target) {
+            slot = i;
+            break;
+        }
+    }
+    if (slot == 0) return;
+
+    if (!lv_obj_has_state(target, LV_STATE_CHECKED)) {
+        HW_Interface.AUDIO.StopVoice();
+        lv_obj_t *old_bar = get_slot_bar(s_current_slot);
+        lv_bar_set_value(old_bar, 0, LV_ANIM_OFF);
+        s_current_slot = 0;
+    } else {
+        if (s_current_slot != 0) {
+            lv_obj_t *old_button = get_slot_button(s_current_slot);
+            if (old_button) lv_obj_clear_state(old_button, LV_STATE_CHECKED);
+            lv_obj_t *old_bar = get_slot_bar(s_current_slot);
+            if (old_bar) lv_bar_set_value(old_bar, 0, LV_ANIM_OFF);
+        }
+        HW_Interface.AUDIO.PlayVoicePut(slot);
+        s_current_slot = slot;
+    }
 }

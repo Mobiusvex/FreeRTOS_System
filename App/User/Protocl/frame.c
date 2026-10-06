@@ -1,20 +1,6 @@
 #include "frame.h"
 #include <string.h>
-
-/* ============================================================
- *  CRC32（标准反射算法，与 Python binascii.crc32 结果一致）
- *  多项式: 0xEDB88320，初值 0xFFFFFFFF，输出异或 0xFFFFFFFF
- * ============================================================ */
-uint32_t Frame_CRC32(const uint8_t *data, uint32_t len) {
-    uint32_t crc = 0xFFFFFFFFU;
-    for (uint32_t i = 0; i < len; i++) {
-        crc ^= data[i];
-        for (int k = 0; k < 8; k++) {
-            crc = (crc & 1) ? (0xEDB88320U ^ (crc >> 1)) : (crc >> 1);
-        }
-    }
-    return crc ^ 0xFFFFFFFFU;
-}
+#include "tools_func.h"
 
 /* ============================================================
  *  初始化
@@ -76,7 +62,7 @@ static FrameStatus_t frame_parse_one(FrameParser_t *p, Frame_t *out) {
         }
 
         /* ---- 5. 校验 CRC（范围：从起始到数据结束）---- */
-        uint32_t calc_crc = Frame_CRC32(p->buf, FRAME_HEAD_LEN + data_len);
+        uint32_t calc_crc = Soft_CRC32(p->buf, FRAME_HEAD_LEN + data_len);
         uint16_t recv_crc = (uint16_t)p->buf[FRAME_HEAD_LEN + data_len]
                             | ((uint16_t)p->buf[FRAME_HEAD_LEN + data_len + 1] << 8);
 
@@ -151,7 +137,7 @@ uint16_t Frame_Build(uint8_t *out, uint16_t buf_size,
     }
 
     /* CRC（低16位小端）*/
-    uint32_t crc = Frame_CRC32(out, FRAME_HEAD_LEN + data_len);
+    uint32_t crc = Soft_CRC32(out, FRAME_HEAD_LEN + data_len);
     out[FRAME_HEAD_LEN + data_len] = (uint8_t)(crc & 0xFF);
     out[FRAME_HEAD_LEN + data_len + 1] = (uint8_t)((crc >> 8) & 0xFF);
 

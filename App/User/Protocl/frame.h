@@ -67,8 +67,5 @@ uint16_t Frame_Build(uint8_t *out, uint16_t buf_size,
                      uint16_t seq, uint8_t cmd,
                      const uint8_t *data, uint8_t data_len);
 
-/* 直接对一段 buffer 计算协议规定的 CRC32（取低16位） */
-uint32_t Frame_CRC32(const uint8_t *data, uint32_t len);
-
 void Frame_Send(BSP_UART_Bus_t bus, uint16_t seq, uint8_t cmd, uint8_t *data, uint8_t data_len, uint32_t timeout_ms);
 #endif /* FRAME_H */

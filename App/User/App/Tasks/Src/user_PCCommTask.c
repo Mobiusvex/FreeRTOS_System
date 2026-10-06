@@ -37,7 +37,6 @@ void user_PCCommTask(void *pvParameters) {
                 ota_clean = true;
                 Cmd_Dispatch(&frame);
                 st = FrameParser_Feed(&s_parser, NULL, 0, &frame);
-                ota_sys_data_update();
                 update_time = osKernelGetTickCount();
             }
             if (st == FRAME_CRC_ERROR) {

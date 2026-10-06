@@ -8,30 +8,23 @@
 #include "tools_func.h"
 #include "cmd_audio.h"
 #include "HWDataAccess.h"
+#include "audio_data.h"
 
-/* ============ 信息页格式（32字节） ============ */
-/*
- * [0..3]   魔数  "VOIC" = 0x564F4943
- * [4..7]   文件大小（4字节小端）
- * [8..27]  文件名（20字节，末尾'\0'）
- * [28..31] 前28字节的CRC32（4字节小端）
- */
-#define AUDIO_META_MAGIC 0x564F4943U
-#define AUDIO_META_SIZE 32U
-#define AUDIO_META_NAME_LEN 20U
-
-#define FLASH_PAGE_SIZE 256U
-#define AUDIO_SECTOR_SIZE 4096U
-#define AUDIO_PAGES_PER_SECTOR (AUDIO_SECTOR_SIZE / FLASH_PAGE_SIZE) /* = 16 */
 #define AUDIO_ACK_TIMEOUT_MS 100U
 
 #define AUDIO_MAX_PACK_DATA 240U
+
+typedef enum {
+    AUDIO_STATE_IDLE = 0,
+    AUDIO_STATE_START,
+    AUDIO_STATE_OK
+} AUDIO_State_t;
 
 /* ============================================================
  *  上下文
  * ============================================================ */
 typedef struct {
-    bool active;
+    AUDIO_State_t active;
     enum_slot_t slot;
     uint16_t total_packets;
     uint32_t file_size;
@@ -47,6 +40,7 @@ typedef struct {
 
 static AUDIO_Context_t s_audio_ctx;
 
+extern osMessageQueueId_t xCmdDisplayQueue;
 /**
  * @brief 发送 ACK
  * @param seq 序号
@@ -67,11 +61,11 @@ static void audio_send_ack(uint16_t seq, uint8_t ack) {
 static bool audio_ensure_erased(uint32_t offset, uint32_t len) {
     if (len == 0) return true;
 
-    uint16_t last_sector = (uint16_t)((offset + len - 1) / AUDIO_SECTOR_SIZE);
+    uint16_t last_sector = (uint16_t)((offset + len - 1) / FLASH_SECTOR_SIZE);
 
     while (s_audio_ctx.next_sector_to_erase <= last_sector) {
         uint32_t addr = AUDIO_SLOT_BASE(s_audio_ctx.slot)
-                        + (uint32_t)s_audio_ctx.next_sector_to_erase * AUDIO_SECTOR_SIZE;
+                        + (uint32_t)s_audio_ctx.next_sector_to_erase * FLASH_SECTOR_SIZE;
 
         RTT_PRINTF("Audio: erase sector %u @0x%08X\n",
                    s_audio_ctx.next_sector_to_erase, addr);
@@ -157,7 +151,7 @@ void AUDIO_HandleStart(const Frame_t *frame) {
     }
 
     /* 5. 初始化上下文 */
-    s_audio_ctx.active = true;
+    s_audio_ctx.active = AUDIO_STATE_START;
     s_audio_ctx.slot = (uint8_t)frame->seq;
     s_audio_ctx.total_packets = total;
     s_audio_ctx.file_size = file_size;
@@ -257,7 +251,7 @@ void AUDIO_HandleEnd(const Frame_t *frame) {
         RTT_PRINTF("Audio End: seq %u != total %u\n",
                    frame->seq, s_audio_ctx.total_packets);
         audio_send_ack(frame->seq, ACK_FAIL);
-        s_audio_ctx.active = false;
+        s_audio_ctx.active = AUDIO_STATE_IDLE;
         return;
     }
 
@@ -265,7 +259,7 @@ void AUDIO_HandleEnd(const Frame_t *frame) {
         RTT_PRINTF("Audio End: only %u/%u packets\n",
                    s_audio_ctx.received_packets, s_audio_ctx.total_packets);
         audio_send_ack(frame->seq, ACK_FAIL);
-        s_audio_ctx.active = false;
+        s_audio_ctx.active = AUDIO_STATE_IDLE;
         return;
     }
 
@@ -281,7 +275,7 @@ void AUDIO_HandleEnd(const Frame_t *frame) {
 
         if (!audio_flush_page()) {
             audio_send_ack(frame->seq, ACK_FAIL);
-            s_audio_ctx.active = false;
+            s_audio_ctx.active = AUDIO_STATE_IDLE;
             return;
         }
     }
@@ -291,7 +285,7 @@ void AUDIO_HandleEnd(const Frame_t *frame) {
         RTT_PRINTF("Audio End: written %u < file_size %u\n",
                    s_audio_ctx.write_offset, s_audio_ctx.file_size);
         audio_send_ack(frame->seq, ACK_FAIL);
-        s_audio_ctx.active = false;
+        s_audio_ctx.active = AUDIO_STATE_IDLE;
         return;
     }
 
@@ -301,7 +295,7 @@ void AUDIO_HandleEnd(const Frame_t *frame) {
     put_u32_le(&meta[0], AUDIO_META_MAGIC);
     put_u32_le(&meta[4], s_audio_ctx.file_size);
     memcpy(&meta[8], s_audio_ctx.filename, AUDIO_META_NAME_LEN);
-    put_u32_le(&meta[28], Frame_CRC32(meta, 28));
+    put_u32_le(&meta[28], Soft_CRC32(meta, 28));
 
     /* 擦除信息页扇区 */
     uint32_t meta_addr = AUDIO_META_ADDR(s_audio_ctx.slot);
@@ -309,70 +303,21 @@ void AUDIO_HandleEnd(const Frame_t *frame) {
 
     if (!BSP_W25Qxx_SectorErase(meta_addr)) {
         audio_send_ack(frame->seq, ACK_FAIL);
-        s_audio_ctx.active = false;
+        s_audio_ctx.active = AUDIO_STATE_IDLE;
         return;
     }
 
     if (!BSP_W25Qxx_BufferWrite(meta, meta_addr, sizeof(meta))) {
         audio_send_ack(frame->seq, ACK_FAIL);
-        s_audio_ctx.active = false;
+        s_audio_ctx.active = AUDIO_STATE_IDLE;
         return;
     }
 
     RTT_PRINTF("Audio End: complete! slot=%u, name='%s', size=%u, flash=%u\n",
                s_audio_ctx.slot, s_audio_ctx.filename,
                s_audio_ctx.file_size, s_audio_ctx.write_offset);
-    s_audio_ctx.active = false;
+    s_audio_ctx.active = AUDIO_STATE_OK;
     audio_send_ack(frame->seq, ACK_OK);
-}
-
-/**
- * @brief 获取音频文件信息
- * @param slot 音频槽号
- * @param filename 文件名
- * @param file_size 文件大小
- * @retval true 成功，false 失败
- */
-bool AUDIO_GetInfo(enum_slot_t slot, char *filename, uint32_t *file_size) {
-    if (slot < 1 || slot > AUDIO_SLOT_COUNT) return false;
-
-    uint8_t meta[AUDIO_META_SIZE];
-    if (!BSP_W25Qxx_BufferRead(meta, AUDIO_META_ADDR(slot), sizeof(meta))) {
-        return false;
-    }
-    if (get_u32_le(&meta[0]) != AUDIO_META_MAGIC) return false;
-
-    uint32_t calc = Frame_CRC32(meta, 28);
-    uint32_t recv = get_u32_le(&meta[28]);
-    if (calc != recv) {
-        RTT_PRINTF("Audio: slot %u meta CRC err\n", slot);
-        return false;
-    }
-
-    if (filename) {
-        memcpy(filename, &meta[8], AUDIO_META_NAME_LEN);
-        filename[AUDIO_META_NAME_LEN - 1] = '\0';
-    }
-    if (file_size) {
-        *file_size = get_u32_le(&meta[4]);
-    }
-    return true;
-}
-
-/**
- * @brief 读取音频文件数据
- * @param slot 音频槽号
- * @param offset 偏移
- * @param buf 缓冲区
- * @param len 长度
- * @retval true 成功，false 失败
- */
-bool AUDIO_ReadData(enum_slot_t slot, uint32_t offset, uint8_t *buf, uint32_t len) {
-    if (slot < 1 || slot > AUDIO_SLOT_COUNT) return false;
-    if (offset + len > AUDIO_DATA_SIZE) return false;
-
-    uint32_t addr = AUDIO_SLOT_BASE(slot) + offset;
-    return BSP_W25Qxx_BufferRead(buf, addr, (uint16_t)len);
 }
 
 void AUDIO_HandlePlay(const Frame_t *frame) {
@@ -383,4 +328,36 @@ void AUDIO_HandlePlay(const Frame_t *frame) {
     }
     HW_Interface.AUDIO.PlayVoicePut(frame->data[0]);
     audio_send_ack(frame->seq, ACK_OK);
+}
+
+/**
+ * @brief 音频播放显示状态更新
+ */
+void audio_sys_data_update(void) {
+    static uint8_t index = 0;
+    static AUDIO_State_t last_state = AUDIO_STATE_IDLE;
+    SYS_DataEventType_t event;
+    bool update = false;
+
+    if (last_state != s_audio_ctx.active) {
+        update = true;
+        index = 0;
+    }
+    if ((index++) == 30) {
+        update = true;
+        index = 0;
+    }
+    if (update) {
+        if (s_audio_ctx.active == AUDIO_STATE_OK) {
+            AudioNames_LoadOne(s_audio_ctx.slot);
+            event = s_audio_ctx.slot + SYS_MUSIC_SLOT1_NAME_UPDATE - 1; // 更新音频文件名字显示
+            osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
+            s_audio_ctx.active = AUDIO_STATE_IDLE;
+        }
+        event = SYS_PAKET_UPDATE;
+        SYS_DATA_SetPaketUpdateData(s_audio_ctx.active, s_audio_ctx.received_packets * 100 / s_audio_ctx.total_packets);
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
+
+    }
+    last_state = s_audio_ctx.active;
 }

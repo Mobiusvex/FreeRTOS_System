@@ -12,11 +12,13 @@ extern osThreadId_t user_uart1ReceiveTaskHandle;
 extern osThreadId_t user_uart3ReceiveTaskHandle;
 extern osThreadId_t user_ESP8266CommTaskHandle;
 extern osThreadId_t user_PCCommTaskHandle;
+extern osThreadId_t user_AudioTaskHandle;
+extern osThreadId_t user_sysDataStorageTaskHandle;
 
 void debug_MonitorTask(void *pvParameters) {
     const TickType_t xDelay = pdMS_TO_TICKS(5000); // 每 5 秒更新一次
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    static UBaseType_t uxWaterMark[7];
+    static UBaseType_t uxWaterMark[9];
     // 注意：监控任务自身栈极小，千万不要在这里定义大数组（如 char buf[256]）
     while (1) {
         vTaskDelayUntil(&xLastWakeTime, xDelay);
@@ -39,6 +41,12 @@ void debug_MonitorTask(void *pvParameters) {
         if (user_PCCommTaskHandle != NULL) {
             uxWaterMark[5] = uxTaskGetStackHighWaterMark(user_PCCommTaskHandle);
         }
+        if (user_AudioTaskHandle != NULL) {
+            uxWaterMark[7] = uxTaskGetStackHighWaterMark(user_AudioTaskHandle);
+        }
+        if (user_sysDataStorageTaskHandle != NULL) {
+            uxWaterMark[8] = uxTaskGetStackHighWaterMark(user_sysDataStorageTaskHandle);
+        }
         // 打印监控任务自身（用于调试监控任务是否爆栈）
         uxWaterMark[6] = uxTaskGetStackHighWaterMark(NULL);
         HeapStats_t stats = {0};
@@ -53,6 +61,8 @@ void debug_MonitorTask(void *pvParameters) {
         // RTT_PRINTF("ESP8266Comm Task Stack Free: %u words\r\n", uxWaterMark[4]);
         // RTT_PRINTF("PCCom Task Stack Free: %u words\r\n", uxWaterMark[5]);
         // RTT_PRINTF("Monitor Task Stack Free: %u words\r\n", uxWaterMark[6]);
+        // RTT_PRINTF("Audio Task Stack Free: %u words\r\n", uxWaterMark[7]);
+        // RTT_PRINTF("SysDataStorage Task Stack Free: %u words\r\n", uxWaterMark[8]);
     }
 }
 

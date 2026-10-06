@@ -27,6 +27,12 @@ typedef enum {
     SYS_VOLUME_UPDATE,
     SYS_PAKET_UPDATE,
     SYS_BACKGROUND_COLOR_UPDATE,
+    SYS_MUSIC_SLOT1_NAME_UPDATE,
+    SYS_MUSIC_SLOT2_NAME_UPDATE,
+    SYS_MUSIC_SLOT3_NAME_UPDATE,
+    SYS_MUSIC_SLOT4_NAME_UPDATE,
+    SYS_MUSIC_SLOT5_NAME_UPDATE,
+    SYS_MUSIC_PLAYER_PROGRESS_UPDATE,
 } SYS_DataEventType_t;
 
 typedef enum {
@@ -114,6 +120,7 @@ typedef struct {
     PaketUpdateState_t paket_update_status;
     uint8_t paket_update_progress; // 0-100
     SYS_UPGRADE_t new_paket_status;
+    uint8_t audio_player_progress; // 0-100
     AlarmStatusUnion_t alarm_status;
 } SystemGlobalData_t;
 
@@ -141,6 +148,7 @@ void SYS_DATA_SetBackgroundColor(uint8_t color_code);
 void SYS_DATA_SetOnenetSwitch(bool switch_connect);
 void SYS_DATA_SetPaketUpdateData(PaketUpdateState_t status, uint8_t progress);
 void SYS_DATA_SetNewPaketState(SYS_UPGRADE_t status);
+void SYS_DATA_SetAudioPlayerProgress(uint8_t progress);
 void SYS_DATA_UpdateAlarmStatus(void);
 
 void SYS_DATA_GetVersion(uint16_t *version);
@@ -157,6 +165,7 @@ void SYS_DATA_GetBackgroundColor(uint8_t *color_code);
 void SYS_DATA_GetOnenetSwitch(bool *switch_connect);
 void SYS_DATA_GetPaketUpdateData(PaketUpdateState_t *status, uint8_t *progress);
 void SYS_DATA_GetNewPaketState(SYS_UPGRADE_t *status);
+void SYS_DATA_GetAudioPlayerProgress(uint8_t *progress);
 void SYS_DATA_GetAlarmStatus(AlarmStatusUnion_t *status);
 bool SYS_DATA_IsTempAlarm(void);
 bool SYS_DATA_IsHumiAlarm(void);

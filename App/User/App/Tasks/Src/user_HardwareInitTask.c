@@ -13,6 +13,7 @@
 #include "tim.h"
 #include "ui.h"
 #include "user_ui_popup.h"
+#include "bsp_init.h"
 /**
  * @brief Hardware initialization task
  * @param pvParameters Task parameters
@@ -60,5 +61,6 @@ void hardwareInitTask(void *pvParameters) {
     ui_init();
     popup_init();
     osKernelRestoreLock(lock_state);
+    bsp_init();
     osThreadExit();
 }

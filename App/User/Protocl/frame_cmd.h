@@ -1,13 +1,16 @@
 #ifndef FRAME_CMD_H
 #define FRAME_CMD_H
 
+#define CMD_MASK 0XF0
 /* ============ OTA 相关 ============ */
+#define CMD_OTA_MASK 0X10
 #define CMD_OTA_START 0x11 /* 上位机→STM32：起始包 */
 #define CMD_OTA_DATA 0x12  /* 上位机→STM32：数据包 */
 #define CMD_OTA_ACK 0x13   /* STM32→上位机：应答(0x66成功/0x55失败) */
 #define CMD_OTA_END 0x14   /* 上位机→STM32：结束包 */
 
 /* ============ 语音下载相关 ============ */
+#define CMD_AUDIO_MASK 0X20
 #define CMD_AUDIO_START 0x21 /* 上位机→STM32：起始包 */
 #define CMD_AUDIO_DATA 0x22  /* 上位机→STM32：数据包 */
 #define CMD_AUDIO_ACK 0x23   /* STM32→上位机：应答 */

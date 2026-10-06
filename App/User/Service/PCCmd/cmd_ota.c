@@ -1,5 +1,3 @@
-
-
 #include "cmd_ota.h"
 #include "frame.h"
 #include "frame_cmd.h"
@@ -15,15 +13,9 @@
 /* ============================================================
  *  常量定义
  * ============================================================ */
-#define OTA_KEY_STREAM_LEN 240U /* 密钥流长度 */
-#define OTA_DATA_PER_PAGE 240U  /* 每页有效数据字节数 */
-#define OTA_META_SIZE 16U       /* 元信息有效长度 */
-
-#define OTA_RESERVED_SIZE 12U /* 页内保留区大小 */
 
 #define OTA_CODE_MAX_SIZE 0X7A800U /* 最大固件字节数 */
 
-#define OTA_MAGIC 0x4F544131U   /* "OTA1" */
 #define OTA_ACK_TIMEOUT_MS 100U /* ACK 发送超时 */
 
 /* ============================================================
@@ -113,7 +105,7 @@ static bool ota_write_data_page(uint16_t page_idx,
     }
 
     /* 3. 计算本页 CRC32（只对前 240 字节） */
-    uint32_t page_crc = Frame_CRC32(page, OTA_DATA_PER_PAGE);
+    uint32_t page_crc = Soft_CRC32(page, OTA_DATA_PER_PAGE);
     put_u32_le(&page[OTA_DATA_PER_PAGE], page_crc);
     /* 4. 保留 12 字节填 0xFF */
     memset(&page[OTA_DATA_PER_PAGE + 4], 0xFF, OTA_RESERVED_SIZE);
@@ -142,7 +134,7 @@ static bool ota_verify_and_calc_crc(uint16_t total_packets, uint32_t *out_crc) {
         }
 
         /* 2. 校验本页 CRC */
-        uint32_t pc_calc = Frame_CRC32(page, OTA_DATA_PER_PAGE);
+        uint32_t pc_calc = Soft_CRC32(page, OTA_DATA_PER_PAGE);
         uint32_t pc_stored = get_u32_le(&page[OTA_DATA_PER_PAGE]);
         if (pc_calc != pc_stored) {
             RTT_PRINTF("OTA Verify: page %u CRC err (calc=0x%08X stored=0x%08X)\n",
@@ -353,7 +345,7 @@ void OTA_HandleEnd(const Frame_t *frame) {
     put_u32_le(&meta[0x00], OTA_MAGIC);
     put_u32_le(&meta[0x04], s_ota_ctx.firmware_size);
     put_u32_le(&meta[0x08], recv_crc);
-    uint32_t meta_crc = Frame_CRC32(meta, 12);
+    uint32_t meta_crc = Soft_CRC32(meta, 12);
     put_u32_le(&meta[0x0C], meta_crc);
 
     /* 擦除元信息扇区 */
@@ -385,17 +377,14 @@ extern osMessageQueueId_t xCmdDisplayQueue;
 
 /**
  * @brief OTA 系统数据更新
- * @retval true 更新成功，false 更新失败
  * @retval
- * @note 状态改变立即更新，数据包进度条30包更新一次
+ * @note 状态改变立即更新
  */
-bool ota_sys_data_update(void) {
+void ota_sys_data_update(void) {
     static uint8_t index = 0;
     static OTA_State_t last_state = OTA_STATE_IDLE;
     SYS_DataEventType_t event;
     bool update = false;
-    bool ret = false;
-
     if (last_state != s_ota_ctx.active) {
         update = true;
         index = 0;
@@ -408,14 +397,12 @@ bool ota_sys_data_update(void) {
         SYS_DATA_SetPaketUpdateData(s_ota_ctx.active, s_ota_ctx.received_packets * 100 / s_ota_ctx.total_packets);
         event = SYS_PAKET_UPDATE; // 更新OTA显示
         osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
-        ret = true;
     }
     if (s_ota_ctx.active == OTA_STATE_OK) {
         SYS_DATA_SetNewPaketState(SYS_NEW_PAKET_READY);
         osThreadFlagsSet(user_sysDataStorageTaskHandle, FLAG_MSG_DATA_STORAGE);
     }
     last_state = s_ota_ctx.active;
-    return ret;
 }
 
 /**

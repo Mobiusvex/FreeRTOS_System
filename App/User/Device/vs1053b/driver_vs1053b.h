@@ -64,7 +64,7 @@ bool VS1053_IsReady(void);
 uint16_t VS1053_GetDecodeTime(void);
 uint16_t VS1053_GetBitRate(void);
 uint16_t VS1053_GetEndFillByte(void);
-
+void VS1053_SetVolumePercent(uint8_t vol);
 /* 结束播放 */
 void VS1053_StopPlay(void);
 

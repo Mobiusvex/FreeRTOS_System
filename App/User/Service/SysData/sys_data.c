@@ -1,6 +1,7 @@
 // sys_data.c
 #include "sys_data.h"
 #include "sys_storage.h"
+#include "audio_data.h"
 #include "cmsis_os2.h"
 #include <string.h>
 // ========== 静态变量 ==========
@@ -58,7 +59,7 @@ static void sys_data_set_init(void) {
     if (g_sysData->thresholds[THRESHOLD_TYPE_YAW].threshold_high == g_sysData->thresholds[THRESHOLD_TYPE_YAW].threshold_low) {
         SYS_DATA_SetThreshold(THRESHOLD_TYPE_YAW, 2, -2);
     }
-
+    AudioNames_LoadAll();
     if (g_sysData->volume == 0) {
         SYS_DATA_SetVolume(50);
     }
@@ -226,6 +227,11 @@ void SYS_DATA_SetNewPaketState(SYS_UPGRADE_t status) {
     osKernelRestoreLock(lock_state);
 }
 
+void SYS_DATA_SetAudioPlayerProgress(uint8_t progress) {
+    uint32_t lock_state = osKernelLock();
+    g_sysData->audio_player_progress = progress;
+    osKernelRestoreLock(lock_state);
+}
 void SYS_DATA_UpdateAlarmStatus(void) {
     uint32_t lock_state = osKernelLock();
 
@@ -406,6 +412,11 @@ void SYS_DATA_GetNewPaketState(SYS_UPGRADE_t *status) {
     osKernelRestoreLock(lock_state);
 }
 
+void SYS_DATA_GetAudioPlayerProgress(uint8_t *progress) {
+    uint32_t lock_state = osKernelLock();
+    *progress = g_sysData->audio_player_progress;
+    osKernelRestoreLock(lock_state);
+}
 void SYS_DATA_GetAlarmStatus(AlarmStatusUnion_t *status) {
     uint32_t lock_state = osKernelLock();
     *status = g_sysData->alarm_status;

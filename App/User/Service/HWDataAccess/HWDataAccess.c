@@ -11,6 +11,7 @@
 #include "stdio.h"
 
 extern osMessageQueueId_t xAudioCmdQueue;
+extern osMessageQueueId_t xCmdDisplayQueue;
 /**
  * @brief DHT11传感器初始化
  * @retval 初始化成功返回SYS_OK，初始化失败返回SYS_ERROR
@@ -126,39 +127,47 @@ SYS_StatusTypeDef HW_AUDIO_Init(void) {
     if (!VS1053_Init()) {
         return SYS_ERROR;
     }
+    VS1053_StopPlay();
     return SYS_OK;
 }
 
 void HW_AUDIO_Reset(void) {
     VS1053_Reset();
+    VS1053_StopPlay();
 }
 
 enum_slot_t HW_AUDIO_Play(enum_slot_t slot) {
-    char filename[20];
+    char filename[AUDIO_META_NAME_LEN];
     uint32_t file_size;
-    uint8_t buf[512];
-
+    static uint8_t buf[512];
+    SYS_DataEventType_t event;
+    uint8_t volume = 0xFE, new_volume = 0xFE;
     if (!AUDIO_GetInfo(slot, filename, &file_size)) {
         RTT_PRINTF("Voice: slot %u empty\n", slot);
         return AUDIO_SLOT_NONE;
     }
     RTT_PRINTF("Playing '%s' (%u bytes)\n", filename, file_size);
 
-    VS1053_SetVolume(0x20, 0x20);
-
     for (uint32_t off = 0; off < file_size;) {
         uint8_t next;
         if (osMessageQueueGet(xAudioCmdQueue, &next, NULL, 0) == osOK) /* 被打断 */
             return next;
-
         uint32_t chunk = file_size - off;
         if (chunk > sizeof(buf)) chunk = sizeof(buf);
 
+        SYS_DATA_GetVolume(&new_volume);
+        if (new_volume != volume) {
+            VS1053_SetVolumePercent(new_volume);
+            volume = new_volume; // 更新音量
+        }
         if (!AUDIO_ReadData(slot, off, buf, (uint16_t)chunk) || !VS1053_WriteSdiBlocking(buf, (uint16_t)chunk)) {
             RTT_PRINTF("play slot %u fail @%u\n", slot, off);
             break;
         }
         off += chunk;
+        SYS_DATA_SetAudioPlayerProgress(off * 100 / file_size);
+        event = SYS_MUSIC_PLAYER_PROGRESS_UPDATE;
+        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
     }
     return AUDIO_SLOT_NONE;
 }
