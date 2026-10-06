@@ -9,6 +9,7 @@
 #include "sys_data.h"
 #include "user_sysDataStorageTask.h"
 #include "tools_func.h"
+#include "HWDataAccess.h"
 
 /* ============================================================
  *  常量定义
@@ -397,6 +398,9 @@ void ota_sys_data_update(void) {
         SYS_DATA_SetPaketUpdateData(s_ota_ctx.active, s_ota_ctx.received_packets * 100 / s_ota_ctx.total_packets);
         event = SYS_PAKET_UPDATE; // 更新OTA显示
         osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
+    }
+    if (s_ota_ctx.active == OTA_STATE_START) {
+        HW_Interface.AUDIO.PlayVoicePut(AUDIO_SLOT_NONE); // 通知播放器停止播放
     }
     if (s_ota_ctx.active == OTA_STATE_OK) {
         SYS_DATA_SetNewPaketState(SYS_NEW_PAKET_READY);

@@ -142,6 +142,7 @@ enum_slot_t HW_AUDIO_Play(enum_slot_t slot) {
     static uint8_t buf[512];
     SYS_DataEventType_t event;
     uint8_t volume = 0xFE, new_volume = 0xFE;
+    uint8_t last_progress = 0, new_progress = 0;
     if (!AUDIO_GetInfo(slot, filename, &file_size)) {
         RTT_PRINTF("Voice: slot %u empty\n", slot);
         return AUDIO_SLOT_NONE;
@@ -165,9 +166,13 @@ enum_slot_t HW_AUDIO_Play(enum_slot_t slot) {
             break;
         }
         off += chunk;
-        SYS_DATA_SetAudioPlayerProgress(off * 100 / file_size);
-        event = SYS_MUSIC_PLAYER_PROGRESS_UPDATE;
-        osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
+        new_progress = off * 100 / file_size;
+        if (new_progress != last_progress) { // 更新进度
+            SYS_DATA_SetAudioPlayerProgress(new_progress);
+            last_progress = new_progress;
+            event = SYS_MUSIC_PLAYER_PROGRESS_UPDATE;
+            osMessageQueuePut(xCmdDisplayQueue, &event, 0, 0);
+        }
     }
     return AUDIO_SLOT_NONE;
 }

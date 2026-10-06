@@ -169,7 +169,6 @@ void AUDIO_HandleStart(const Frame_t *frame) {
                frame->seq, file_size, total, s_audio_ctx.filename);
 
     audio_send_ack(frame->seq, ACK_OK);
-    HW_Interface.AUDIO.PlayVoicePut(AUDIO_SLOT_NONE); // 通知播放器停止播放
 }
 
 /**
@@ -348,7 +347,9 @@ void audio_sys_data_update(void) {
         index = 0;
     }
     if (update) {
-        if (s_audio_ctx.active == AUDIO_STATE_OK) {
+        if (s_audio_ctx.active == AUDIO_STATE_START) {
+            HW_Interface.AUDIO.PlayVoicePut(AUDIO_SLOT_NONE); // 通知播放器停止播放
+        } else if (s_audio_ctx.active == AUDIO_STATE_OK) {
             AudioNames_LoadOne(s_audio_ctx.slot);
             event = s_audio_ctx.slot + SYS_MUSIC_SLOT1_NAME_UPDATE - 1; // 更新音频文件名字显示
             osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
@@ -357,7 +358,6 @@ void audio_sys_data_update(void) {
         event = SYS_PAKET_UPDATE;
         SYS_DATA_SetPaketUpdateData(s_audio_ctx.active, s_audio_ctx.received_packets * 100 / s_audio_ctx.total_packets);
         osMessageQueuePut(xCmdDisplayQueue, &event, 0, 50);
-
     }
     last_state = s_audio_ctx.active;
 }
